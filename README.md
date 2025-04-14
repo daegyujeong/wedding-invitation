@@ -56,3 +56,50 @@
 ```bash
 git clone https://github.com/your-username/flutter-wedding-invitation.git
 cd flutter-wedding-invitation
+
+lib/
+  ├── main.dart                     # 앱 진입점
+  ├── app/                          # 앱 관련 설정
+  │    ├── di/                      # 의존성 주입
+  │    ├── locator.dart             # 서비스 로케이터
+  │    └── app.dart                 # 앱 설정 및 라우팅
+  ├── core/                         # 핵심 기능
+  │    ├── constants/               # 상수 정의
+  │    ├── exceptions/              # 예외 처리
+  │    ├── services/                # 서비스 인터페이스
+  │    │    ├── storage_service.dart
+  │    │    ├── auth_service.dart
+  │    │    └── navigation_service.dart
+  │    └── utils/                   # 유틸리티 함수
+  ├── data/                         # 데이터 레이어
+  │    ├── datasources/             # 데이터 소스
+  │    │    ├── remote/
+  │    │    └── local/
+  │    ├── repositories/            # 저장소 구현체
+  │    └── models/                  # 데이터 모델
+  ├── domain/                       # 도메인 레이어
+  │    ├── entities/                # 비즈니스 엔티티
+  │    ├── repositories/            # 저장소 인터페이스
+  │    └── usecases/                # 비즈니스 유스케이스
+  ├── presentation/                 # 프레젠테이션 레이어
+  │    ├── common/                  # 공통 위젯
+  │    ├── screens/                 # 화면 구현
+  │    │    ├── home/               # 홈 화면
+  │    │    │    ├── home_screen.dart
+  │    │    │    └── home_viewmodel.dart
+  │    │    ├── gallery/            # 갤러리 화면
+  │    │    │    ├── gallery_screen.dart
+  │    │    │    └── gallery_viewmodel.dart
+  │    │    ├── location/           # 오시는 길 화면
+  │    │    │    ├── location_screen.dart
+  │    │    │    └── location_viewmodel.dart
+  │    │    ├── messages/           # 축하 메시지 화면
+  │    │    │    ├── message_screen.dart
+  │    │    │    └── message_viewmodel.dart
+  │    │    └── editor/             # 에디터 화면
+  │    │         ├── editor_screen.dart
+  │    │         └── editor_viewmodel.dart
+  │    └── viewmodels/              # 공통 뷰모델
+  └── infrastructure/               # 인프라 레이어
+       ├── services/                # 서비스 구현체
+       └── repositories/            # 저장소 구현체

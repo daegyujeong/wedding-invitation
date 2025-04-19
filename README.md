@@ -54,5 +54,5 @@
 
 1. 저장소 복제
 ```bash
-git clone https://github.com/your-username/flutter-wedding-invitation.git
+git clone https://github.com/daegyujeong/flutter-wedding-invitation.git
 cd flutter-wedding-invitation

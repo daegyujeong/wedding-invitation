@@ -13,7 +13,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Timer _timer;
-
+  final String _currentLanguage = 'ko';
   @override
   void initState() {
     super.initState();
@@ -53,7 +53,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
           final invitation = viewModel.invitation!;
           final timeUntilWedding = viewModel.getTimeUntilWedding();
-
+          final weddingVenue = invitation.venues.firstWhere(
+            (venue) => venue.eventType == 'Wedding',
+            orElse: () => invitation.venues.first,
+          );
           return SingleChildScrollView(
             child: Column(
               children: [
@@ -84,11 +87,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(invitation.groomName,
-                          style: const TextStyle(fontSize: 20)),
+                      Text(
+                        invitation.groomName.getText(_currentLanguage),
+                        style: const TextStyle(fontSize: 20),
+                      ), // Text
                       const Text(' 그리고 ', style: TextStyle(fontSize: 16)),
-                      Text(invitation.brideName,
-                          style: const TextStyle(fontSize: 20)),
+                      Text(
+                        invitation.brideName.getText(_currentLanguage),
+                        style: const TextStyle(fontSize: 20),
+                      ), // Text
                     ],
                   ),
                 ),
@@ -126,19 +133,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
+// 날짜 포맷 코드
                       Text(
                         DateFormat('yyyy년 MM월 dd일 EEEE', 'ko_KR')
-                            .format(invitation.weddingDate),
+                            .format(weddingVenue.eventDate),
                         style: const TextStyle(fontSize: 18),
-                      ),
+                      ), // Text
+
                       Text(
                         DateFormat('aa hh시 mm분', 'ko_KR')
-                            .format(invitation.weddingDate),
+                            .format(weddingVenue.eventDate),
                         style: const TextStyle(fontSize: 18),
-                      ),
+                      ), // Text
+
                       const SizedBox(height: 8),
-                      Text(invitation.location,
-                          style: const TextStyle(fontSize: 18)),
+
+                      Text(
+                        weddingVenue.name,
+                        style: const TextStyle(fontSize: 18),
+                      ), // Text
                     ],
                   ),
                 ),

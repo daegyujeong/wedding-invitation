@@ -55,4 +55,4 @@
 1. 저장소 복제
 ```bash
 git clone https://github.com/daegyujeong/wedding-invitation.git
-cd flutter-wedding-invitation
+cd wedding-invitation

@@ -1,4 +1,5 @@
 import 'package:wedding_invitation/data/models/venue_model.dart';
+import 'package:flutter/material.dart';
 
 class MultiLanguageText {
   final Map<String, String> translations;
@@ -81,5 +82,17 @@ class InvitationModel {
       'template': template,
       'supported_languages': supportedLanguages,
     };
+  }
+}
+
+// 언어 변경 기능을 위한 Provider
+class LocaleProvider extends ChangeNotifier {
+  Locale _locale = const Locale('ko');
+
+  Locale get locale => _locale;
+
+  void setLocale(Locale locale) {
+    _locale = locale;
+    notifyListeners();
   }
 }

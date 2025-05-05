@@ -78,6 +78,7 @@ class EditorViewModel extends ChangeNotifier {
             'images': [
               'assets/images/gallery1.jpg',
               'assets/images/gallery2.jpg',
+              'assets/images/gallery3.jpg',
             ],
           },
           order: 1,

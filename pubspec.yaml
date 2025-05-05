@@ -44,7 +44,7 @@ dependencies:
   url_launcher: ^6.1.10 # 전화, 문자, 지도 앱 연결
   carousel_slider: ^4.2.1 # 이미지 슬라이더
   # latlong2: ^0.8.1 # 위도/경도 처리
-  intl: ^0.20.2 # 날짜 형식
+  intl: ^0.19.0 # 날짜 형식
   qr_flutter: ^4.0.0 # QR코드 생성
   
   # 에디터 관련 패키지
@@ -65,6 +65,8 @@ dependencies:
   vm_service: ^15.0.0
   latlong2: ^0.9.0 # 위도/경도 처리
   flutter_map: ^5.0.0 # 지도 표시
+  flutter_localizations:
+    sdk: flutter
 dev_dependencies:
   # flutter_test:
   #   sdk: flutter
@@ -87,7 +89,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
+  assets:
+    - assets/images/
+    - assets/images/background.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

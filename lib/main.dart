@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'data/services/supabase_service.dart';
 import 'presentation/viewmodels/home_viewmodel.dart';
+import 'presentation/viewmodels/editor_viewmodel.dart';
 import 'presentation/screens/home/home_screen.dart';
+import 'presentation/screens/editor/editor_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +27,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => HomeViewModel()),
+        ChangeNotifierProvider(create: (_) => EditorViewModel()),
         // 다른 ViewModel 추가
       ],
       child: MaterialApp(
@@ -42,8 +45,7 @@ class MyApp extends StatelessWidget {
               const Scaffold(body: Center(child: Text('오시는 길'))),
           '/message': (context) =>
               const Scaffold(body: Center(child: Text('축하 메시지'))),
-          '/editor': (context) =>
-              const Scaffold(body: Center(child: Text('에디터'))),
+          '/editor': (context) => const EditorScreen(),
         },
       ),
     );

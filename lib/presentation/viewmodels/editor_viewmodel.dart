@@ -97,7 +97,11 @@ class EditorViewModel extends ChangeNotifier {
           id: 'page_4',
           title: '축하 메시지',
           template: 'message',
-          content: {},
+          content: {
+            'title': '축하 메시지를 남겨주세요',
+            'description': '소중한 축하 메시지는 저희에게 큰 힘이 됩니다.',
+            'allow_comments': true,
+          },
           order: 3,
         ),
       ];
@@ -202,6 +206,15 @@ class EditorViewModel extends ChangeNotifier {
     }).toList();
 
     notifyListeners();
+  }
+
+  // Update page content
+  void updatePageContent(String pageId, Map<String, dynamic> content) {
+    final index = _pages.indexWhere((page) => page.id == pageId);
+    if (index != -1) {
+      _pages[index] = _pages[index].copyWith(content: content);
+      notifyListeners();
+    }
   }
 
   // Save all changes

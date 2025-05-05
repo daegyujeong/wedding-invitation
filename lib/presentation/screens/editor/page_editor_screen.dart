@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/editor_viewmodel.dart';
+import 'template_editors/template_editor_factory.dart';
 
 class PageEditorScreen extends StatelessWidget {
   const PageEditorScreen({Key? key}) : super(key: key);
@@ -175,22 +176,15 @@ class PageEditorScreen extends StatelessWidget {
   }
 
   void _navigateToPageDetailEditor(BuildContext context, dynamic page) {
-    // This would navigate to a page-specific editor based on the template
-    // For now, just show a basic dialog
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('${page.title} 페이지 편집'),
-          content: const Text('여기에 템플릿별 에디터가 표시됩니다.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('닫기'),
-            ),
-          ],
-        );
-      },
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TemplateEditorFactory.getEditor(
+          context, 
+          page, 
+          Provider.of<EditorViewModel>(context, listen: false),
+        ),
+      ),
     );
   }
 }

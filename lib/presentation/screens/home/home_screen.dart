@@ -63,14 +63,14 @@ class _HomeScreenState extends State<HomeScreen> {
           
           // Get edited content from editor view model
           String greetingText = invitation.greetingMessage.getText(_currentLanguage);
+          
           if (!editorViewModel.isLoading && editorViewModel.pages.isNotEmpty) {
-            final mainPage = editorViewModel.pages.firstWhere(
-              (page) => page.template == 'main',
-              orElse: () => null,
-            );
-            
-            if (mainPage != null && mainPage.content.containsKey('greeting_text')) {
-              greetingText = mainPage.content['greeting_text'];
+            final mainPages = editorViewModel.pages.where((page) => page.template == 'main');
+            if (mainPages.isNotEmpty) {
+              final mainPage = mainPages.first;
+              if (mainPage.content.containsKey('greeting_text')) {
+                greetingText = mainPage.content['greeting_text'];
+              }
             }
           }
           
@@ -90,11 +90,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 // 초대 문구 (에디터에서 편집된 내용)
                 Padding(
-                  padding: EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(24),
                   child: Text(
                     greetingText,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 18),
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ),
 

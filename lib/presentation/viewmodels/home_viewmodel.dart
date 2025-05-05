@@ -21,7 +21,6 @@ class HomeViewModel extends ChangeNotifier {
       await Future.delayed(const Duration(seconds: 1)); // 임시 지연
 
       // 임시 데이터
-// 임시 데이터
       _invitation = InvitationModel(
         id: '1',
         title: MultiLanguageText(

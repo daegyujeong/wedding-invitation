@@ -11,8 +11,8 @@ class EditorScreen extends StatefulWidget {
   _EditorScreenState createState() => _EditorScreenState();
 }
 
-class _EditorScreenState extends State<EditorScreen> {
-  int _selectedIndex = 0;
+class _EditorScreenState extends State<EditorScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   final _tabs = const [
     Tab(text: '페이지', icon: Icon(Icons.pages)),
     Tab(text: '네비게이션', icon: Icon(Icons.menu)),
@@ -21,10 +21,20 @@ class _EditorScreenState extends State<EditorScreen> {
   @override
   void initState() {
     super.initState();
+    // Initialize the TabController with the number of tabs
+    _tabController = TabController(length: _tabs.length, vsync: this);
+    
     // Load editor data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<EditorViewModel>(context, listen: false).loadData('1');
     });
+  }
+
+  @override
+  void dispose() {
+    // Dispose the controller when the widget is disposed
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -41,12 +51,8 @@ class _EditorScreenState extends State<EditorScreen> {
           ),
         ],
         bottom: TabBar(
+          controller: _tabController, // Connect the TabBar to the controller
           tabs: _tabs,
-          onTap: (index) {
-            setState(() {
-              _selectedIndex = index;
-            });
-          },
         ),
       ),
       body: Consumer<EditorViewModel>(
@@ -59,8 +65,8 @@ class _EditorScreenState extends State<EditorScreen> {
             return Center(child: Text('오류: ${viewModel.errorMessage}'));
           }
 
-          return IndexedStack(
-            index: _selectedIndex,
+          return TabBarView(
+            controller: _tabController, // Also connect the TabBarView to the same controller
             children: const [
               PageEditorScreen(),
               NavigationEditorScreen(),

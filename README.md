@@ -1,13 +1,10 @@
 # Flutter Mobile Wedding Invitation
-
 모바일 청첩장을 쉽게 만들고 공유할 수 있는 Flutter 기반 애플리케이션입니다.
 
 ## 프로젝트 소개
-
 이 프로젝트는 결혼을 앞둔 커플들이 모바일 청첩장을 직접 디자인하고 맞춤화하여 친구 및 가족들과 쉽게 공유할 수 있도록 도와주는 애플리케이션입니다. 사용자 친화적인 인터페이스와 풍부한 커스터마이징 옵션을 제공합니다.
 
 ## 주요 기능
-
 ### 1. 직관적인 청첩장 에디터
 - 다양한 템플릿 제공
 - 텍스트, 이미지, 색상 등 커스터마이징
@@ -33,26 +30,44 @@
 - QR 코드 생성
 - 개인화된 링크 생성
 
-## 기술 스택
+### 6. 페이지 및 네비게이션 관리 (신규 기능)
+- 페이지 수 설정 및 관리
+- 페이지 순서 변경 (드래그 앤 드롭)
+- 네비게이션 바 설정 (활성화/비활성화)
+- 네비게이션 아이템 유형 설정 (북마크/리다이렉트)
 
-- **프론트엔드**: Flutter
-- **백엔드**: Supabase
-- **저장소**: Supabase Storage
-- **인증**: Supabase Auth
-- **지도**: Flutter Map
-- **상태 관리**: Provider, Riverpod
-- **아키텍처**: MVVM (Model-View-ViewModel)
+## 기술 스택
+- 프론트엔드: Flutter
+- 백엔드: Supabase
+- 저장소: Supabase Storage
+- 인증: Supabase Auth
+- 지도: Flutter Map
+- 상태 관리: Provider, Riverpod
+- 아키텍처: MVVM (Model-View-ViewModel)
 
 ## 개발 환경 설정
-
 ### 필수 요구사항
 - Flutter 3.0.0 이상
 - Dart 2.17.0 이상
 - 인터넷 연결
 
 ### 설치 방법
-
 1. 저장소 복제
-```bash
+```
 git clone https://github.com/daegyujeong/wedding-invitation.git
 cd wedding-invitation
+```
+
+2. 의존성 설치
+```
+flutter pub get
+```
+
+3. 앱 실행
+```
+flutter run
+```
+
+## 브랜치 정보
+- `main`: 주요 개발 코드
+- `feature/edit-page`: 페이지 및 네비게이션 편집 기능 (새로운 기능)

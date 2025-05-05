@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import '../../viewmodels/home_viewmodel.dart';
+import '../../viewmodels/editor_viewmodel.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,12 +15,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Timer _timer;
   final String _currentLanguage = 'ko';
+  
   @override
   void initState() {
     super.initState();
-    // ViewModel 데이터 로드
+    // 데이터 로드
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<HomeViewModel>(context, listen: false).loadInvitation('1');
+      Provider.of<EditorViewModel>(context, listen: false).loadData('1');
     });
 
     // 타이머 설정 (1초마다 갱신)
@@ -37,26 +40,40 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer<HomeViewModel>(
-        builder: (context, viewModel, child) {
-          if (viewModel.isLoading) {
+      body: Consumer2<HomeViewModel, EditorViewModel>(
+        builder: (context, homeViewModel, editorViewModel, child) {
+          if (homeViewModel.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (viewModel.errorMessage != null) {
-            return Center(child: Text('오류: ${viewModel.errorMessage}'));
+          if (homeViewModel.errorMessage != null) {
+            return Center(child: Text('오류: ${homeViewModel.errorMessage}'));
           }
 
-          if (viewModel.invitation == null) {
+          if (homeViewModel.invitation == null) {
             return const Center(child: Text('데이터를 불러올 수 없습니다.'));
           }
 
-          final invitation = viewModel.invitation!;
-          final timeUntilWedding = viewModel.getTimeUntilWedding();
+          final invitation = homeViewModel.invitation!;
+          final timeUntilWedding = homeViewModel.getTimeUntilWedding();
           final weddingVenue = invitation.venues.firstWhere(
             (venue) => venue.eventType == 'Wedding',
             orElse: () => invitation.venues.first,
           );
+          
+          // Get edited content from editor view model
+          String greetingText = invitation.greetingMessage.getText(_currentLanguage);
+          if (!editorViewModel.isLoading && editorViewModel.pages.isNotEmpty) {
+            final mainPage = editorViewModel.pages.firstWhere(
+              (page) => page.template == 'main',
+              orElse: () => null,
+            );
+            
+            if (mainPage != null && mainPage.content.containsKey('greeting_text')) {
+              greetingText = mainPage.content['greeting_text'];
+            }
+          }
+          
           return SingleChildScrollView(
             child: Column(
               children: [
@@ -71,11 +88,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // 초대 문구
-                const Padding(
+                // 초대 문구 (에디터에서 편집된 내용)
+                Padding(
                   padding: EdgeInsets.all(24),
                   child: Text(
-                    '저희 두 사람이 사랑과 믿음으로\n새로운 가정을 이루게 되었습니다.',
+                    greetingText,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 18),
                   ),
@@ -90,12 +107,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(
                         invitation.groomName.getText(_currentLanguage),
                         style: const TextStyle(fontSize: 20),
-                      ), // Text
+                      ),
                       const Text(' 그리고 ', style: TextStyle(fontSize: 16)),
                       Text(
                         invitation.brideName.getText(_currentLanguage),
                         style: const TextStyle(fontSize: 20),
-                      ), // Text
+                      ),
                     ],
                   ),
                 ),
@@ -133,25 +150,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
-// 날짜 포맷 코드
                       Text(
                         DateFormat('yyyy년 MM월 dd일 EEEE', 'ko_KR')
                             .format(weddingVenue.eventDate),
                         style: const TextStyle(fontSize: 18),
-                      ), // Text
-
+                      ),
                       Text(
                         DateFormat('aa hh시 mm분', 'ko_KR')
                             .format(weddingVenue.eventDate),
                         style: const TextStyle(fontSize: 18),
-                      ), // Text
-
+                      ),
                       const SizedBox(height: 8),
-
                       Text(
                         weddingVenue.name,
                         style: const TextStyle(fontSize: 18),
-                      ), // Text
+                      ),
                     ],
                   ),
                 ),

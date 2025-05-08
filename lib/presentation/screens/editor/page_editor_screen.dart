@@ -4,7 +4,7 @@ import '../../viewmodels/editor_viewmodel.dart';
 import 'template_editors/template_editor_factory.dart';
 
 class PageEditorScreen extends StatelessWidget {
-  const PageEditorScreen({Key? key}) : super(key: key);
+  const PageEditorScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,9 @@ class PageEditorScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  const Text('페이지', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text('페이지',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const Spacer(),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.add),
@@ -38,7 +40,9 @@ class PageEditorScreen extends StatelessWidget {
                 onReorder: (oldIndex, newIndex) {
                   viewModel.reorderPages(oldIndex, newIndex);
                 },
-                children: pages.map((page) => _buildPageItem(context, viewModel, page)).toList(),
+                children: pages
+                    .map((page) => _buildPageItem(context, viewModel, page))
+                    .toList(),
               ),
             ),
           ],
@@ -47,7 +51,8 @@ class PageEditorScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPageItem(BuildContext context, EditorViewModel viewModel, dynamic page) {
+  Widget _buildPageItem(
+      BuildContext context, EditorViewModel viewModel, dynamic page) {
     return Card(
       key: Key(page.id),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -89,7 +94,7 @@ class PageEditorScreen extends StatelessWidget {
       case 'message':
         return Icons.message;
       default:
-        return Icons.page;
+        return Icons.pages;
     }
   }
 
@@ -150,7 +155,8 @@ class PageEditorScreen extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, EditorViewModel viewModel, dynamic page) {
+  void _showDeleteConfirmation(
+      BuildContext context, EditorViewModel viewModel, dynamic page) {
     showDialog(
       context: context,
       builder: (context) {
@@ -180,8 +186,8 @@ class PageEditorScreen extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (context) => TemplateEditorFactory.getEditor(
-          context, 
-          page, 
+          context,
+          page,
           Provider.of<EditorViewModel>(context, listen: false),
         ),
       ),

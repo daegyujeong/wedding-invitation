@@ -4,6 +4,7 @@ import 'package:wedding_invitation/data/models/editor_widget_model.dart';
 import 'package:wedding_invitation/presentation/viewmodels/editor_viewmodel.dart';
 import 'package:wedding_invitation/presentation/screens/editor/widget_selector_screen.dart';
 import 'package:wedding_invitation/presentation/widgets/editor/draggable_widget.dart';
+import 'package:wedding_invitation/presentation/screens/editor/widget_editor_dialog.dart';
 
 class EditorScreen extends StatefulWidget {
   const EditorScreen({Key? key}) : super(key: key);
@@ -20,6 +21,25 @@ class _EditorScreenState extends State<EditorScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<EditorViewModel>(context, listen: false).loadDesign();
     });
+  }
+
+  void _showWidgetEditorDialog(BuildContext context, {EditorWidget? widget}) {
+    showDialog(
+      context: context,
+      builder: (context) => WidgetEditorDialog(
+        widget: widget,
+        onSave: (editedWidget) {
+          final viewModel = Provider.of<EditorViewModel>(context, listen: false);
+          if (widget == null) {
+            // Add new widget
+            viewModel.addWidget(editedWidget);
+          } else {
+            // Update existing widget
+            viewModel.updateWidget(editedWidget);
+          }
+        },
+      ),
+    );
   }
 
   @override
@@ -50,8 +70,10 @@ class _EditorScreenState extends State<EditorScreen> {
         builder: (context, viewModel, child) {
           return Stack(
             children: [
-              // Background (can be customized later)
+              // Background (can be customized)
               Container(
+                width: double.infinity,
+                height: double.infinity,
                 decoration: BoxDecoration(
                   color: viewModel.backgroundColor,
                   image: viewModel.backgroundImage != null
@@ -64,7 +86,7 @@ class _EditorScreenState extends State<EditorScreen> {
               ),
               
               // Widget canvas - where widgets are placed
-              Container(
+              SizedBox(
                 width: double.infinity,
                 height: double.infinity,
                 child: Stack(
@@ -76,7 +98,7 @@ class _EditorScreenState extends State<EditorScreen> {
                         viewModel.updateWidgetPosition(widget.id, offset);
                       },
                       onEdit: () {
-                        viewModel.editWidget(widget.id, context);
+                        _showWidgetEditorDialog(context, widget: widget);
                       },
                       onDelete: () {
                         viewModel.removeWidget(widget.id);
@@ -92,18 +114,8 @@ class _EditorScreenState extends State<EditorScreen> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () {
-          // Show widget selector
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => WidgetSelectorScreen(
-                onWidgetSelected: (widget) {
-                  Provider.of<EditorViewModel>(context, listen: false)
-                      .addWidget(widget);
-                },
-              ),
-            ),
-          );
+          // Show widget editor dialog to add a new widget
+          _showWidgetEditorDialog(context);
         },
       ),
       bottomNavigationBar: BottomAppBar(
@@ -131,7 +143,7 @@ class _EditorScreenState extends State<EditorScreen> {
               IconButton(
                 icon: const Icon(Icons.text_fields),
                 onPressed: () {
-                  // Shortcut to add text widget
+                  // Add a text widget directly
                   final viewModel = Provider.of<EditorViewModel>(context, listen: false);
                   viewModel.addWidget(viewModel.createDefaultTextWidget());
                 },
@@ -140,7 +152,7 @@ class _EditorScreenState extends State<EditorScreen> {
               IconButton(
                 icon: const Icon(Icons.calendar_today),
                 onPressed: () {
-                  // Shortcut to add D-day widget
+                  // Add a D-day widget directly
                   final viewModel = Provider.of<EditorViewModel>(context, listen: false);
                   viewModel.addWidget(viewModel.createDefaultDDayWidget());
                 },

@@ -90,6 +90,15 @@ class EditorViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Update an existing widget
+  void updateWidget(EditorWidget updatedWidget) {
+    final index = _widgets.indexWhere((widget) => widget.id == updatedWidget.id);
+    if (index != -1) {
+      _widgets[index] = updatedWidget;
+      notifyListeners();
+    }
+  }
+
   // Remove a widget from the canvas
   void removeWidget(String id) {
     _widgets.removeWhere((widget) => widget.id == id);

@@ -3,17 +3,17 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import '../../../../data/models/custom_widget_model.dart';
+import '../../../data/models/custom_widget_model.dart';
 
 class WidgetEditorDialog extends StatefulWidget {
   final CustomWidgetModel widgetModel;
   final Function(CustomWidgetModel) onSave;
 
   const WidgetEditorDialog({
-    super.key,
+    Key? key,
     required this.widgetModel,
     required this.onSave,
-  });
+  }) : super(key: key);
 
   @override
   _WidgetEditorDialogState createState() => _WidgetEditorDialogState();
@@ -266,10 +266,82 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
   }
 
   Widget _buildButtonEditorFields() {
-    return const Column();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextField(
+          decoration: const InputDecoration(labelText: '버튼 텍스트'),
+          controller:
+              TextEditingController(text: _editedProperties['text'] ?? '버튼'),
+          onChanged: (value) => _updateProperty('text', value),
+        ),
+        const SizedBox(height: 16),
+        const Text('배경 색상'),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  Color(_editedProperties['color'] ?? Colors.blue.value),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            onPressed: () {
+              _showColorPicker('color');
+            },
+            child: const Text('배경 색상 선택', style: TextStyle(color: Colors.white)),
+          ),
+        ),
+        const SizedBox(height: 16),
+        const Text('텍스트 색상'),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  Color(_editedProperties['textColor'] ?? Colors.white.value),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            onPressed: () {
+              _showColorPicker('textColor');
+            },
+            child: Text(
+              '텍스트 색상 선택',
+              style: TextStyle(
+                  color: _getContrastingColor(Color(
+                      _editedProperties['textColor'] ?? Colors.white.value))),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        const Text('버튼 동작'),
+        DropdownButton<String>(
+          value: _editedProperties['action'] ?? 'none',
+          items: const [
+            DropdownMenuItem(value: 'none', child: Text('없음')),
+            DropdownMenuItem(value: 'url', child: Text('URL 열기')),
+            DropdownMenuItem(value: 'phone', child: Text('전화 걸기')),
+            DropdownMenuItem(value: 'sms', child: Text('문자 보내기')),
+            DropdownMenuItem(value: 'email', child: Text('이메일 보내기')),
+            DropdownMenuItem(value: 'map', child: Text('지도 열기')),
+          ],
+          onChanged: (value) => _updateProperty('action', value),
+        ),
+        if (_editedProperties['action'] != 'none' &&
+            _editedProperties['action'] != null)
+          TextField(
+            decoration: const InputDecoration(labelText: '대상 (URL/전화번호/이메일 등)'),
+            controller: TextEditingController(
+                text: _editedProperties['actionTarget'] ?? ''),
+            onChanged: (value) => _updateProperty('actionTarget', value),
+          ),
+      ],
+    );
   }
 
-  Widget buildCountdownEditorFields() {
+  Widget _buildCountdownEditorFields() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -327,7 +399,7 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
     );
   }
 
-  Widget buildMapEditorFields() {
+  Widget _buildMapEditorFields() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -385,7 +457,7 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
     );
   }
 
-  Widget buildGalleryEditorFields() {
+  Widget _buildGalleryEditorFields() {
     // In a real app, this would use an image picker to add/remove images
     final images = _editedProperties['images'] ??
         ['assets/images/gallery1.jpg', 'assets/images/gallery2.jpg'];
@@ -508,7 +580,7 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
     );
   }
 
-  Widget buildMessageBoxEditorFields() {
+  Widget _buildMessageBoxEditorFields() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -536,7 +608,7 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
     );
   }
 
-  void showColorPicker(String propertyKey) {
+  void _showColorPicker(String propertyKey) {
     Color currentColor =
         Color(_editedProperties[propertyKey] ?? Colors.black.value);
 
@@ -564,7 +636,12 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
       ),
     );
   }
-}
 
-// Finally, let's create a Custom Page Editor screen
-// lib/presentation/screens/editor/custom_page_editor_screen.dart
+  Color _getContrastingColor(Color color) {
+    // Calculate the perceptive luminance (based on ITU-R BT.709)
+    double luminance = (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255;
+    
+    // Return black for bright colors and white for dark colors
+    return luminance > 0.5 ? Colors.black : Colors.white;
+  }
+}

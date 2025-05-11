@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/editor_widget_model.dart';
+import '../../../data/models/invitation_model.dart';
 import 'package:uuid/uuid.dart';
 
 class WidgetSelectorScreen extends StatelessWidget {
@@ -23,6 +24,12 @@ class WidgetSelectorScreen extends StatelessWidget {
           ),
           _buildWidgetItem(
             context,
+            '카운트다운 타이머',
+            Icons.timer,
+            WidgetType.CountdownTimer,
+          ),
+          _buildWidgetItem(
+            context,
             '지도',
             Icons.map,
             WidgetType.Map,
@@ -32,6 +39,12 @@ class WidgetSelectorScreen extends StatelessWidget {
             '텍스트',
             Icons.text_fields,
             WidgetType.Text,
+          ),
+          _buildWidgetItem(
+            context,
+            '이미지',
+            Icons.image,
+            WidgetType.Image,
           ),
           _buildWidgetItem(
             context,
@@ -72,6 +85,23 @@ class WidgetSelectorScreen extends StatelessWidget {
                 'eventId': '',
                 'format': 'D-{days}',
                 'style': 'default',
+                'position': {
+                  'dx': 100.0,
+                  'dy': 100.0,
+                },
+              },
+            );
+            break;
+          case WidgetType.CountdownTimer:
+            widget = CountdownWidget(
+              id: uuid.v4(),
+              data: {
+                'targetDate': DateTime(2025, 5, 31).toIso8601String(),
+                'format': '{days}:{hours}:{minutes}:{seconds}',
+                'position': {
+                  'dx': 100.0,
+                  'dy': 100.0,
+                },
               },
             );
             break;
@@ -82,6 +112,10 @@ class WidgetSelectorScreen extends StatelessWidget {
                 'venueId': '',
                 'mapType': 'google',
                 'showDirections': true,
+                'position': {
+                  'dx': 100.0,
+                  'dy': 100.0,
+                },
               },
             );
             break;
@@ -90,28 +124,91 @@ class WidgetSelectorScreen extends StatelessWidget {
               id: uuid.v4(),
               data: {
                 'text': {
-                  'translations': {'en': 'New Text'},
-                  'default_language': 'en',
+                  'translations': {'ko': '새 텍스트'},
+                  'default_language': 'ko',
                 },
                 'fontFamily': 'Roboto',
                 'fontSize': 16.0,
                 'color': '#000000',
+                'position': {
+                  'dx': 100.0,
+                  'dy': 100.0,
+                },
               },
             );
             break;
-          // 다른 위젯 유형도 처리
+          case WidgetType.Image:
+            widget = ImageWidget(
+              id: uuid.v4(),
+              data: {
+                'imageUrl': 'https://via.placeholder.com/150',
+                'width': 150.0,
+                'height': 150.0,
+                'position': {
+                  'dx': 100.0,
+                  'dy': 100.0,
+                },
+              },
+            );
+            break;
+          case WidgetType.Gallery:
+            widget = GalleryWidget(
+              id: uuid.v4(),
+              data: {
+                'imageUrls': [
+                  'https://via.placeholder.com/150',
+                  'https://via.placeholder.com/150',
+                  'https://via.placeholder.com/150',
+                ],
+                'layoutType': 'grid',
+                'position': {
+                  'dx': 100.0,
+                  'dy': 100.0,
+                },
+              },
+            );
+            break;
+          case WidgetType.Schedule:
+            widget = ScheduleWidget(
+              id: uuid.v4(),
+              data: {
+                'events': [
+                  {
+                    'time': '13:00',
+                    'description': '식전 행사',
+                  },
+                  {
+                    'time': '14:00',
+                    'description': '결혼식',
+                  },
+                  {
+                    'time': '15:30',
+                    'description': '피로연',
+                  },
+                ],
+                'position': {
+                  'dx': 100.0,
+                  'dy': 100.0,
+                },
+              },
+            );
+            break;
           default:
-            // 기본값
+            // 기본값 (텍스트 위젯)
             widget = TextWidget(
               id: uuid.v4(),
               data: {
                 'text': {
-                  'translations': {'en': 'New Widget'},
-                  'default_language': 'en',
+                  'translations': {'ko': '새 위젯'},
+                  'default_language': 'ko',
                 },
                 'fontFamily': 'Roboto',
                 'fontSize': 16.0,
                 'color': '#000000',
+                'position': {
+                  'dx': 100.0,
+                  'dy': 100.0,
+                },
               },
             );
         }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/models/navigation_model.dart';
 import '../../data/models/page_model.dart';
+import '../../data/models/custom_widget_model.dart';
 
 class EditorViewModel extends ChangeNotifier {
   bool _isLoading = false;
@@ -66,7 +67,7 @@ class EditorViewModel extends ChangeNotifier {
           template: 'main',
           content: {
             'background_image': 'assets/images/main.jpg',
-            'greeting_text': '저희 두 사람이 사랑과 믿음으로\n새로운 가정을 이루게 되었습니다.',
+            'greeting_text': '저희 두 사람이 사랑과 믿음으로\\n새로운 가정을 이루게 되었습니다.',
           },
           order: 0,
         ),
@@ -214,6 +215,15 @@ class EditorViewModel extends ChangeNotifier {
     final index = _pages.indexWhere((page) => page.id == pageId);
     if (index != -1) {
       _pages[index] = _pages[index].copyWith(content: content);
+      notifyListeners();
+    }
+  }
+
+  // Update page widgets
+  void updatePageWidgets(String pageId, List<CustomWidgetModel> widgets) {
+    final index = _pages.indexWhere((page) => page.id == pageId);
+    if (index != -1) {
+      _pages[index] = _pages[index].copyWith(widgets: widgets);
       notifyListeners();
     }
   }

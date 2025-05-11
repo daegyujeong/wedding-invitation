@@ -1,4 +1,4 @@
-// Finally, let's create a Custom Page Editor screen
+// Custom Page Editor screen
 // lib/presentation/screens/editor/custom_page_editor_screen.dart
 
 import 'package:flutter/material.dart';
@@ -13,9 +13,9 @@ class CustomPageEditorScreen extends StatefulWidget {
   final PageModel page;
 
   const CustomPageEditorScreen({
-    super.key,
+    Key? key,
     required this.page,
-  });
+  }) : super(key: key);
 
   @override
   _CustomPageEditorScreenState createState() => _CustomPageEditorScreenState();
@@ -58,15 +58,39 @@ class _CustomPageEditorScreenState extends State<CustomPageEditorScreen> {
   }
 
   void _deleteWidget(String widgetId) {
-    setState(() {
-      _editedPage = _editedPage.copyWith(
-        widgets: _editedPage.widgets.where((w) => w.id != widgetId).toList(),
-      );
-    });
-    _saveChanges();
+    // Show confirmation dialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('위젯 삭제'),
+        content: const Text('이 위젯을 삭제하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              setState(() {
+                _editedPage = _editedPage.copyWith(
+                  widgets: _editedPage.widgets
+                      .where((w) => w.id != widgetId)
+                      .toList(),
+                );
+              });
+              _saveChanges();
+            },
+            child: const Text('삭제'),
+          ),
+        ],
+      ),
+    );
   }
 
-  void _editWidget(CustomWidgetModel widget) {
+  void _editWidgetProperties(CustomWidgetModel widget) {
     showDialog(
       context: context,
       builder: (context) => WidgetEditorDialog(
@@ -89,6 +113,12 @@ class _CustomPageEditorScreenState extends State<CustomPageEditorScreen> {
       appBar: AppBar(
         title: Text('${_editedPage.title} 편집'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.undo),
+            onPressed: () {
+              // Implement undo functionality if needed
+            },
+          ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
@@ -97,13 +127,24 @@ class _CustomPageEditorScreenState extends State<CustomPageEditorScreen> {
           ),
         ],
       ),
-      body: SizedBox(
+      body: Container(
         height: double.infinity,
+        color: Colors.grey[100],
         child: Stack(
           children: [
             // Background color/image
             Container(
-              color: Colors.grey[100],
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
             ),
 
             // Widgets
@@ -111,9 +152,48 @@ class _CustomPageEditorScreenState extends State<CustomPageEditorScreen> {
               return CustomWidgetFactory.buildWidget(
                 widget,
                 onEdit: _updateWidget,
+                onDelete: _deleteWidget,
+                onEditProperties: _editWidgetProperties,
               );
-            }),
+            }).toList(),
+
+            // Add a grid overlay for better positioning
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: GridPainter(),
+                ),
+              ),
+            ),
           ],
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Container(
+          height: 50,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('${_editedPage.widgets.length} 위젯'),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.preview),
+                    onPressed: () {
+                      // Implement preview functionality
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.settings),
+                    onPressed: () {
+                      // Implement page settings
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -122,6 +202,7 @@ class _CustomPageEditorScreenState extends State<CustomPageEditorScreen> {
         },
         child: const Icon(Icons.add),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
@@ -162,5 +243,29 @@ class _CustomPageEditorScreenState extends State<CustomPageEditorScreen> {
         _addWidget(type);
       },
     );
+  }
+}
+
+class GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.grey.withOpacity(0.2)
+      ..strokeWidth = 1;
+
+    // Draw vertical lines
+    for (int i = 0; i < size.width; i += 20) {
+      canvas.drawLine(Offset(i.toDouble(), 0), Offset(i.toDouble(), size.height), paint);
+    }
+
+    // Draw horizontal lines
+    for (int i = 0; i < size.height; i += 20) {
+      canvas.drawLine(Offset(0, i.toDouble()), Offset(size.width, i.toDouble()), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }

@@ -4,7 +4,11 @@ import 'package:carousel_slider/carousel_slider.dart';
 
 class CustomWidgetFactory {
   static Widget buildWidget(
-      CustomWidgetModel model, {Function(CustomWidgetModel)? onEdit}) {
+    CustomWidgetModel model, {
+    Function(CustomWidgetModel)? onEdit,
+    Function(String)? onDelete,
+    Function(CustomWidgetModel)? onEditProperties,
+  }) {
     // Wrap in a positioned widget if we're in the editor
     Widget widget = _buildWidgetByType(model);
     
@@ -43,7 +47,9 @@ class CustomWidgetFactory {
                           icon: const Icon(Icons.edit, color: Colors.white, size: 14),
                           onPressed: () {
                             // Show edit dialog
-                            // This would be implemented in the editor screen
+                            if (onEditProperties != null) {
+                              onEditProperties(model);
+                            }
                           },
                           iconSize: 14,
                           padding: const EdgeInsets.all(4),
@@ -53,7 +59,9 @@ class CustomWidgetFactory {
                           icon: const Icon(Icons.delete, color: Colors.white, size: 14),
                           onPressed: () {
                             // Delete widget
-                            // This would be implemented in the editor screen
+                            if (onDelete != null) {
+                              onDelete(model.id);
+                            }
                           },
                           iconSize: 14,
                           padding: const EdgeInsets.all(4),
@@ -70,8 +78,8 @@ class CustomWidgetFactory {
                   child: GestureDetector(
                     onPanUpdate: (details) {
                       final updatedModel = model.copyWith(
-                        width: model.width + details.delta.dx,
-                        height: model.height + details.delta.dy,
+                        width: model.width + details.delta.dx > 50 ? model.width + details.delta.dx : 50,
+                        height: model.height + details.delta.dy > 50 ? model.height + details.delta.dy : 50,
                       );
                       onEdit(updatedModel);
                     },
@@ -211,6 +219,7 @@ class CustomWidgetFactory {
     final latitude = (model.properties['latitude'] as num?)?.toDouble() ?? 37.5665;
     final longitude = (model.properties['longitude'] as num?)?.toDouble() ?? 126.978;
     final title = model.properties['title'] ?? '위치';
+    final description = model.properties['description'] ?? '';
 
     // Placeholder for actual map
     return Container(
@@ -223,333 +232,224 @@ class CustomWidgetFactory {
           children: [
             const Icon(Icons.map, size: 50),
             const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(_editedProperties['color'] ?? Colors.blue.value),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-            onPressed: () {
-              _showColorPicker('color');
-            },
-            child: const Text('배경 색상 선택', style: TextStyle(color: Colors.white)),
-          ),
-        ),
-        const SizedBox(height: 16),
-        const Text('텍스트 색상'),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(_editedProperties['textColor'] ?? Colors.white.value),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-            onPressed: () {
-              _showColorPicker('textColor');
-            },
-            child: Text('텍스트 색상 선택', 
-              style: TextStyle(
-                color: _getContrastingColor(Color(_editedProperties['textColor'] ?? Colors.white.value))
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        const Text('버튼 동작'),
-        DropdownButton<String>(
-          value: _editedProperties['action'] ?? 'none',
-          items: const [
-            DropdownMenuItem(value: 'none', child: Text('없음')),
-            DropdownMenuItem(value: 'url', child: Text('URL 열기')),
-            DropdownMenuItem(value: 'phone', child: Text('전화 걸기')),
-            DropdownMenuItem(value: 'sms', child: Text('문자 보내기')),
-            DropdownMenuItem(value: 'email', child: Text('이메일 보내기')),
-            DropdownMenuItem(value: 'map', child: Text('지도 열기')),
-          ],
-          onChanged: (value) => _updateProperty('action', value),
-        ),
-        if (_editedProperties['action'] != 'none' && _editedProperties['action'] != null)
-          TextField(
-            decoration: const InputDecoration(labelText: '대상 (URL/전화번호/이메일 등)'),
-            controller: TextEditingController(
-                text: _editedProperties['actionTarget'] ?? ''),
-            onChanged: (value) => _updateProperty('actionTarget', value),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildCountdownEditorFields() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        TextField(
-          decoration: const InputDecoration(labelText: '카운트다운 제목'),
-          controller: TextEditingController(
-              text: _editedProperties['title'] ?? '결혼식까지'),
-          onChanged: (value) => _updateProperty('title', value),
-        ),
-        const SizedBox(height: 16),
-        const Text('종료 날짜 및 시간'),
-        const SizedBox(height: 8),
-        ElevatedButton(
-          onPressed: () async {
-            final currentDate = DateTime.parse(_editedProperties['endDate'] ?? 
-              DateTime.now().add(const Duration(days: 30)).toIso8601String());
-            
-            final DateTime? pickedDate = await showDatePicker(
-              context: context,
-              initialDate: currentDate,
-              firstDate: DateTime.now(),
-              lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
-            );
-            
-            if (pickedDate != null) {
-              final TimeOfDay? pickedTime = await showTimePicker(
-                context: context,
-                initialTime: TimeOfDay.fromDateTime(currentDate),
-              );
-              
-              if (pickedTime != null) {
-                final newDateTime = DateTime(
-                  pickedDate.year,
-                  pickedDate.month,
-                  pickedDate.day,
-                  pickedTime.hour,
-                  pickedTime.minute,
-                );
-                
-                _updateProperty('endDate', newDateTime.toIso8601String());
-              }
-            }
-          },
-          child: const Text('날짜 및 시간 선택'),
-        ),
-        const SizedBox(height: 16),
-        SwitchListTile(
-          title: const Text('초 단위 표시'),
-          value: _editedProperties['showSeconds'] ?? true,
-          onChanged: (value) => _updateProperty('showSeconds', value),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMapEditorFields() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        TextField(
-          decoration: const InputDecoration(labelText: '위치 제목'),
-          controller: TextEditingController(
-              text: _editedProperties['title'] ?? '위치'),
-          onChanged: (value) => _updateProperty('title', value),
-        ),
-        TextField(
-          decoration: const InputDecoration(labelText: '위치 설명'),
-          controller: TextEditingController(
-              text: _editedProperties['description'] ?? ''),
-          onChanged: (value) => _updateProperty('description', value),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                decoration: const InputDecoration(labelText: '위도'),
-                controller: TextEditingController(
-                    text: (_editedProperties['latitude'] ?? 37.5665).toString()),
-                keyboardType: TextInputType.number,
-                onChanged: (value) => _updateProperty('latitude', double.tryParse(value) ?? 37.5665),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: TextField(
-                decoration: const InputDecoration(labelText: '경도'),
-                controller: TextEditingController(
-                    text: (_editedProperties['longitude'] ?? 126.978).toString()),
-                keyboardType: TextInputType.number,
-                onChanged: (value) => _updateProperty('longitude', double.tryParse(value) ?? 126.978),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        const Text('확대 레벨'),
-        Slider(
-          value: (_editedProperties['zoom'] as num?)?.toDouble() ?? 15.0,
-          min: 1,
-          max: 20,
-          divisions: 19,
-          label: "${(_editedProperties['zoom'] as num?)?.toDouble() ?? 15.0}",
-          onChanged: (value) => _updateProperty('zoom', value),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGalleryEditorFields() {
-    // For simplicity, we'll use a predefined list of images
-    final List<String> selectedImages = List<String>.from(
-      _editedProperties['images'] ?? ['assets/images/gallery1.jpg']);
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Text('갤러리 이미지 선택'),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 200,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              _buildImageSelectionItem('assets/images/gallery1.jpg', selectedImages),
-              _buildImageSelectionItem('assets/images/gallery2.jpg', selectedImages),
-              _buildImageSelectionItem('assets/images/gallery3.jpg', selectedImages),
-              _buildImageSelectionItem('assets/images/main.jpg', selectedImages),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        SwitchListTile(
-          title: const Text('인디케이터 점 표시'),
-          value: _editedProperties['showDots'] ?? true,
-          onChanged: (value) => _updateProperty('showDots', value),
-        ),
-        SwitchListTile(
-          title: const Text('자동 스크롤'),
-          value: _editedProperties['autoScroll'] ?? false,
-          onChanged: (value) => _updateProperty('autoScroll', value),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildImageSelectionItem(String imagePath, List<String> selectedImages) {
-    final isSelected = selectedImages.contains(imagePath);
-    
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (isSelected) {
-            // Don't allow removing the last image
-            if (selectedImages.length > 1) {
-              selectedImages.remove(imagePath);
-            }
-          } else {
-            selectedImages.add(imagePath);
-          }
-          _updateProperty('images', selectedImages);
-        });
-      },
-      child: Container(
-        width: 120,
-        margin: const EdgeInsets.only(right: 8),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: isSelected ? Colors.blue : Colors.grey,
-            width: isSelected ? 3 : 1,
-          ),
-        ),
-        child: Stack(
-          children: [
-            Image.asset(
-              imagePath,
-              fit: BoxFit.cover,
-              width: 120,
-              height: 200,
-            ),
-            if (isSelected)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Colors.blue,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.check, color: Colors.white, size: 16),
-                ),
-              ),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            if (description.isNotEmpty) 
+              Text(description, style: const TextStyle(fontSize: 12)),
+            const SizedBox(height: 8),
+            Text('위도: $latitude, 경도: $longitude', style: const TextStyle(fontSize: 12)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMessageBoxEditorFields() {
+  static Widget _buildGalleryWidget(CustomWidgetModel model) {
+    final images = model.properties['images'] ?? 
+      ['assets/images/gallery1.jpg', 'assets/images/gallery2.jpg', 'assets/images/gallery3.jpg'];
+    final showDots = model.properties['showDots'] ?? true;
+    final autoScroll = model.properties['autoScroll'] ?? false;
+
+    return CarouselSlider(
+      options: CarouselOptions(
+        height: model.height,
+        autoPlay: autoScroll,
+        viewportFraction: 1.0,
+        enableInfiniteScroll: true,
+        autoPlayInterval: const Duration(seconds: 3),
+        autoPlayAnimationDuration: const Duration(milliseconds: 800),
+        autoPlayCurve: Curves.fastOutSlowIn,
+        enlargeCenterPage: true,
+        scrollDirection: Axis.horizontal,
+        aspectRatio: 16/9,
+      ),
+      items: (images as List).map<Widget>((item) {
+        return Builder(
+          builder: (BuildContext context) {
+            return Container(
+              width: model.width,
+              margin: const EdgeInsets.symmetric(horizontal: 5.0),
+              decoration: const BoxDecoration(
+                color: Colors.grey,
+              ),
+              child: Image.asset(
+                item,
+                fit: BoxFit.cover,
+              ),
+            );
+          },
+        );
+      }).toList(),
+    );
+  }
+
+  static Widget _buildMessageBoxWidget(CustomWidgetModel model) {
+    final title = model.properties['title'] ?? '축하 메시지';
+    final placeholder = model.properties['placeholder'] ?? '메시지를 남겨주세요';
+    final showSubmitButton = model.properties['showSubmitButton'] ?? true;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            decoration: InputDecoration(
+              hintText: placeholder,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            maxLines: 3,
+          ),
+          if (showSubmitButton) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  // Handle message submission
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: const Text(
+                  '메시지 전송',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// Custom countdown widget
+class CountdownWidget extends StatelessWidget {
+  final String title;
+  final DateTime endDate;
+  final bool showSeconds;
+
+  const CountdownWidget({
+    Key? key,
+    required this.title,
+    required this.endDate,
+    this.showSeconds = true,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final difference = endDate.difference(now);
+
+    // Calculate remaining time
+    final days = difference.inDays;
+    final hours = difference.inHours.remainder(24);
+    final minutes = difference.inMinutes.remainder(60);
+    final seconds = difference.inSeconds.remainder(60);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildTimeUnit(days, '일'),
+              _buildSeparator(),
+              _buildTimeUnit(hours, '시간'),
+              _buildSeparator(),
+              _buildTimeUnit(minutes, '분'),
+              if (showSeconds) ...[
+                _buildSeparator(),
+                _buildTimeUnit(seconds, '초'),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeUnit(int value, String label) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
       children: [
-        TextField(
-          decoration: const InputDecoration(labelText: '제목'),
-          controller: TextEditingController(
-              text: _editedProperties['title'] ?? '축하 메시지'),
-          onChanged: (value) => _updateProperty('title', value),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            value.toString().padLeft(2, '0'),
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
         ),
-        const SizedBox(height: 16),
-        TextField(
-          decoration: const InputDecoration(labelText: '입력 힌트'),
-          controller: TextEditingController(
-              text: _editedProperties['placeholder'] ?? '메시지를 남겨주세요'),
-          onChanged: (value) => _updateProperty('placeholder', value),
-        ),
-        const SizedBox(height: 16),
-        SwitchListTile(
-          title: const Text('전송 버튼 표시'),
-          value: _editedProperties['showSubmitButton'] ?? true,
-          onChanged: (value) => _updateProperty('showSubmitButton', value),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+          ),
         ),
       ],
     );
   }
 
-  void _showColorPicker(String propertyKey) {
-    final currentColor = Color(_editedProperties[propertyKey] ?? Colors.black.value);
-    
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('색상 선택'),
-          content: SingleChildScrollView(
-            child: ColorPicker(
-              pickerColor: currentColor,
-              onColorChanged: (color) {
-                setState(() {
-                  _editedProperties[propertyKey] = color.value;
-                });
-              },
-              showLabel: true,
-              pickerAreaHeightPercent: 0.8,
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('확인'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
+  Widget _buildSeparator() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8),
+      child: Text(
+        ':',
+        style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
-  }
-  
-  Color _getContrastingColor(Color color) {
-    // Calculate the perceptive luminance (based on ITU-R BT.709)
-    double luminance = (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255;
-    
-    // Return black for bright colors and white for dark colors
-    return luminance > 0.5 ? Colors.black : Colors.white;
   }
 }

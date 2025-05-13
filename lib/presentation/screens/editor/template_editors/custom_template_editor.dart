@@ -8,10 +8,10 @@ class CustomTemplateEditor extends StatefulWidget {
   final EditorViewModel viewModel;
 
   const CustomTemplateEditor({
-    Key? key,
+    super.key,
     required this.page,
     required this.viewModel,
-  }) : super(key: key);
+  });
 
   @override
   _CustomTemplateEditorState createState() => _CustomTemplateEditorState();
@@ -65,13 +65,13 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor> {
 
   Widget _buildEditor() {
     // If free placement mode is selected, show the draggable editor
-    if (_selectedEditMode == 1) {
+    if (_selectedEditMode == 0) {
       return CustomDraggableEditor(
         page: widget.page,
         viewModel: widget.viewModel,
       );
     }
-    
+
     // Otherwise, show the basic editor
     return _buildBasicEditor();
   }
@@ -90,7 +90,8 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('타이틀', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const Text('타이틀',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           TextField(
             controller: titleController,
@@ -100,8 +101,9 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor> {
             ),
           ),
           const SizedBox(height: 16),
-          
-          const Text('내용', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+
+          const Text('내용',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           TextField(
             controller: contentController,
@@ -112,25 +114,27 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor> {
             maxLines: 10,
           ),
           const SizedBox(height: 24),
-          
+
           Center(
             child: ElevatedButton(
               onPressed: () {
-                final updatedContent = Map<String, dynamic>.from(widget.page.content);
+                final updatedContent =
+                    Map<String, dynamic>.from(widget.page.content);
                 updatedContent['custom_title'] = titleController.text;
                 updatedContent['custom_content'] = contentController.text;
-                
-                widget.viewModel.updatePageContent(widget.page.id, updatedContent);
+
+                widget.viewModel
+                    .updatePageContent(widget.page.id, updatedContent);
                 Navigator.pop(context);
               },
               child: const Text('저장'),
             ),
           ),
-          
+
           const SizedBox(height: 16),
           const Divider(),
           const SizedBox(height: 16),
-          
+
           // Information about advanced editor
           const Card(
             child: Padding(

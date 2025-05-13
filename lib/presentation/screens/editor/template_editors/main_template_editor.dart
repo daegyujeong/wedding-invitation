@@ -7,10 +7,10 @@ class MainTemplateEditor extends StatefulWidget {
   final EditorViewModel viewModel;
 
   const MainTemplateEditor({
-    Key? key,
+    super.key,
     required this.page,
     required this.viewModel,
-  }) : super(key: key);
+  });
 
   @override
   _MainTemplateEditorState createState() => _MainTemplateEditorState();
@@ -25,11 +25,13 @@ class _MainTemplateEditorState extends State<MainTemplateEditor> {
     super.initState();
     // Initialize controllers with existing content
     _greetingController = TextEditingController(
-      text: widget.page.content['greeting_text'] ?? '저희 두 사람이 사랑과 믿음으로\n새로운 가정을 이루게 되었습니다.',
+      text: widget.page.content['greeting_text'] ??
+          '저희 두 사람이 사랑과 믿음으로 새로운 가정을 이루게 되었습니다.',
     );
-    _backgroundImage = widget.page.content['background_image'] ?? 'assets/images/main.jpg';
+    _backgroundImage =
+        widget.page.content['background_image'] ?? 'assets/images/main.jpg';
   }
-  
+
   @override
   void dispose() {
     _greetingController.dispose();
@@ -40,7 +42,7 @@ class _MainTemplateEditorState extends State<MainTemplateEditor> {
     final updatedContent = Map<String, dynamic>.from(widget.page.content);
     updatedContent['greeting_text'] = _greetingController.text;
     updatedContent['background_image'] = _backgroundImage;
-    
+
     widget.viewModel.updatePageContent(widget.page.id, updatedContent);
     Navigator.pop(context);
   }
@@ -68,19 +70,19 @@ class _MainTemplateEditorState extends State<MainTemplateEditor> {
               width: double.infinity,
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey),
-                image: _backgroundImage.isNotEmpty 
-                  ? DecorationImage(
-                      image: AssetImage(_backgroundImage),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
+                image: _backgroundImage.isNotEmpty
+                    ? DecorationImage(
+                        image: AssetImage(_backgroundImage),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
-              child: _backgroundImage.isEmpty 
-                ? const Center(child: Text('배경 이미지 없음'))
-                : null,
+              child: _backgroundImage.isEmpty
+                  ? const Center(child: Text('배경 이미지 없음'))
+                  : null,
             ),
             const SizedBox(height: 16),
-            
+
             // Background image button
             ElevatedButton.icon(
               onPressed: () {
@@ -94,9 +96,10 @@ class _MainTemplateEditorState extends State<MainTemplateEditor> {
               label: const Text('배경 이미지 변경'),
             ),
             const SizedBox(height: 24),
-            
+
             // Greeting text editor
-            const Text('인사말', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('인사말',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
               controller: _greetingController,

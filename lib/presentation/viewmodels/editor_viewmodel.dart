@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import '../../data/models/navigation_model.dart';
 import '../../data/models/page_model.dart';
 import '../../data/models/custom_widget_model.dart';
+import '../../data/services/widget_template_service.dart';
 
 class EditorViewModel extends ChangeNotifier {
   bool _isLoading = false;
@@ -59,52 +60,168 @@ class EditorViewModel extends ChangeNotifier {
         isEnabled: true,
       );
 
-      // Sample pages
+      // Sample pages using new structure
       _pages = [
         PageModel(
           id: 'page_1',
           title: '메인',
-          template: 'main',
-          content: {
-            'background_image': 'assets/images/main.jpg',
-            'greeting_text': '저희 두 사람이 사랑과 믿음으로\\n새로운 가정을 이루게 되었습니다.',
+          settings: {
+            'backgroundColor': '#F8F9FA',
+            'backgroundImage': 'assets/images/main.jpg',
+            'showTitle': true,
+            'titleColor': '#333333',
+            'titleSize': 28.0,
+            'padding': 16.0,
           },
           order: 0,
+          widgets: [
+            CustomWidgetModel(
+              id: 'main_greeting',
+              type: 'text',
+              position: const Offset(20, 100),
+              size: const Size(360, 80),
+              properties: {
+                'text': '저희 두 사람이 사랑과 믿음으로\n새로운 가정을 이루게 되었습니다.',
+                'fontSize': 18.0,
+                'fontWeight': 'normal',
+                'color': '#333333',
+                'textAlign': 'center',
+                'backgroundColor': 'transparent',
+              },
+            ),
+          ],
         ),
         PageModel(
           id: 'page_2',
           title: '갤러리',
-          template: 'gallery',
-          content: {
-            'images': [
-              'assets/images/gallery1.jpg',
-              'assets/images/gallery2.jpg',
-              'assets/images/gallery3.jpg',
-            ],
+          settings: {
+            'backgroundColor': '#FFFFFF',
+            'showTitle': true,
+            'titleColor': '#333333',
+            'titleSize': 24.0,
+            'padding': 16.0,
           },
           order: 1,
+          widgets: [
+            CustomWidgetModel(
+              id: 'gallery_title',
+              type: 'text',
+              position: const Offset(20, 20),
+              size: const Size(360, 40),
+              properties: {
+                'text': '우리의 소중한 순간들',
+                'fontSize': 24.0,
+                'fontWeight': 'bold',
+                'color': '#333333',
+                'textAlign': 'center',
+                'backgroundColor': 'transparent',
+              },
+            ),
+            CustomWidgetModel(
+              id: 'gallery_img1',
+              type: 'image',
+              position: const Offset(20, 80),
+              size: const Size(160, 120),
+              properties: {
+                'imageUrl': 'assets/images/gallery1.jpg',
+                'fit': 'cover',
+                'borderRadius': 8.0,
+              },
+            ),
+            CustomWidgetModel(
+              id: 'gallery_img2',
+              type: 'image',
+              position: const Offset(200, 80),
+              size: const Size(160, 120),
+              properties: {
+                'imageUrl': 'assets/images/gallery2.jpg',
+                'fit': 'cover',
+                'borderRadius': 8.0,
+              },
+            ),
+          ],
         ),
         PageModel(
           id: 'page_3',
           title: '오시는 길',
-          template: 'location',
-          content: {
-            'address': '서울시 강남구 테헤란로 123',
-            'lat': 37.5,
-            'lng': 127.0,
+          settings: {
+            'backgroundColor': '#FFFFFF',
+            'showTitle': true,
+            'titleColor': '#333333',
+            'titleSize': 24.0,
+            'padding': 16.0,
           },
           order: 2,
+          widgets: [
+            CustomWidgetModel(
+              id: 'location_map',
+              type: 'map',
+              position: const Offset(20, 20),
+              size: const Size(360, 200),
+              properties: {
+                'latitude': 37.5,
+                'longitude': 127.0,
+                'address': '서울시 강남구 테헤란로 123',
+                'zoom': 15.0,
+              },
+            ),
+            CustomWidgetModel(
+              id: 'location_address',
+              type: 'text',
+              position: const Offset(20, 240),
+              size: const Size(360, 60),
+              properties: {
+                'text': '📍 서울시 강남구 테헤란로 123\n그랜드 컨벤션 센터 3층',
+                'fontSize': 16.0,
+                'fontWeight': 'normal',
+                'color': '#666666',
+                'textAlign': 'center',
+                'backgroundColor': 'transparent',
+              },
+            ),
+          ],
         ),
         PageModel(
           id: 'page_4',
           title: '축하 메시지',
-          template: 'message',
-          content: {
-            'title': '축하 메시지를 남겨주세요',
-            'description': '소중한 축하 메시지는 저희에게 큰 힘이 됩니다.',
-            'allow_comments': true,
+          settings: {
+            'backgroundColor': '#FFFFFF',
+            'showTitle': true,
+            'titleColor': '#333333',
+            'titleSize': 24.0,
+            'padding': 16.0,
           },
           order: 3,
+          widgets: [
+            CustomWidgetModel(
+              id: 'message_title',
+              type: 'text',
+              position: const Offset(20, 20),
+              size: const Size(360, 40),
+              properties: {
+                'text': '축하 메시지를 남겨주세요',
+                'fontSize': 20.0,
+                'fontWeight': 'bold',
+                'color': '#333333',
+                'textAlign': 'center',
+                'backgroundColor': 'transparent',
+              },
+            ),
+            CustomWidgetModel(
+              id: 'message_description',
+              type: 'text',
+              position: const Offset(20, 80),
+              size: const Size(360, 40),
+              properties: {
+                'text': '소중한 축하 메시지는 저희에게 큰 힘이 됩니다.',
+                'fontSize': 14.0,
+                'fontWeight': 'normal',
+                'color': '#666666',
+                'textAlign': 'center',
+                'backgroundColor': 'transparent',
+              },
+            ),
+          ],
         ),
       ];
     } catch (e) {
@@ -165,18 +282,47 @@ class EditorViewModel extends ChangeNotifier {
     }
   }
 
-  // Add a new page
-  void addPage(String title, String template) {
+  // Add a new page (simplified - no template parameter)
+  void addPage(String title, String? template) {
     final uuid = const Uuid();
     final newPage = PageModel(
       id: uuid.v4(),
       title: title,
-      template: template,
-      content: {},
+      settings: {
+        'backgroundColor': '#FFFFFF',
+        'showTitle': true,
+        'titleColor': '#333333',
+        'titleSize': 24.0,
+        'padding': 16.0,
+      },
       order: _pages.length, // Add to the end
+      widgets: [],
     );
     
     _pages.add(newPage);
+    notifyListeners();
+  }
+
+  // Duplicate a page
+  void duplicatePage(String pageId) {
+    final originalPage = _pages.firstWhere((page) => page.id == pageId);
+    final uuid = const Uuid();
+    
+    final duplicatedPage = PageModel(
+      id: uuid.v4(),
+      title: '${originalPage.title} (복사)',
+      settings: Map<String, dynamic>.from(originalPage.settings),
+      order: _pages.length,
+      widgets: originalPage.widgets.map((widget) => CustomWidgetModel(
+        id: uuid.v4(),
+        type: widget.type,
+        position: widget.position,
+        size: widget.size,
+        properties: Map<String, dynamic>.from(widget.properties),
+      )).toList(),
+    );
+    
+    _pages.add(duplicatedPage);
     notifyListeners();
   }
 
@@ -210,11 +356,11 @@ class EditorViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Update page content
-  void updatePageContent(String pageId, Map<String, dynamic> content) {
-    final index = _pages.indexWhere((page) => page.id == pageId);
+  // Update entire page
+  void updatePage(PageModel updatedPage) {
+    final index = _pages.indexWhere((page) => page.id == updatedPage.id);
     if (index != -1) {
-      _pages[index] = _pages[index].copyWith(content: content);
+      _pages[index] = updatedPage;
       notifyListeners();
     }
   }
@@ -228,8 +374,56 @@ class EditorViewModel extends ChangeNotifier {
     }
   }
 
-  // Save all changes
+  // Add widget to page
+  void addWidget(String pageId, CustomWidgetModel widget) {
+    final index = _pages.indexWhere((page) => page.id == pageId);
+    if (index != -1) {
+      final currentWidgets = List<CustomWidgetModel>.from(_pages[index].widgets);
+      currentWidgets.add(widget);
+      _pages[index] = _pages[index].copyWith(widgets: currentWidgets);
+      notifyListeners();
+    }
+  }
+
+  // Remove widget from page
+  void removeWidget(String pageId, String widgetId) {
+    final index = _pages.indexWhere((page) => page.id == pageId);
+    if (index != -1) {
+      final currentWidgets = List<CustomWidgetModel>.from(_pages[index].widgets);
+      currentWidgets.removeWhere((widget) => widget.id == widgetId);
+      _pages[index] = _pages[index].copyWith(widgets: currentWidgets);
+      notifyListeners();
+    }
+  }
+
+  // Update widget in page
+  void updateWidget(String pageId, CustomWidgetModel updatedWidget) {
+    final pageIndex = _pages.indexWhere((page) => page.id == pageId);
+    if (pageIndex != -1) {
+      final currentWidgets = List<CustomWidgetModel>.from(_pages[pageIndex].widgets);
+      final widgetIndex = currentWidgets.indexWhere((widget) => widget.id == updatedWidget.id);
+      
+      if (widgetIndex != -1) {
+        currentWidgets[widgetIndex] = updatedWidget;
+        _pages[pageIndex] = _pages[pageIndex].copyWith(widgets: currentWidgets);
+        notifyListeners();
+      }
+    }
+  }
+
+  // Apply quick template to page
+  void applyQuickTemplate(String pageId, String templateType) {
+    final widgets = WidgetTemplateService.getTemplate(templateType);
+    updatePageWidgets(pageId, widgets);
+  }
+
+  // Save all changes (for backward compatibility)
   Future<void> saveChanges() async {
+    await saveInvitation();
+  }
+
+  // Save invitation
+  Future<void> saveInvitation() async {
     _isLoading = true;
     notifyListeners();
 
@@ -245,5 +439,40 @@ class EditorViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  // Get main page (for home screen compatibility)
+  PageModel? get mainPage {
+    // Find the first page or a page with specific settings indicating it's the main page
+    if (_pages.isNotEmpty) {
+      return _pages.firstWhere(
+        (page) => page.order == 0,
+        orElse: () => _pages.first,
+      );
+    }
+    return null;
+  }
+
+  // Get greeting text (for home screen compatibility)
+  String getGreetingText(String language) {
+    final main = mainPage;
+    if (main != null) {
+      // Look for a text widget that might contain greeting
+      final greetingWidget = main.widgets.firstWhere(
+        (widget) => widget.type == 'text' && 
+                   widget.properties['text']?.toString().contains('사랑') == true,
+        orElse: () => main.widgets.isNotEmpty ? main.widgets.first : 
+                     CustomWidgetModel(
+                       id: 'default',
+                       type: 'text',
+                       position: Offset.zero,
+                       size: Size.zero,
+                       properties: {'text': ''},
+                     ),
+      );
+      
+      return greetingWidget.properties['text']?.toString() ?? '';
+    }
+    return '';
   }
 }

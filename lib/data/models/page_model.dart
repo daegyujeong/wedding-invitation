@@ -3,40 +3,50 @@ import 'custom_widget_model.dart';
 class PageModel {
   final String id;
   final String title;
-  final String template;
-  final Map<String, dynamic> content;
+  final Map<String, dynamic> settings; // General page settings (background, padding, etc.)
   final int order;
-  final List<CustomWidgetModel> widgets; // New field for custom widgets
+  final List<CustomWidgetModel> widgets;
 
   PageModel({
     required this.id,
     required this.title,
-    required this.template,
-    required this.content,
+    this.settings = const {},
     required this.order,
-    this.widgets = const [], // Default to empty list
+    this.widgets = const [],
   });
 
   // Create a copy with updated fields
   PageModel copyWith({
     String? title,
-    String? template,
-    Map<String, dynamic>? content,
+    Map<String, dynamic>? settings,
     int? order,
     List<CustomWidgetModel>? widgets,
   }) {
     return PageModel(
       id: this.id,
       title: title ?? this.title,
-      template: template ?? this.template,
-      content: content ?? this.content,
+      settings: settings ?? this.settings,
       order: order ?? this.order,
       widgets: widgets ?? this.widgets,
     );
   }
 
+  // Convenience methods for settings
+  String get backgroundColor => settings['backgroundColor'] ?? '#FFFFFF';
+  String get backgroundImage => settings['backgroundImage'] ?? '';
+  double get padding => settings['padding']?.toDouble() ?? 16.0;
+  bool get showTitle => settings['showTitle'] ?? true;
+  String get titleColor => settings['titleColor'] ?? '#000000';
+  double get titleSize => settings['titleSize']?.toDouble() ?? 24.0;
+
+  // Update specific setting
+  PageModel updateSetting(String key, dynamic value) {
+    final newSettings = Map<String, dynamic>.from(settings);
+    newSettings[key] = value;
+    return copyWith(settings: newSettings);
+  }
+
   factory PageModel.fromJson(Map<String, dynamic> json) {
-    // Parse widgets if present
     List<CustomWidgetModel> widgetsList = [];
     if (json.containsKey('widgets') && json['widgets'] != null) {
       widgetsList = (json['widgets'] as List)
@@ -47,8 +57,7 @@ class PageModel {
     return PageModel(
       id: json['id'],
       title: json['title'],
-      template: json['template'],
-      content: json['content'],
+      settings: json['settings'] ?? {},
       order: json['order'],
       widgets: widgetsList,
     );
@@ -58,8 +67,7 @@ class PageModel {
     return {
       'id': id,
       'title': title,
-      'template': template,
-      'content': content,
+      'settings': settings,
       'order': order,
       'widgets': widgets.map((w) => w.toJson()).toList(),
     };

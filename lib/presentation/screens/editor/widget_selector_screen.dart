@@ -1,221 +1,354 @@
 import 'package:flutter/material.dart';
-import '../../../data/models/editor_widget_model.dart';
-import '../../../data/models/invitation_model.dart';
-import 'package:uuid/uuid.dart';
+import '../../../viewmodels/editor_viewmodel.dart';
+import '../../../data/services/widget_template_service.dart';
 
-class WidgetSelectorScreen extends StatelessWidget {
-  final Function(EditorWidget) onWidgetSelected;
+class WidgetSelectorScreen extends StatefulWidget {
+  final String pageId;
+  final EditorViewModel viewModel;
 
-  const WidgetSelectorScreen({super.key, required this.onWidgetSelected});
+  const WidgetSelectorScreen({
+    super.key,
+    required this.pageId,
+    required this.viewModel,
+  });
+
+  @override
+  State<WidgetSelectorScreen> createState() => _WidgetSelectorScreenState();
+}
+
+class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
+  final categories = WidgetTemplateService.getWidgetCategories();
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: categories.length + 1, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('위젯 추가'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          tabs: [
+            const Tab(
+              icon: Icon(Icons.auto_awesome),
+              text: '템플릿',
+            ),
+            ...categories.keys.map((category) => Tab(
+              icon: Icon(_getCategoryIcon(category)),
+              text: category,
+            )),
+          ],
+        ),
       ),
-      body: ListView(
+      body: TabBarView(
+        controller: _tabController,
         children: [
-          _buildWidgetItem(
-            context,
-            'D-day 카운터',
-            Icons.calendar_today,
-            WidgetType.DDay,
+          _buildTemplateTab(),
+          ...categories.entries.map((entry) => _buildWidgetCategoryTab(entry.key, entry.value)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTemplateTab() {
+    final templates = [
+      {
+        'type': 'hero',
+        'name': '히어로 섹션',
+        'description': '제목 + 배경 이미지 + 날짜',
+        'icon': Icons.photo_size_select_actual,
+        'color': Colors.purple,
+      },
+      {
+        'type': 'gallery',
+        'name': '갤러리',
+        'description': '이미지 그리드 레이아웃',
+        'icon': Icons.photo_library,
+        'color': Colors.green,
+      },
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '빠른 템플릿',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          _buildWidgetItem(
-            context,
-            '카운트다운 타이머',
-            Icons.timer,
-            WidgetType.CountdownTimer,
+          const SizedBox(height: 8),
+          Text(
+            '미리 만들어진 위젯 조합을 한 번에 추가할 수 있습니다.',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+            ),
           ),
-          _buildWidgetItem(
-            context,
-            '지도',
-            Icons.map,
-            WidgetType.Map,
-          ),
-          _buildWidgetItem(
-            context,
-            '텍스트',
-            Icons.text_fields,
-            WidgetType.Text,
-          ),
-          _buildWidgetItem(
-            context,
-            '이미지',
-            Icons.image,
-            WidgetType.Image,
-          ),
-          _buildWidgetItem(
-            context,
-            '이미지 갤러리',
-            Icons.photo_library,
-            WidgetType.Gallery,
-          ),
-          _buildWidgetItem(
-            context,
-            '일정',
-            Icons.schedule,
-            WidgetType.Schedule,
+          const SizedBox(height: 16),
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.2,
+              ),
+              itemCount: templates.length,
+              itemBuilder: (context, index) {
+                final template = templates[index];
+                return _buildTemplateCard(template);
+              },
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildWidgetItem(
-    BuildContext context,
-    String title,
-    IconData icon,
-    WidgetType type,
-  ) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      onTap: () {
-        // 선택된 위젯 유형에 따라 데이터 생성
-        const uuid = Uuid();
-        EditorWidget widget;
+  Widget _buildTemplateCard(Map<String, dynamic> template) {
+    return Card(
+      elevation: 2,
+      child: InkWell(
+        onTap: () => _addTemplate(template['type']),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: (template['color'] as Color).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  template['icon'],
+                  size: 24,
+                  color: template['color'],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                template['name'],
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                template['description'],
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-        switch (type) {
-          case WidgetType.DDay:
-            widget = DDayWidget(
-              id: uuid.v4(),
-              data: {
-                'eventId': '',
-                'format': 'D-{days}',
-                'style': 'default',
-                'position': {
-                  'dx': 100.0,
-                  'dy': 100.0,
-                },
+  Widget _buildWidgetCategoryTab(String category, List<Map<String, dynamic>> widgets) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            category,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.4,
+              ),
+              itemCount: widgets.length,
+              itemBuilder: (context, index) {
+                final widget = widgets[index];
+                return _buildWidgetCard(widget);
               },
-            );
-            break;
-          case WidgetType.CountdownTimer:
-            widget = CountdownWidget(
-              id: uuid.v4(),
-              data: {
-                'targetDate': DateTime(2025, 5, 31).toIso8601String(),
-                'format': '{days}:{hours}:{minutes}:{seconds}',
-                'position': {
-                  'dx': 100.0,
-                  'dy': 100.0,
-                },
-              },
-            );
-            break;
-          case WidgetType.Map:
-            widget = MapWidget(
-              id: uuid.v4(),
-              data: {
-                'venueId': '',
-                'mapType': 'google',
-                'showDirections': true,
-                'position': {
-                  'dx': 100.0,
-                  'dy': 100.0,
-                },
-              },
-            );
-            break;
-          case WidgetType.Text:
-            widget = TextWidget(
-              id: uuid.v4(),
-              data: {
-                'text': {
-                  'translations': {'ko': '새 텍스트'},
-                  'default_language': 'ko',
-                },
-                'fontFamily': 'Roboto',
-                'fontSize': 16.0,
-                'color': '#000000',
-                'position': {
-                  'dx': 100.0,
-                  'dy': 100.0,
-                },
-              },
-            );
-            break;
-          case WidgetType.Image:
-            widget = ImageWidget(
-              id: uuid.v4(),
-              data: {
-                'imageUrl': 'https://via.placeholder.com/150',
-                'width': 150.0,
-                'height': 150.0,
-                'position': {
-                  'dx': 100.0,
-                  'dy': 100.0,
-                },
-              },
-            );
-            break;
-          case WidgetType.Gallery:
-            widget = GalleryWidget(
-              id: uuid.v4(),
-              data: {
-                'imageUrls': [
-                  'https://via.placeholder.com/150',
-                  'https://via.placeholder.com/150',
-                  'https://via.placeholder.com/150',
-                ],
-                'layoutType': 'grid',
-                'position': {
-                  'dx': 100.0,
-                  'dy': 100.0,
-                },
-              },
-            );
-            break;
-          case WidgetType.Schedule:
-            widget = ScheduleWidget(
-              id: uuid.v4(),
-              data: {
-                'events': [
-                  {
-                    'time': '13:00',
-                    'description': '식전 행사',
-                  },
-                  {
-                    'time': '14:00',
-                    'description': '결혼식',
-                  },
-                  {
-                    'time': '15:30',
-                    'description': '피로연',
-                  },
-                ],
-                'position': {
-                  'dx': 100.0,
-                  'dy': 100.0,
-                },
-              },
-            );
-            break;
-          default:
-            // 기본값 (텍스트 위젯)
-            widget = TextWidget(
-              id: uuid.v4(),
-              data: {
-                'text': {
-                  'translations': {'ko': '새 위젯'},
-                  'default_language': 'ko',
-                },
-                'fontFamily': 'Roboto',
-                'fontSize': 16.0,
-                'color': '#000000',
-                'position': {
-                  'dx': 100.0,
-                  'dy': 100.0,
-                },
-              },
-            );
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWidgetCard(Map<String, dynamic> widgetInfo) {
+    return Card(
+      elevation: 2,
+      child: InkWell(
+        onTap: () => _addWidget(widgetInfo['type']),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                _getWidgetIcon(widgetInfo['icon']),
+                size: 32,
+                color: Colors.blue.shade600,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widgetInfo['name'],
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                widgetInfo['description'],
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case '텍스트':
+        return Icons.text_fields;
+      case '이미지':
+        return Icons.image;
+      case '인터랙티브':
+        return Icons.touch_app;
+      case '장식':
+        return Icons.palette;
+      default:
+        return Icons.widgets;
+    }
+  }
+
+  IconData _getWidgetIcon(String iconName) {
+    switch (iconName) {
+      case 'text_fields':
+        return Icons.text_fields;
+      case 'title':
+        return Icons.title;
+      case 'image':
+        return Icons.image;
+      case 'photo_library':
+        return Icons.photo_library;
+      case 'smart_button':
+        return Icons.smart_button;
+      case 'map':
+        return Icons.map;
+      case 'timer':
+        return Icons.timer;
+      case 'horizontal_rule':
+        return Icons.horizontal_rule;
+      case 'space_bar':
+        return Icons.space_bar;
+      default:
+        return Icons.widgets;
+    }
+  }
+
+  void _addTemplate(String templateType) {
+    _showConfirmationDialog(
+      title: '템플릿 추가',
+      content: '선택한 템플릿의 모든 위젯이 페이지에 추가됩니다. 계속하시겠습니까?',
+      onConfirm: () {
+        final widgets = WidgetTemplateService.getTemplate(templateType);
+        for (final widget in widgets) {
+          widget.viewModel.addWidget(widget.pageId, widget);
         }
-
-        onWidgetSelected(widget);
         Navigator.pop(context);
+        _showSuccessSnackBar('템플릿이 추가되었습니다.');
       },
+    );
+  }
+
+  void _addWidget(String widgetType) {
+    final widget = WidgetTemplateService.createDefaultWidget(widgetType);
+    widget.viewModel.addWidget(widget.pageId, widget);
+    Navigator.pop(context);
+    _showSuccessSnackBar('위젯이 추가되었습니다.');
+  }
+
+  void _showConfirmationDialog({
+    required String title,
+    required String content,
+    required VoidCallback onConfirm,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onConfirm();
+            },
+            child: const Text('추가'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.green,
+      ),
     );
   }
 }

@@ -5,7 +5,8 @@
       onConfirm: () {
         final widgets = WidgetTemplateService.getTemplate(templateType);
         for (final widget in widgets) {
-          // 올바른 방법: WidgetSelectorScreen의 pageId와 viewModel 사용
+          // CORRECT: CustomWidgetModel에는 viewModel, pageId가 없음
+          // WidgetSelectorScreen의 widget.viewModel과 widget.pageId 사용
           widget.viewModel.addWidget(widget.pageId, widget);
         }
         Navigator.pop(context);
@@ -16,7 +17,8 @@
 
   void _addWidget(String widgetType) {
     final widget = WidgetTemplateService.createDefaultWidget(widgetType);
-    // 올바른 방법: WidgetSelectorScreen의 pageId와 viewModel 사용
+    // CORRECT: CustomWidgetModel에는 viewModel, pageId가 없음  
+    // WidgetSelectorScreen의 widget.viewModel과 widget.pageId 사용
     widget.viewModel.addWidget(widget.pageId, widget);
     Navigator.pop(context);
     _showSuccessSnackBar('위젯이 추가되었습니다.');

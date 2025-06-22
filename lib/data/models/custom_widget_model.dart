@@ -31,14 +31,18 @@ class CustomWidgetModel {
     required this.height,
   });
 
+  // Convenience getters for backward compatibility
+  Offset get position => Offset(positionX, positionY);
+  Size get size => Size(width, height);
+
   factory CustomWidgetModel.create(WidgetType type) {
-    final uuid = Uuid();
+    const uuid = Uuid();
     // Default properties based on widget type
     Map<String, dynamic> defaultProps = {};
-    
+
     double defaultWidth = 300;
     double defaultHeight = 100;
-    
+
     switch (type) {
       case WidgetType.text:
         defaultProps = {
@@ -78,7 +82,8 @@ class CustomWidgetModel {
       case WidgetType.countdown:
         defaultProps = {
           'title': '결혼식까지',
-          'endDate': DateTime.now().add(Duration(days: 30)).toIso8601String(),
+          'endDate':
+              DateTime.now().add(const Duration(days: 30)).toIso8601String(),
           'showSeconds': true,
         };
         defaultHeight = 120;
@@ -95,7 +100,11 @@ class CustomWidgetModel {
         break;
       case WidgetType.gallery:
         defaultProps = {
-          'images': ['assets/images/gallery1.jpg', 'assets/images/gallery2.jpg', 'assets/images/gallery3.jpg'],
+          'images': [
+            'assets/images/gallery1.jpg',
+            'assets/images/gallery2.jpg',
+            'assets/images/gallery3.jpg'
+          ],
           'showDots': true,
           'autoScroll': false,
         };
@@ -110,7 +119,7 @@ class CustomWidgetModel {
         defaultHeight = 200;
         break;
     }
-    
+
     return CustomWidgetModel(
       id: uuid.v4(),
       type: type,

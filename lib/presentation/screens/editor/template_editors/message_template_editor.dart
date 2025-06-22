@@ -7,10 +7,10 @@ class MessageTemplateEditor extends StatefulWidget {
   final EditorViewModel viewModel;
 
   const MessageTemplateEditor({
-    Key? key,
+    super.key,
     required this.page,
     required this.viewModel,
-  }) : super(key: key);
+  });
 
   @override
   _MessageTemplateEditorState createState() => _MessageTemplateEditorState();
@@ -26,14 +26,14 @@ class _MessageTemplateEditorState extends State<MessageTemplateEditor> {
     super.initState();
     // Initialize controllers with existing content
     _titleController = TextEditingController(
-      text: widget.page.content['title'] ?? '축하 메시지를 남겨주세요',
+      text: widget.page.settings['title'] ?? '축하 메시지를 남겨주세요',
     );
     _descriptionController = TextEditingController(
-      text: widget.page.content['description'] ?? '소중한 축하 메시지는 저희에게 큰 힘이 됩니다.',
+      text: widget.page.settings['description'] ?? '소중한 축하 메시지는 저희에게 큰 힘이 됩니다.',
     );
-    _allowComments = widget.page.content['allow_comments'] ?? true;
+    _allowComments = widget.page.settings['allow_comments'] ?? true;
   }
-  
+
   @override
   void dispose() {
     _titleController.dispose();
@@ -42,12 +42,12 @@ class _MessageTemplateEditorState extends State<MessageTemplateEditor> {
   }
 
   void _saveChanges() {
-    final updatedContent = Map<String, dynamic>.from(widget.page.content);
+    final updatedContent = Map<String, dynamic>.from(widget.page.settings);
     updatedContent['title'] = _titleController.text;
     updatedContent['description'] = _descriptionController.text;
     updatedContent['allow_comments'] = _allowComments;
-    
-    widget.viewModel.updatePageContent(widget.page.id, updatedContent);
+
+    // widget.viewModel.updatePageWidgets(widget.page.id, updatedContent);
     Navigator.pop(context);
   }
 
@@ -69,7 +69,8 @@ class _MessageTemplateEditorState extends State<MessageTemplateEditor> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Title
-            const Text('타이틀', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('타이틀',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
               controller: _titleController,
@@ -79,9 +80,10 @@ class _MessageTemplateEditorState extends State<MessageTemplateEditor> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Description
-            const Text('설명', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('설명',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
               controller: _descriptionController,
@@ -92,7 +94,7 @@ class _MessageTemplateEditorState extends State<MessageTemplateEditor> {
               maxLines: 3,
             ),
             const SizedBox(height: 16),
-            
+
             // Allow comments toggle
             SwitchListTile(
               title: const Text('메시지 작성 허용'),

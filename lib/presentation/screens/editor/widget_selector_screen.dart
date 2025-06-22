@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../viewmodels/editor_viewmodel.dart';
+import '../../viewmodels/editor_viewmodel.dart';
 import '../../../data/services/widget_template_service.dart';
+import '../../../data/models/editor_widget_model.dart';
 
 class WidgetSelectorScreen extends StatefulWidget {
   final String pageId;
@@ -50,9 +51,9 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
               text: '템플릿',
             ),
             ...categories.keys.map((category) => Tab(
-              icon: Icon(_getCategoryIcon(category)),
-              text: category,
-            )),
+                  icon: Icon(_getCategoryIcon(category)),
+                  text: category,
+                )),
           ],
         ),
       ),
@@ -60,7 +61,8 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
         controller: _tabController,
         children: [
           _buildTemplateTab(),
-          ...categories.entries.map((entry) => _buildWidgetCategoryTab(entry.key, entry.value)),
+          ...categories.entries
+              .map((entry) => _buildWidgetCategoryTab(entry.key, entry.value)),
         ],
       ),
     );
@@ -176,7 +178,8 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
     );
   }
 
-  Widget _buildWidgetCategoryTab(String category, List<Map<String, dynamic>> widgets) {
+  Widget _buildWidgetCategoryTab(
+      String category, List<Map<String, dynamic>> widgets) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -310,10 +313,82 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
   }
 
   void _addWidget(String widgetType) {
-    final widgetModel = WidgetTemplateService.createDefaultWidget(widgetType);
-    // FIXED: Use WidgetSelectorScreen's pageId and viewModel
-    widget.viewModel.addWidget(widget.pageId, widgetModel);
-    Navigator.pop(context);
+    // Create EditorWidget instead of CustomWidgetModel for compatibility
+    EditorWidget editorWidget;
+
+    switch (widgetType) {
+      case 'text':
+        editorWidget = TextWidget(
+          id: 'text_${DateTime.now().millisecondsSinceEpoch}',
+          data: {
+            'text': {
+              'translations': {'ko': '텍스트를 입력하세요'},
+              'default_language': 'ko',
+            },
+            'fontFamily': 'Roboto',
+            'fontSize': 16.0,
+            'color': '#333333',
+            'position': {
+              'dx': 100.0,
+              'dy': 100.0,
+            },
+          },
+        );
+        break;
+      case 'title':
+        editorWidget = TextWidget(
+          id: 'title_${DateTime.now().millisecondsSinceEpoch}',
+          data: {
+            'text': {
+              'translations': {'ko': '제목을 입력하세요'},
+              'default_language': 'ko',
+            },
+            'fontFamily': 'Roboto',
+            'fontSize': 24.0,
+            'color': '#333333',
+            'position': {
+              'dx': 100.0,
+              'dy': 50.0,
+            },
+          },
+        );
+        break;
+      case 'countdown':
+        editorWidget = DDayWidget(
+          id: 'countdown_${DateTime.now().millisecondsSinceEpoch}',
+          data: {
+            'eventId': '',
+            'format': 'D-{days}',
+            'style': 'default',
+            'position': {
+              'dx': 100.0,
+              'dy': 150.0,
+            },
+          },
+        );
+        break;
+      default:
+        // Default to text widget
+        editorWidget = TextWidget(
+          id: 'widget_${DateTime.now().millisecondsSinceEpoch}',
+          data: {
+            'text': {
+              'translations': {'ko': '새로운 위젯'},
+              'default_language': 'ko',
+            },
+            'fontFamily': 'Roboto',
+            'fontSize': 16.0,
+            'color': '#333333',
+            'position': {
+              'dx': 100.0,
+              'dy': 100.0,
+            },
+          },
+        );
+    }
+
+    // Pass the widget back through Navigator result
+    Navigator.pop(context, editorWidget);
     _showSuccessSnackBar('위젯이 추가되었습니다.');
   }
 

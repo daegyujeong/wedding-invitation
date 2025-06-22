@@ -7,10 +7,10 @@ class GalleryTemplateEditor extends StatefulWidget {
   final EditorViewModel viewModel;
 
   const GalleryTemplateEditor({
-    Key? key,
+    super.key,
     required this.page,
     required this.viewModel,
-  }) : super(key: key);
+  });
 
   @override
   _GalleryTemplateEditorState createState() => _GalleryTemplateEditorState();
@@ -23,7 +23,7 @@ class _GalleryTemplateEditorState extends State<GalleryTemplateEditor> {
   void initState() {
     super.initState();
     // Initialize with existing content
-    _images = List<String>.from(widget.page.content['images'] ?? []);
+    _images = List<String>.from(widget.page.settings['images'] ?? []);
     if (_images.isEmpty) {
       _images.add('assets/images/gallery1.jpg');
       _images.add('assets/images/gallery2.jpg');
@@ -31,10 +31,11 @@ class _GalleryTemplateEditorState extends State<GalleryTemplateEditor> {
   }
 
   void _saveChanges() {
-    final updatedContent = Map<String, dynamic>.from(widget.page.content);
-    updatedContent['images'] = _images;
-    
-    widget.viewModel.updatePageContent(widget.page.id, updatedContent);
+    final updatedSettings = Map<String, dynamic>.from(widget.page.settings);
+    updatedSettings['images'] = _images;
+
+    final updatedPage = widget.page.copyWith(settings: updatedSettings);
+    widget.viewModel.updatePage(updatedPage);
     Navigator.pop(context);
   }
 
@@ -72,7 +73,9 @@ class _GalleryTemplateEditorState extends State<GalleryTemplateEditor> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('갤러리 이미지', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text('갤러리 이미지',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ElevatedButton.icon(
                   onPressed: _addImage,
                   icon: const Icon(Icons.add),
@@ -101,7 +104,7 @@ class _GalleryTemplateEditorState extends State<GalleryTemplateEditor> {
                           ),
                         ),
                       ),
-                      
+
                       // Actions
                       ButtonBar(
                         alignment: MainAxisAlignment.end,
@@ -116,7 +119,8 @@ class _GalleryTemplateEditorState extends State<GalleryTemplateEditor> {
                           TextButton.icon(
                             onPressed: () => _removeImage(index),
                             icon: const Icon(Icons.delete, color: Colors.red),
-                            label: const Text('삭제', style: TextStyle(color: Colors.red)),
+                            label: const Text('삭제',
+                                style: TextStyle(color: Colors.red)),
                           ),
                         ],
                       ),

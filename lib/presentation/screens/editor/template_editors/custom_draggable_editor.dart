@@ -13,10 +13,10 @@ class CustomDraggableEditor extends StatefulWidget {
   final EditorViewModel viewModel;
 
   const CustomDraggableEditor({
-    Key? key,
+    super.key,
     required this.page,
     required this.viewModel,
-  }) : super(key: key);
+  });
 
   @override
   _CustomDraggableEditorState createState() => _CustomDraggableEditorState();
@@ -32,32 +32,34 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
     super.initState();
     // Initialize widgets from page content
     _loadWidgetsFromPageContent();
-    
+
     // Initialize background color
-    _backgroundColor = widget.page.content['background_color'] != null
-        ? Color(int.parse(widget.page.content['background_color'], radix: 16))
+    _backgroundColor = widget.page.settings['backgroundColor'] != null
+        ? Color(
+            int.parse(widget.page.backgroundColor.replaceFirst('#', '0xFF')))
         : Colors.white;
   }
 
   void _loadWidgetsFromPageContent() {
-    final widgetsJson = widget.page.content['widgets'] as List<dynamic>? ?? [];
-    
+    final widgetsJson = widget.page.settings['widgets'] as List<dynamic>? ?? [];
+
     _widgets = widgetsJson
         .map((json) => EditorWidget.fromJson(json as Map<String, dynamic>))
         .toList();
   }
 
   void _savePageContent() {
-    final updatedContent = Map<String, dynamic>.from(widget.page.content);
-    
+    final updatedSettings = Map<String, dynamic>.from(widget.page.settings);
+
     // Save widgets
-    updatedContent['widgets'] = _widgets.map((w) => w.toJson()).toList();
-    
+    updatedSettings['widgets'] = _widgets.map((w) => w.toJson()).toList();
+
     // Save background color
-    updatedContent['background_color'] =
-        _backgroundColor.value.toRadixString(16);
-    
-    widget.viewModel.updatePageContent(widget.page.id, updatedContent);
+    updatedSettings['backgroundColor'] =
+        '#${_backgroundColor.value.toRadixString(16).substring(2)}';
+
+    final updatedPage = widget.page.copyWith(settings: updatedSettings);
+    widget.viewModel.updatePage(updatedPage);
     Navigator.pop(context);
   }
 
@@ -82,7 +84,7 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
         'dx': position.dx,
         'dy': position.dy,
       };
-      
+
       // Create updated widget
       EditorWidget updatedWidget;
       switch (widget.type) {
@@ -129,7 +131,7 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
           );
           break;
       }
-      
+
       setState(() {
         _widgets[index] = updatedWidget;
       });
@@ -141,7 +143,7 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
     if (index == -1) return;
 
     final widget = _widgets[index];
-    
+
     // Different edit dialog based on widget type
     switch (widget.type) {
       case WidgetType.Text:
@@ -165,160 +167,160 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
     final textController = TextEditingController(
       text: widget.text.getText('ko'), // Use current language
     );
-    
+
     double fontSize = widget.fontSize;
     String fontFamily = widget.fontFamily;
-    Color textColor = Color(int.parse('FF${widget.color.substring(1)}', radix: 16));
+    Color textColor =
+        Color(int.parse('FF${widget.color.substring(1)}', radix: 16));
 
     showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Text('텍스트 편집'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: textController,
-                      decoration: const InputDecoration(labelText: '텍스트'),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        const Text('글자 크기:'),
-                        Expanded(
-                          child: Slider(
-                            value: fontSize,
-                            min: 8,
-                            max: 40,
-                            divisions: 32,
-                            label: fontSize.round().toString(),
-                            onChanged: (value) {
-                              setDialogState(() {
-                                fontSize = value;
-                              });
-                            },
-                          ),
-                        ),
-                        Text('${fontSize.round()}'),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        const Text('색상:'),
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text('색상 선택'),
-                                  content: SingleChildScrollView(
-                                    child: ColorPicker(
-                                      pickerColor: textColor,
-                                      onColorChanged: (color) {
-                                        setDialogState(() {
-                                          textColor = color;
-                                        });
-                                      },
-                                      pickerAreaHeightPercent: 0.8,
-                                    ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text('선택'),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('텍스트 편집'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: textController,
+                    decoration: const InputDecoration(labelText: '텍스트'),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Text('글자 크기:'),
+                      Expanded(
+                        child: Slider(
+                          value: fontSize,
+                          min: 8,
+                          max: 40,
+                          divisions: 32,
+                          label: fontSize.round().toString(),
+                          onChanged: (value) {
+                            setDialogState(() {
+                              fontSize = value;
+                            });
                           },
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: textColor,
-                              border: Border.all(color: Colors.grey),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
+                        ),
+                      ),
+                      Text('${fontSize.round()}'),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Text('색상:'),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: const Text('색상 선택'),
+                                content: SingleChildScrollView(
+                                  child: ColorPicker(
+                                    pickerColor: textColor,
+                                    onColorChanged: (color) {
+                                      setDialogState(() {
+                                        textColor = color;
+                                      });
+                                    },
+                                    pickerAreaHeightPercent: 0.8,
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text('선택'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: textColor,
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      value: fontFamily,
-                      decoration: const InputDecoration(
-                        labelText: '글꼴',
-                        border: OutlineInputBorder(),
                       ),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'Roboto',
-                          child: Text('Roboto'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'NotoSansKR',
-                          child: Text('Noto Sans KR'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'NanumGothic',
-                          child: Text('Nanum Gothic'),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        if (value != null) {
-                          setDialogState(() {
-                            fontFamily = value;
-                          });
-                        }
-                      },
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: fontFamily,
+                    decoration: const InputDecoration(
+                      labelText: '글꼴',
+                      border: OutlineInputBorder(),
                     ),
-                  ],
-                ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'Roboto',
+                        child: Text('Roboto'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'NotoSansKR',
+                        child: Text('Noto Sans KR'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'NanumGothic',
+                        child: Text('Nanum Gothic'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setDialogState(() {
+                          fontFamily = value;
+                        });
+                      }
+                    },
+                  ),
+                ],
               ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('취소'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    // Update the widget
-                    final updatedData = Map<String, dynamic>.from(widget.data);
-                    updatedData['text'] = {
-                      'translations': {'ko': textController.text},
-                      'default_language': 'ko',
-                    };
-                    updatedData['fontSize'] = fontSize;
-                    updatedData['fontFamily'] = fontFamily;
-                    updatedData['color'] = '#${textColor.value.toRadixString(16).substring(2)}';
-                    
-                    setState(() {
-                      _widgets[index] = TextWidget(
-                        id: widget.id,
-                        data: updatedData,
-                      );
-                    });
-                    
-                    Navigator.pop(context);
-                  },
-                  child: const Text('저장'),
-                ),
-              ],
-            );
-          }
-        );
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('취소'),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Update the widget
+                  final updatedData = Map<String, dynamic>.from(widget.data);
+                  updatedData['text'] = {
+                    'translations': {'ko': textController.text},
+                    'default_language': 'ko',
+                  };
+                  updatedData['fontSize'] = fontSize;
+                  updatedData['fontFamily'] = fontFamily;
+                  updatedData['color'] =
+                      '#${textColor.value.toRadixString(16).substring(2)}';
+
+                  setState(() {
+                    _widgets[index] = TextWidget(
+                      id: widget.id,
+                      data: updatedData,
+                    );
+                  });
+
+                  Navigator.pop(context);
+                },
+                child: const Text('저장'),
+              ),
+            ],
+          );
+        });
       },
     );
   }
@@ -399,14 +401,14 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
                 final updatedData = Map<String, dynamic>.from(widget.data);
                 updatedData['format'] = format;
                 updatedData['style'] = style;
-                
+
                 setState(() {
                   _widgets[index] = DDayWidget(
                     id: widget.id,
                     data: updatedData,
                   );
                 });
-                
+
                 Navigator.pop(context);
               },
               child: const Text('저장'),
@@ -480,14 +482,14 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
                 final updatedData = Map<String, dynamic>.from(widget.data);
                 updatedData['venueId'] = venueId;
                 updatedData['showDirections'] = showDirections;
-                
+
                 setState(() {
                   _widgets[index] = MapWidget(
                     id: widget.id,
                     data: updatedData,
                   );
                 });
-                
+
                 Navigator.pop(context);
               },
               child: const Text('저장'),
@@ -554,7 +556,7 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
             height: double.infinity,
             color: _backgroundColor,
           ),
-          
+
           // Widget canvas
           Stack(
             children: _widgets.map((widget) {
@@ -576,15 +578,24 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "customDraggableEditorFAB",
         child: const Icon(Icons.add),
-        onPressed: () {
+        onPressed: () async {
           // Show widget selector
-          showModalBottomSheet(
-            context: context,
-            builder: (context) => WidgetSelectorScreen(
-              onWidgetSelected: _addWidget,
+          final result = await Navigator.push<EditorWidget>(
+            context,
+            MaterialPageRoute(
+              builder: (context) => WidgetSelectorScreen(
+                pageId: widget.page.id,
+                viewModel: widget.viewModel,
+              ),
             ),
           );
+
+          // If a widget was selected, add it to the local list
+          if (result != null) {
+            _addWidget(result);
+          }
         },
       ),
       bottomNavigationBar: BottomAppBar(

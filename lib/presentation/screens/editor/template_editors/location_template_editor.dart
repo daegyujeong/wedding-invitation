@@ -7,10 +7,10 @@ class LocationTemplateEditor extends StatefulWidget {
   final EditorViewModel viewModel;
 
   const LocationTemplateEditor({
-    Key? key,
+    super.key,
     required this.page,
     required this.viewModel,
-  }) : super(key: key);
+  });
 
   @override
   _LocationTemplateEditorState createState() => _LocationTemplateEditorState();
@@ -26,16 +26,16 @@ class _LocationTemplateEditorState extends State<LocationTemplateEditor> {
     super.initState();
     // Initialize controllers with existing content
     _addressController = TextEditingController(
-      text: widget.page.content['address'] ?? '서울시 강남구 테헤란로 123',
+      text: widget.page.settings['address'] ?? '서울시 강남구 테헤란로 123',
     );
     _latController = TextEditingController(
-      text: (widget.page.content['lat'] ?? 37.5).toString(),
+      text: (widget.page.settings['lat'] ?? 37.5).toString(),
     );
     _lngController = TextEditingController(
-      text: (widget.page.content['lng'] ?? 127.0).toString(),
+      text: (widget.page.settings['lng'] ?? 127.0).toString(),
     );
   }
-  
+
   @override
   void dispose() {
     _addressController.dispose();
@@ -45,12 +45,13 @@ class _LocationTemplateEditorState extends State<LocationTemplateEditor> {
   }
 
   void _saveChanges() {
-    final updatedContent = Map<String, dynamic>.from(widget.page.content);
-    updatedContent['address'] = _addressController.text;
-    updatedContent['lat'] = double.tryParse(_latController.text) ?? 37.5;
-    updatedContent['lng'] = double.tryParse(_lngController.text) ?? 127.0;
-    
-    widget.viewModel.updatePageContent(widget.page.id, updatedContent);
+    final updatedSettings = Map<String, dynamic>.from(widget.page.settings);
+    updatedSettings['address'] = _addressController.text;
+    updatedSettings['lat'] = double.tryParse(_latController.text) ?? 37.5;
+    updatedSettings['lng'] = double.tryParse(_lngController.text) ?? 127.0;
+
+    final updatedPage = widget.page.copyWith(settings: updatedSettings);
+    widget.viewModel.updatePage(updatedPage);
     Navigator.pop(context);
   }
 
@@ -82,15 +83,17 @@ class _LocationTemplateEditorState extends State<LocationTemplateEditor> {
                   children: [
                     const Icon(Icons.map, size: 50),
                     const SizedBox(height: 8),
-                    Text('위도: ${_latController.text}, 경도: ${_lngController.text}'),
+                    Text(
+                        '위도: ${_latController.text}, 경도: ${_lngController.text}'),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Address
-            const Text('주소', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('주소',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
               controller: _addressController,
@@ -100,7 +103,7 @@ class _LocationTemplateEditorState extends State<LocationTemplateEditor> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Coordinates
             Row(
               children: [
@@ -108,7 +111,9 @@ class _LocationTemplateEditorState extends State<LocationTemplateEditor> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('위도', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      const Text('위도',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _latController,
@@ -126,7 +131,9 @@ class _LocationTemplateEditorState extends State<LocationTemplateEditor> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('경도', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      const Text('경도',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _lngController,

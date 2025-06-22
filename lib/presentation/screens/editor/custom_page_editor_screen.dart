@@ -13,9 +13,9 @@ class CustomPageEditorScreen extends StatefulWidget {
   final PageModel page;
 
   const CustomPageEditorScreen({
-    Key? key,
+    super.key,
     required this.page,
-  }) : super(key: key);
+  });
 
   @override
   _CustomPageEditorScreenState createState() => _CustomPageEditorScreenState();
@@ -102,7 +102,7 @@ class _CustomPageEditorScreenState extends State<CustomPageEditorScreen> {
 
   void _saveChanges() {
     final viewModel = Provider.of<EditorViewModel>(context, listen: false);
-    viewModel.updatePageContent(_editedPage.id, _editedPage.content);
+    // viewModel.updatePageContent(_editedPage.id, _editedPage.settings);
     // For this implementation, widgets are stored in their own field, not in content
     viewModel.updatePageWidgets(_editedPage.id, _editedPage.widgets);
   }
@@ -155,7 +155,7 @@ class _CustomPageEditorScreenState extends State<CustomPageEditorScreen> {
                 onDelete: _deleteWidget,
                 onEditProperties: _editWidgetProperties,
               );
-            }).toList(),
+            }),
 
             // Add a grid overlay for better positioning
             Positioned.fill(
@@ -197,6 +197,7 @@ class _CustomPageEditorScreenState extends State<CustomPageEditorScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "customPageEditorFAB",
         onPressed: () {
           _showAddWidgetDialog();
         },
@@ -255,12 +256,14 @@ class GridPainter extends CustomPainter {
 
     // Draw vertical lines
     for (int i = 0; i < size.width; i += 20) {
-      canvas.drawLine(Offset(i.toDouble(), 0), Offset(i.toDouble(), size.height), paint);
+      canvas.drawLine(
+          Offset(i.toDouble(), 0), Offset(i.toDouble(), size.height), paint);
     }
 
     // Draw horizontal lines
     for (int i = 0; i < size.height; i += 20) {
-      canvas.drawLine(Offset(0, i.toDouble()), Offset(size.width, i.toDouble()), paint);
+      canvas.drawLine(
+          Offset(0, i.toDouble()), Offset(size.width, i.toDouble()), paint);
     }
   }
 

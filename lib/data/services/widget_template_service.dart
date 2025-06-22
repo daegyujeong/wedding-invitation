@@ -6,20 +6,25 @@ class WidgetTemplateService {
     return [
       CustomWidgetModel(
         id: 'hero_bg_${DateTime.now().millisecondsSinceEpoch}',
-        type: 'image',
-        position: const Offset(0, 0),
-        size: const Size(400, 300),
+        type: WidgetType.image,
+        positionX: 0,
+        positionY: 0,
+        width: 400,
+        height: 300,
         properties: {
-          'imageUrl': 'https://via.placeholder.com/400x300/f8f9fa/6c757d?text=배경+이미지',
+          'imageUrl':
+              'https://via.placeholder.com/400x300/f8f9fa/6c757d?text=배경+이미지',
           'fit': 'cover',
           'borderRadius': 0.0,
         },
       ),
       CustomWidgetModel(
         id: 'hero_title_${DateTime.now().millisecondsSinceEpoch + 1}',
-        type: 'text',
-        position: const Offset(50, 100),
-        size: const Size(300, 60),
+        type: WidgetType.text,
+        positionX: 50,
+        positionY: 100,
+        width: 300,
+        height: 60,
         properties: {
           'text': '결혼합니다',
           'fontSize': 32.0,
@@ -31,9 +36,11 @@ class WidgetTemplateService {
       ),
       CustomWidgetModel(
         id: 'hero_subtitle_${DateTime.now().millisecondsSinceEpoch + 2}',
-        type: 'text',
-        position: const Offset(50, 170),
-        size: const Size(300, 40),
+        type: WidgetType.text,
+        positionX: 50,
+        positionY: 170,
+        width: 300,
+        height: 40,
         properties: {
           'text': '신랑 ♥ 신부',
           'fontSize': 20.0,
@@ -45,9 +52,11 @@ class WidgetTemplateService {
       ),
       CustomWidgetModel(
         id: 'hero_date_${DateTime.now().millisecondsSinceEpoch + 3}',
-        type: 'text',
-        position: const Offset(50, 220),
-        size: const Size(300, 30),
+        type: WidgetType.text,
+        positionX: 50,
+        positionY: 220,
+        width: 300,
+        height: 30,
         properties: {
           'text': '2024년 12월 25일',
           'fontSize': 16.0,
@@ -64,9 +73,11 @@ class WidgetTemplateService {
     return [
       CustomWidgetModel(
         id: 'gallery_title_${DateTime.now().millisecondsSinceEpoch}',
-        type: 'text',
-        position: const Offset(20, 20),
-        size: const Size(360, 40),
+        type: WidgetType.text,
+        positionX: 20,
+        positionY: 20,
+        width: 360,
+        height: 40,
         properties: {
           'text': '우리의 소중한 순간들',
           'fontSize': 24.0,
@@ -78,44 +89,56 @@ class WidgetTemplateService {
       ),
       CustomWidgetModel(
         id: 'gallery_img1_${DateTime.now().millisecondsSinceEpoch + 1}',
-        type: 'image',
-        position: const Offset(20, 80),
-        size: const Size(160, 120),
+        type: WidgetType.image,
+        positionX: 20,
+        positionY: 80,
+        width: 160,
+        height: 120,
         properties: {
-          'imageUrl': 'https://via.placeholder.com/160x120/e9ecef/6c757d?text=사진1',
+          'imageUrl':
+              'https://via.placeholder.com/160x120/e9ecef/6c757d?text=사진1',
           'fit': 'cover',
           'borderRadius': 8.0,
         },
       ),
       CustomWidgetModel(
         id: 'gallery_img2_${DateTime.now().millisecondsSinceEpoch + 2}',
-        type: 'image',
-        position: const Offset(200, 80),
-        size: const Size(160, 120),
+        type: WidgetType.image,
+        positionX: 200,
+        positionY: 80,
+        width: 160,
+        height: 120,
         properties: {
-          'imageUrl': 'https://via.placeholder.com/160x120/e9ecef/6c757d?text=사진2',
+          'imageUrl':
+              'https://via.placeholder.com/160x120/e9ecef/6c757d?text=사진2',
           'fit': 'cover',
           'borderRadius': 8.0,
         },
       ),
       CustomWidgetModel(
         id: 'gallery_img3_${DateTime.now().millisecondsSinceEpoch + 3}',
-        type: 'image',
-        position: const Offset(20, 220),
-        size: const Size(160, 120),
+        type: WidgetType.image,
+        positionX: 20,
+        positionY: 220,
+        width: 160,
+        height: 120,
         properties: {
-          'imageUrl': 'https://via.placeholder.com/160x120/e9ecef/6c757d?text=사진3',
+          'imageUrl':
+              'https://via.placeholder.com/160x120/e9ecef/6c757d?text=사진3',
           'fit': 'cover',
           'borderRadius': 8.0,
         },
       ),
       CustomWidgetModel(
         id: 'gallery_img4_${DateTime.now().millisecondsSinceEpoch + 4}',
-        type: 'image',
-        position: const Offset(200, 220),
-        size: const Size(160, 120),
+        type: WidgetType.image,
+        positionX: 200,
+        positionY: 220,
+        width: 160,
+        height: 120,
         properties: {
-          'imageUrl': 'https://via.placeholder.com/160x120/e9ecef/6c757d?text=사진4',
+          'imageUrl':
+              'https://via.placeholder.com/160x120/e9ecef/6c757d?text=사진4',
           'fit': 'cover',
           'borderRadius': 8.0,
         },
@@ -204,17 +227,21 @@ class WidgetTemplateService {
   }
 
   // Create a default widget of specified type
-  static CustomWidgetModel createDefaultWidget(String type, {Offset? position}) {
-    final pos = position ?? const Offset(50, 50);
+  static CustomWidgetModel createDefaultWidget(String type,
+      {double? positionX, double? positionY}) {
+    final x = positionX ?? 50.0;
+    final y = positionY ?? 50.0;
     final id = '${type}_${DateTime.now().millisecondsSinceEpoch}';
 
     switch (type) {
       case 'text':
         return CustomWidgetModel(
           id: id,
-          type: type,
-          position: pos,
-          size: const Size(200, 40),
+          type: WidgetType.text,
+          positionX: x,
+          positionY: y,
+          width: 200,
+          height: 40,
           properties: {
             'text': '텍스트를 입력하세요',
             'fontSize': 16.0,
@@ -228,9 +255,11 @@ class WidgetTemplateService {
       case 'title':
         return CustomWidgetModel(
           id: id,
-          type: 'text',
-          position: pos,
-          size: const Size(300, 50),
+          type: WidgetType.text,
+          positionX: x,
+          positionY: y,
+          width: 300,
+          height: 50,
           properties: {
             'text': '제목을 입력하세요',
             'fontSize': 24.0,
@@ -244,18 +273,22 @@ class WidgetTemplateService {
       case 'image':
         return CustomWidgetModel(
           id: id,
-          type: type,
-          position: pos,
-          size: const Size(200, 150),
+          type: WidgetType.image,
+          positionX: x,
+          positionY: y,
+          width: 200,
+          height: 150,
           properties: {
-            'imageUrl': 'https://via.placeholder.com/200x150/e9ecef/6c757d?text=이미지',
+            'imageUrl':
+                'https://via.placeholder.com/200x150/e9ecef/6c757d?text=이미지',
             'fit': 'cover',
             'borderRadius': 8.0,
           },
         );
 
       default:
-        return createDefaultWidget('text', position: position);
+        return createDefaultWidget('text',
+            positionX: positionX, positionY: positionY);
     }
   }
 }

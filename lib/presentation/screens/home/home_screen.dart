@@ -15,7 +15,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Timer _timer;
   final String _currentLanguage = 'ko';
-  
+
   @override
   void initState() {
     super.initState();
@@ -60,20 +60,33 @@ class _HomeScreenState extends State<HomeScreen> {
             (venue) => venue.eventType == 'Wedding',
             orElse: () => invitation.venues.first,
           );
-          
+
           // Get edited content from editor view model
-          String greetingText = invitation.greetingMessage.getText(_currentLanguage);
-          
+          String greetingText =
+              invitation.greetingMessage.getText(_currentLanguage);
+
           if (!editorViewModel.isLoading && editorViewModel.pages.isNotEmpty) {
-            final mainPages = editorViewModel.pages.where((page) => page.template == 'main');
-            if (mainPages.isNotEmpty) {
-              final mainPage = mainPages.first;
-              if (mainPage.content.containsKey('greeting_text')) {
-                greetingText = mainPage.content['greeting_text'];
+            // Find the main page (order 0 or title "메인")
+            final mainPage = editorViewModel.pages.firstWhere(
+              (page) => page.order == 0 || page.title == '메인',
+              orElse: () => editorViewModel.pages.first,
+            );
+
+            // Look for greeting text widget in the main page
+            if (mainPage.widgets.isNotEmpty) {
+              final greetingWidgets = mainPage.widgets.where((widget) =>
+                  widget.type.index == 0 && // WidgetType.text has index 0
+                  widget.properties.containsKey('text'));
+
+              if (greetingWidgets.isNotEmpty) {
+                final greetingWidget = greetingWidgets.first;
+                if (greetingWidget.properties.containsKey('text')) {
+                  greetingText = greetingWidget.properties['text'];
+                }
               }
             }
           }
-          
+
           return SingleChildScrollView(
             child: Column(
               children: [

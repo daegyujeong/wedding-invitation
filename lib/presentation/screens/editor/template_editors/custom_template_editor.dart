@@ -62,7 +62,7 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
         actions: [
           // Quick template buttons
           PopupMenuButton<String>(
-            icon: const Icon(Icons.template_outlined),
+            icon: const Icon(Icons.auto_awesome),
             tooltip: '빠른 템플릿',
             onSelected: _applyQuickTemplate,
             itemBuilder: (context) => [
@@ -107,6 +107,7 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
       ),
       floatingActionButton: _tabController.index == 0
           ? FloatingActionButton.extended(
+              heroTag: "customTemplateEditorFAB",
               onPressed: _showWidgetSelector,
               icon: const Icon(Icons.add),
               label: const Text('위젯 추가'),
@@ -157,7 +158,8 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.visibility, size: 16, color: Colors.grey.shade600),
+                      Icon(Icons.visibility,
+                          size: 16, color: Colors.grey.shade600),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
@@ -171,7 +173,8 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
                       Switch(
                         value: widget.page.showTitle,
                         onChanged: (value) {
-                          final updatedPage = widget.page.updateSetting('showTitle', value);
+                          final updatedPage =
+                              widget.page.updateSetting('showTitle', value);
                           widget.viewModel.updatePage(updatedPage);
                           setState(() {});
                         },
@@ -200,7 +203,7 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Background color
                   Row(
                     children: [
@@ -212,7 +215,8 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: Color(int.parse(widget.page.backgroundColor.replaceFirst('#', '0xFF'))),
+                            color: Color(int.parse(widget.page.backgroundColor
+                                .replaceFirst('#', '0xFF'))),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: Colors.grey.shade300),
                           ),
@@ -221,7 +225,7 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Background image
                   Row(
                     children: [
@@ -250,7 +254,8 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
                         alignment: Alignment.topRight,
                         child: IconButton(
                           onPressed: () {
-                            final updatedPage = widget.page.updateSetting('backgroundImage', '');
+                            final updatedPage = widget.page
+                                .updateSetting('backgroundImage', '');
                             widget.viewModel.updatePage(updatedPage);
                             setState(() {});
                           },
@@ -285,7 +290,7 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Title color
                     Row(
                       children: [
@@ -297,7 +302,8 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: Color(int.parse(widget.page.titleColor.replaceFirst('#', '0xFF'))),
+                              color: Color(int.parse(widget.page.titleColor
+                                  .replaceFirst('#', '0xFF'))),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(color: Colors.grey.shade300),
                             ),
@@ -306,7 +312,7 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
                       ],
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Title size
                     Row(
                       children: [
@@ -321,7 +327,8 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
                             divisions: 36,
                             label: '${widget.page.titleSize.toInt()}px',
                             onChanged: (value) {
-                              final updatedPage = widget.page.updateSetting('titleSize', value);
+                              final updatedPage =
+                                  widget.page.updateSetting('titleSize', value);
                               widget.viewModel.updatePage(updatedPage);
                               setState(() {});
                             },
@@ -352,7 +359,6 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
                   Row(
                     children: [
                       const Text('페이지 여백'),
@@ -366,7 +372,8 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
                           divisions: 32,
                           label: '${widget.page.padding.toInt()}px',
                           onChanged: (value) {
-                            final updatedPage = widget.page.updateSetting('padding', value);
+                            final updatedPage =
+                                widget.page.updateSetting('padding', value);
                             widget.viewModel.updatePage(updatedPage);
                             setState(() {});
                           },
@@ -402,7 +409,7 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('빠른 템플릿 적용'),
-        content: Text('현재 위젯들이 모두 삭제되고 새로운 템플릿이 적용됩니다. 계속하시겠습니까?'),
+        content: const Text('현재 위젯들이 모두 삭제되고 새로운 템플릿이 적용됩니다. 계속하시겠습니까?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

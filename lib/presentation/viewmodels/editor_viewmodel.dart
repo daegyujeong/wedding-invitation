@@ -15,10 +15,10 @@ class EditorViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   NavigationBarModel? get navigationBar => _navigationBar;
   List<PageModel> get pages => _pages;
-  
+
   // Get a sorted list of pages by order
-  List<PageModel> get sortedPages => 
-    List.from(_pages)..sort((a, b) => a.order.compareTo(b.order));
+  List<PageModel> get sortedPages =>
+      List.from(_pages)..sort((a, b) => a.order.compareTo(b.order));
 
   // Initialize data
   Future<void> loadData(String invitationId) async {
@@ -77,9 +77,11 @@ class EditorViewModel extends ChangeNotifier {
           widgets: [
             CustomWidgetModel(
               id: 'main_greeting',
-              type: 'text',
-              position: const Offset(20, 100),
-              size: const Size(360, 80),
+              type: WidgetType.text,
+              positionX: 20,
+              positionY: 100,
+              width: 360,
+              height: 80,
               properties: {
                 'text': '저희 두 사람이 사랑과 믿음으로\n새로운 가정을 이루게 되었습니다.',
                 'fontSize': 18.0,
@@ -105,9 +107,11 @@ class EditorViewModel extends ChangeNotifier {
           widgets: [
             CustomWidgetModel(
               id: 'gallery_title',
-              type: 'text',
-              position: const Offset(20, 20),
-              size: const Size(360, 40),
+              type: WidgetType.text,
+              positionX: 20,
+              positionY: 20,
+              width: 360,
+              height: 40,
               properties: {
                 'text': '우리의 소중한 순간들',
                 'fontSize': 24.0,
@@ -119,9 +123,11 @@ class EditorViewModel extends ChangeNotifier {
             ),
             CustomWidgetModel(
               id: 'gallery_img1',
-              type: 'image',
-              position: const Offset(20, 80),
-              size: const Size(160, 120),
+              type: WidgetType.image,
+              positionX: 20,
+              positionY: 80,
+              width: 160,
+              height: 120,
               properties: {
                 'imageUrl': 'assets/images/gallery1.jpg',
                 'fit': 'cover',
@@ -130,9 +136,11 @@ class EditorViewModel extends ChangeNotifier {
             ),
             CustomWidgetModel(
               id: 'gallery_img2',
-              type: 'image',
-              position: const Offset(200, 80),
-              size: const Size(160, 120),
+              type: WidgetType.image,
+              positionX: 200,
+              positionY: 80,
+              width: 160,
+              height: 120,
               properties: {
                 'imageUrl': 'assets/images/gallery2.jpg',
                 'fit': 'cover',
@@ -155,9 +163,11 @@ class EditorViewModel extends ChangeNotifier {
           widgets: [
             CustomWidgetModel(
               id: 'location_map',
-              type: 'map',
-              position: const Offset(20, 20),
-              size: const Size(360, 200),
+              type: WidgetType.map,
+              positionX: 20,
+              positionY: 20,
+              width: 360,
+              height: 200,
               properties: {
                 'latitude': 37.5,
                 'longitude': 127.0,
@@ -167,9 +177,11 @@ class EditorViewModel extends ChangeNotifier {
             ),
             CustomWidgetModel(
               id: 'location_address',
-              type: 'text',
-              position: const Offset(20, 240),
-              size: const Size(360, 60),
+              type: WidgetType.text,
+              positionX: 20,
+              positionY: 240,
+              width: 360,
+              height: 60,
               properties: {
                 'text': '📍 서울시 강남구 테헤란로 123\n그랜드 컨벤션 센터 3층',
                 'fontSize': 16.0,
@@ -195,9 +207,11 @@ class EditorViewModel extends ChangeNotifier {
           widgets: [
             CustomWidgetModel(
               id: 'message_title',
-              type: 'text',
-              position: const Offset(20, 20),
-              size: const Size(360, 40),
+              type: WidgetType.text,
+              positionX: 20,
+              positionY: 20,
+              width: 360,
+              height: 40,
               properties: {
                 'text': '축하 메시지를 남겨주세요',
                 'fontSize': 20.0,
@@ -209,9 +223,11 @@ class EditorViewModel extends ChangeNotifier {
             ),
             CustomWidgetModel(
               id: 'message_description',
-              type: 'text',
-              position: const Offset(20, 80),
-              size: const Size(360, 40),
+              type: WidgetType.text,
+              positionX: 20,
+              positionY: 80,
+              width: 360,
+              height: 40,
               properties: {
                 'text': '소중한 축하 메시지는 저희에게 큰 힘이 됩니다.',
                 'fontSize': 14.0,
@@ -246,7 +262,7 @@ class EditorViewModel extends ChangeNotifier {
 
     final items = List<NavigationItemModel>.from(_navigationBar!.items);
     final index = items.indexWhere((item) => item.id == itemId);
-    
+
     if (index != -1) {
       items[index] = items[index].copyWith(isEnabled: isEnabled);
       _navigationBar = _navigationBar!.copyWith(items: items);
@@ -260,7 +276,7 @@ class EditorViewModel extends ChangeNotifier {
 
     final items = List<NavigationItemModel>.from(_navigationBar!.items);
     final index = items.indexWhere((item) => item.id == itemId);
-    
+
     if (index != -1) {
       items[index] = items[index].copyWith(isBookmark: isBookmark);
       _navigationBar = _navigationBar!.copyWith(items: items);
@@ -274,7 +290,7 @@ class EditorViewModel extends ChangeNotifier {
 
     final items = List<NavigationItemModel>.from(_navigationBar!.items);
     final index = items.indexWhere((item) => item.id == itemId);
-    
+
     if (index != -1) {
       items[index] = items[index].copyWith(targetPage: targetPage);
       _navigationBar = _navigationBar!.copyWith(items: items);
@@ -284,7 +300,7 @@ class EditorViewModel extends ChangeNotifier {
 
   // Add a new page (simplified - no template parameter)
   void addPage(String title, String? template) {
-    final uuid = const Uuid();
+    const uuid = Uuid();
     final newPage = PageModel(
       id: uuid.v4(),
       title: title,
@@ -298,7 +314,7 @@ class EditorViewModel extends ChangeNotifier {
       order: _pages.length, // Add to the end
       widgets: [],
     );
-    
+
     _pages.add(newPage);
     notifyListeners();
   }
@@ -306,22 +322,26 @@ class EditorViewModel extends ChangeNotifier {
   // Duplicate a page
   void duplicatePage(String pageId) {
     final originalPage = _pages.firstWhere((page) => page.id == pageId);
-    final uuid = const Uuid();
-    
+    const uuid = Uuid();
+
     final duplicatedPage = PageModel(
       id: uuid.v4(),
       title: '${originalPage.title} (복사)',
       settings: Map<String, dynamic>.from(originalPage.settings),
       order: _pages.length,
-      widgets: originalPage.widgets.map((widget) => CustomWidgetModel(
-        id: uuid.v4(),
-        type: widget.type,
-        position: widget.position,
-        size: widget.size,
-        properties: Map<String, dynamic>.from(widget.properties),
-      )).toList(),
+      widgets: originalPage.widgets
+          .map((widget) => CustomWidgetModel(
+                id: uuid.v4(),
+                type: widget.type,
+                positionX: widget.positionX,
+                positionY: widget.positionY,
+                width: widget.width,
+                height: widget.height,
+                properties: Map<String, dynamic>.from(widget.properties),
+              ))
+          .toList(),
     );
-    
+
     _pages.add(duplicatedPage);
     notifyListeners();
   }
@@ -378,7 +398,8 @@ class EditorViewModel extends ChangeNotifier {
   void addWidget(String pageId, CustomWidgetModel widget) {
     final index = _pages.indexWhere((page) => page.id == pageId);
     if (index != -1) {
-      final currentWidgets = List<CustomWidgetModel>.from(_pages[index].widgets);
+      final currentWidgets =
+          List<CustomWidgetModel>.from(_pages[index].widgets);
       currentWidgets.add(widget);
       _pages[index] = _pages[index].copyWith(widgets: currentWidgets);
       notifyListeners();
@@ -389,7 +410,8 @@ class EditorViewModel extends ChangeNotifier {
   void removeWidget(String pageId, String widgetId) {
     final index = _pages.indexWhere((page) => page.id == pageId);
     if (index != -1) {
-      final currentWidgets = List<CustomWidgetModel>.from(_pages[index].widgets);
+      final currentWidgets =
+          List<CustomWidgetModel>.from(_pages[index].widgets);
       currentWidgets.removeWhere((widget) => widget.id == widgetId);
       _pages[index] = _pages[index].copyWith(widgets: currentWidgets);
       notifyListeners();
@@ -400,9 +422,11 @@ class EditorViewModel extends ChangeNotifier {
   void updateWidget(String pageId, CustomWidgetModel updatedWidget) {
     final pageIndex = _pages.indexWhere((page) => page.id == pageId);
     if (pageIndex != -1) {
-      final currentWidgets = List<CustomWidgetModel>.from(_pages[pageIndex].widgets);
-      final widgetIndex = currentWidgets.indexWhere((widget) => widget.id == updatedWidget.id);
-      
+      final currentWidgets =
+          List<CustomWidgetModel>.from(_pages[pageIndex].widgets);
+      final widgetIndex =
+          currentWidgets.indexWhere((widget) => widget.id == updatedWidget.id);
+
       if (widgetIndex != -1) {
         currentWidgets[widgetIndex] = updatedWidget;
         _pages[pageIndex] = _pages[pageIndex].copyWith(widgets: currentWidgets);
@@ -430,7 +454,7 @@ class EditorViewModel extends ChangeNotifier {
     try {
       // Here you would save to Supabase
       await Future.delayed(const Duration(seconds: 1)); // Simulate saving
-      
+
       // If successful, you might want to reload the data
       // await loadData();
     } catch (e) {
@@ -459,18 +483,22 @@ class EditorViewModel extends ChangeNotifier {
     if (main != null) {
       // Look for a text widget that might contain greeting
       final greetingWidget = main.widgets.firstWhere(
-        (widget) => widget.type == 'text' && 
-                   widget.properties['text']?.toString().contains('사랑') == true,
-        orElse: () => main.widgets.isNotEmpty ? main.widgets.first : 
-                     CustomWidgetModel(
-                       id: 'default',
-                       type: 'text',
-                       position: Offset.zero,
-                       size: Size.zero,
-                       properties: {'text': ''},
-                     ),
+        (widget) =>
+            widget.type == WidgetType.text &&
+            widget.properties['text']?.toString().contains('사랑') == true,
+        orElse: () => main.widgets.isNotEmpty
+            ? main.widgets.first
+            : CustomWidgetModel(
+                id: 'default',
+                type: WidgetType.text,
+                positionX: 0,
+                positionY: 0,
+                width: 0,
+                height: 0,
+                properties: {'text': ''},
+              ),
       );
-      
+
       return greetingWidget.properties['text']?.toString() ?? '';
     }
     return '';

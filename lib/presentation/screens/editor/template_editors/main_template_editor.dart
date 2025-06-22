@@ -25,11 +25,11 @@ class _MainTemplateEditorState extends State<MainTemplateEditor> {
     super.initState();
     // Initialize controllers with existing content
     _greetingController = TextEditingController(
-      text: widget.page.content['greeting_text'] ??
+      text: widget.page.settings['greeting_text'] ??
           '저희 두 사람이 사랑과 믿음으로 새로운 가정을 이루게 되었습니다.',
     );
     _backgroundImage =
-        widget.page.content['background_image'] ?? 'assets/images/main.jpg';
+        widget.page.settings['background_image'] ?? 'assets/images/main.jpg';
   }
 
   @override
@@ -39,11 +39,12 @@ class _MainTemplateEditorState extends State<MainTemplateEditor> {
   }
 
   void _saveChanges() {
-    final updatedContent = Map<String, dynamic>.from(widget.page.content);
-    updatedContent['greeting_text'] = _greetingController.text;
-    updatedContent['background_image'] = _backgroundImage;
+    final updatedSettings = Map<String, dynamic>.from(widget.page.settings);
+    updatedSettings['greeting_text'] = _greetingController.text;
+    updatedSettings['background_image'] = _backgroundImage;
 
-    widget.viewModel.updatePageContent(widget.page.id, updatedContent);
+    final updatedPage = widget.page.copyWith(settings: updatedSettings);
+    widget.viewModel.updatePage(updatedPage);
     Navigator.pop(context);
   }
 

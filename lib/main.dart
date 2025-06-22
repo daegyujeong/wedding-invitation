@@ -1,47 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'core/config/app_config.dart';
-import 'core/config/theme_config.dart';
-import 'core/routes/app_router.dart';
-import 'intl_config.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'data/services/supabase_service.dart';
+import 'presentation/viewmodels/home_viewmodel.dart';
+import 'presentation/viewmodels/editor_viewmodel.dart';
+import 'presentation/screens/home/home_screen.dart';
+import 'presentation/screens/editor/editor_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize Intl for Korean locale
-  await IntlConfig.initialize();
-  
-  // Initialize Supabase
-  await Supabase.initialize(
-    url: AppConfig.supabaseUrl,
-    anonKey: AppConfig.supabaseAnonKey,
-  );
-  
-  // Initialize SharedPreferences
-  await SharedPreferences.getInstance();
-  
-  runApp(
-    const ProviderScope(
-      child: WeddingInvitationApp(),
-    ),
-  );
+
+  // 한국어 날짜 형식 초기화
+  await initializeDateFormatting('ko_KR', null);
+
+  // Supabase 초기화
+  // final supabaseService = await SupabaseService.initialize();
+
+  runApp(const MyApp());
 }
 
-class WeddingInvitationApp extends StatelessWidget {
-  const WeddingInvitationApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '모바일 청첩장',
-      theme: ThemeConfig.lightTheme,
-      darkTheme: ThemeConfig.darkTheme,
-      themeMode: ThemeMode.light,
-      debugShowCheckedModeBanner: false,
-      initialRoute: AppRouter.splash,
-      onGenerateRoute: AppRouter.generateRoute,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => HomeViewModel()),
+        ChangeNotifierProvider(create: (_) => EditorViewModel()),
+        // 다른 ViewModel 추가
+      ],
+      child: MaterialApp(
+        title: '모바일 청첩장',
+        theme: ThemeData(
+          primarySwatch: Colors.pink,
+          fontFamily: 'NotoSansKR',
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: const HomeScreen(),
+        routes: {
+          '/gallery': (context) =>
+              const Scaffold(body: Center(child: Text('갤러리'))),
+          '/location': (context) =>
+              const Scaffold(body: Center(child: Text('오시는 길'))),
+          '/message': (context) =>
+              const Scaffold(body: Center(child: Text('축하 메시지'))),
+          '/editor': (context) => const EditorScreen(),
+        },
+      ),
     );
   }
 }

@@ -33,7 +33,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   
   # Supabase 연동
-  supabase_flutter: ^1.10.14
+  supabase_flutter: ^2.0.0
   
   # 상태 관리
   provider: ^6.0.5
@@ -43,13 +43,11 @@ dependencies:
   # UI 및 기능
   url_launcher: ^6.1.10 # 전화, 문자, 지도 앱 연결
   carousel_slider: ^4.2.1 # 이미지 슬라이더
-  flutter_map: ^3.1.0 # 지도 표시
-  latlong2: ^0.8.1 # 위도/경도 처리
-  intl: ^0.18.0 # 날짜 형식
+  # latlong2: ^0.8.1 # 위도/경도 처리
+  intl: ^0.20.2 # 날짜 형식
   qr_flutter: ^4.0.0 # QR코드 생성
   
   # 에디터 관련 패키지
-  flutter_quill: ^7.0.0  # 리치 텍스트 에디터
   image_picker: ^0.8.7+4  # 이미지 선택
   file_picker: ^5.3.0  # 파일 선택
   cached_network_image: ^3.2.3  # 이미지 캐싱
@@ -64,10 +62,12 @@ dependencies:
   dio: ^5.3.0  # HTTP 클라이언트
   get_it: ^7.6.0  # 서비스 로케이터
   injectable: ^2.1.2  # 의존성 주입
-
+  vm_service: ^15.0.0
+  latlong2: ^0.9.0 # 위도/경도 처리
+  flutter_map: ^5.0.0 # 지도 표시
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
+  # flutter_test:
+  #   sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -75,6 +75,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^3.0.0
+  # devtools_mcp_extension: ^0.2.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -88,7 +89,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+    - assets/images/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

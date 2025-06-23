@@ -1,131 +1,138 @@
 # Flutter Mobile Wedding Invitation
 모바일 청첩장을 쉽게 만들고 공유할 수 있는 Flutter 기반 애플리케이션입니다.
 
-## 프로젝트 소개
+## 📱 프로젝트 소개
 이 프로젝트는 결혼을 앞둔 커플들이 모바일 청첩장을 직접 디자인하고 맞춤화하여 친구 및 가족들과 쉽게 공유할 수 있도록 도와주는 애플리케이션입니다. 사용자 친화적인 인터페이스와 풍부한 커스터마이징 옵션을 제공합니다.
 
-## 주요 기능
+## ✨ 주요 기능
 ### 1. 직관적인 청첩장 에디터
-- 다양한 템플릿 제공
-- 텍스트, 이미지, 색상 등 커스터마이징
+- 드래그 앤 드롭 방식의 위젯 편집
 - 실시간 미리보기
+- 다양한 위젯 타입 지원 (텍스트, 이미지, 지도 등)
 
-### 2. 사진 갤러리
+### 2. 페이지 관리 시스템
+- 무제한 페이지 생성
+- 페이지 순서 변경 (드래그 앤 드롭)
+- 페이지 복사 및 삭제 기능
+
+### 3. 사진 갤러리
 - 웨딩 사진 슬라이더
 - 이미지 확대 보기
 - 다양한 레이아웃 옵션
 
-### 3. 오시는 길 안내
-- 지도 통합
+### 4. 오시는 길 안내
+- 지도 통합 (Flutter Map)
 - 대중교통 및 자가용 경로 안내
 - 주요 네비게이션 앱 연동 (카카오맵, 네이버맵, 구글맵)
 
-### 4. 축하 메시지 기능
+### 5. 축하 메시지 기능
 - 실시간 방명록
 - 이모티콘 지원
 - 메시지 좋아요 기능
 
-### 5. 공유 및 초대 기능
-- 카카오톡, 라인 등 SNS 공유
+### 6. 공유 기능
 - QR 코드 생성
+- 카카오톡, 라인 등 SNS 공유
 - 개인화된 링크 생성
 
-### 6. 페이지 및 네비게이션 관리 (신규 기능)
-- 페이지 수 설정 및 관리
-- 페이지 순서 변경 (드래그 앤 드롭)
-- 네비게이션 바 설정 (활성화/비활성화)
-- 네비게이션 아이템 유형 설정 (북마크/리다이렉트)
+## 🛠 기술 스택
+- **프론트엔드**: Flutter 3.4.1+
+- **백엔드**: Supabase (준비 중)
+- **저장소**: Supabase Storage
+- **인증**: Supabase Auth
+- **지도**: Flutter Map
+- **상태 관리**: Provider
+- **아키텍처**: MVVM (Model-View-ViewModel)
 
-## 기술 스택
-- 프론트엔드: Flutter
-- 백엔드: Supabase
-- 저장소: Supabase Storage
-- 인증: Supabase Auth
-- 지도: Flutter Map
-- 상태 관리: Provider, Riverpod
-- 아키텍처: MVVM (Model-View-ViewModel)
-
-## 개발 환경 설정
-### 필수 요구사항
-- Flutter 3.0.0 이상
+## 📋 필수 요구사항
+- Flutter 3.4.1 이상
 - Dart 2.17.0 이상
 - 인터넷 연결
 
-### 설치 방법
-1. 저장소 복제
+## 🚀 설치 및 실행 방법
+
+### 1. 저장소 복제
 ```bash
 git clone https://github.com/daegyujeong/wedding-invitation.git
 cd wedding-invitation
 ```
 
-2. 의존성 설치
+### 2. 의존성 설치
 ```bash
 flutter pub get
 ```
 
-3. Supabase 설정
-   - `lib/core/config/app_config.dart` 파일에서 Supabase URL과 Anon Key 설정
-   - Supabase 대시보드에서 테이블 생성 (schema.sql 참고)
-
-4. 앱 실행
+### 3. 앱 실행
 ```bash
-flutter run
+# iOS
+flutter run -d ios
+
+# Android
+flutter run -d android
+
+# Web
+flutter run -d chrome
 ```
 
-## 프로젝트 구조
-
+## 📁 프로젝트 구조
 ```
 lib/
-├── core/
-│   ├── config/         # 앱 설정
-│   ├── models/         # 데이터 모델
-│   ├── providers/      # Riverpod providers
-│   ├── routes/         # 라우팅
-│   ├── services/       # API 서비스
-│   ├── utils/          # 유틸리티
-│   └── widgets/        # 공통 위젯
-└── features/
-    ├── home/           # 홈 화면
-    ├── templates/      # 템플릿 선택
-    ├── editor/         # 청첩장 에디터
-    ├── preview/        # 미리보기
-    ├── invitation/     # 청첩장 보기
-    ├── messages/       # 축하 메시지
-    ├── gallery/        # 사진 갤러리
-    ├── location/       # 오시는 길
-    └── share/          # 공유 기능
+├── core/                    # 핵심 유틸리티 및 상수
+├── data/                    # 데이터 레이어
+│   ├── models/             # 데이터 모델
+│   ├── repositories/       # 데이터 저장소
+│   └── services/           # 외부 서비스 연동
+├── features/               # 기능별 모듈
+├── presentation/           # UI 레이어
+│   ├── screens/           # 화면 컴포넌트
+│   ├── viewmodels/        # 뷰모델 (비즈니스 로직)
+│   └── widgets/           # 재사용 가능한 위젯
+└── main.dart              # 앱 진입점
 ```
 
-## 주요 화면
+## 🐛 알려진 이슈 및 해결 방법
 
-1. **홈 화면**: 환영 메시지와 주요 기능 소개, 내 청첩장 목록
-2. **템플릿 선택**: 다양한 디자인 템플릿 제공
-3. **에디터**: 기본 정보, 가족 정보, 사진, 스타일 설정
-4. **미리보기**: 실제 모바일 화면 미리보기
-5. **청첩장 보기**: 완성된 청첩장 화면
-6. **축하 메시지**: 방명록 작성 및 보기
-7. **사진 갤러리**: 웨딩 사진 슬라이드쇼
-8. **오시는 길**: 지도와 교통 정보
-9. **공유**: QR 코드 및 SNS 공유 기능
+### 1. Asset 이미지 누락
+현재 placeholder 이미지를 사용하고 있습니다. 실제 이미지를 추가하려면:
+```bash
+# assets/images/ 폴더에 이미지 추가
+# pubspec.yaml에 이미지 경로 등록
+```
 
-## 브랜치 정보
-- `main`: 주요 개발 코드
-- `refactor/custom-pages-only`: 페이지 커스터마이제이션 및 에디터 개선
+### 2. Supabase 초기화
+Supabase 설정이 필요합니다:
+```dart
+// lib/main.dart에서 주석 해제
+final supabaseService = await SupabaseService.initialize();
+```
 
-## 향후 개선 사항
+### 3. 지도 기능
+실제 지도 표시를 위해서는 Flutter Map 타일 서버 설정이 필요합니다.
 
+## 🔮 향후 개발 계획
+- [ ] Supabase 백엔드 연동
 - [ ] 더 많은 템플릿 추가
-- [ ] 음악 재생 기능
-- [ ] 다국어 지원
-- [ ] 디데이 카운트다운
-- [ ] 참석 여부 확인 기능
-- [ ] 축의금 안내
-- [ ] 웹 버전 지원
+- [ ] 애니메이션 효과 추가
+- [ ] 다국어 지원 확대
+- [ ] 오프라인 모드 지원
+- [ ] 이미지 최적화 및 압축
+- [ ] 초대장 통계 기능
+- [ ] 게스트 RSVP 기능
 
-## 라이센스
+## 🤝 기여하기
+프로젝트에 기여하고 싶으시다면:
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-MIT License
+## 📝 라이센스
+이 프로젝트는 MIT 라이센스 하에 배포됩니다.
 
-## 문의
+## 📞 문의
+프로젝트에 대한 문의사항이 있으시면 이슈를 생성해주세요.
 
-GitHub Issues를 통해 문의해주세요.
+---
+
+**Made with ❤️ by Daegyu Jeong**

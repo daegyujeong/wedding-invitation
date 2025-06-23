@@ -1,67 +1,72 @@
-import '../../data/models/custom_widget_model.dart';
+import 'package:uuid/uuid.dart';
+import '../models/custom_widget_model.dart';
 
 class WidgetTemplateService {
-  // Quick template definitions
-  static List<CustomWidgetModel> getHeroTemplate() {
+  static const _uuid = Uuid();
+
+  static List<CustomWidgetModel> getTemplate(String templateType) {
+    switch (templateType) {
+      case 'main':
+        return _getMainTemplate();
+      case 'gallery':
+        return _getGalleryTemplate();
+      case 'location':
+        return _getLocationTemplate();
+      case 'message':
+        return _getMessageTemplate();
+      case 'simple':
+        return _getSimpleTemplate();
+      default:
+        return [];
+    }
+  }
+
+  static List<CustomWidgetModel> _getMainTemplate() {
     return [
       CustomWidgetModel(
-        id: 'hero_bg_${DateTime.now().millisecondsSinceEpoch}',
-        type: WidgetType.image,
-        positionX: 0,
-        positionY: 0,
-        width: 400,
-        height: 300,
+        id: _uuid.v4(),
+        type: WidgetType.text,
+        positionX: 20,
+        positionY: 100,
+        width: 360,
+        height: 80,
         properties: {
-          'imageUrl':
-              'https://via.placeholder.com/400x300/f8f9fa/6c757d?text=배경+이미지',
-          'fit': 'cover',
-          'borderRadius': 0.0,
+          'text': '저희 두 사람이 사랑과 믿음으로\n새로운 가정을 이루게 되었습니다.',
+          'fontSize': 18.0,
+          'fontWeight': 'normal',
+          'color': '#333333',
+          'textAlign': 'center',
+          'backgroundColor': 'transparent',
         },
       ),
       CustomWidgetModel(
-        id: 'hero_title_${DateTime.now().millisecondsSinceEpoch + 1}',
+        id: _uuid.v4(),
         type: WidgetType.text,
-        positionX: 50,
-        positionY: 100,
-        width: 300,
+        positionX: 20,
+        positionY: 200,
+        width: 360,
         height: 60,
         properties: {
-          'text': '결혼합니다',
-          'fontSize': 32.0,
+          'text': '신랑 김철수 & 신부 이영희',
+          'fontSize': 24.0,
           'fontWeight': 'bold',
-          'color': '#FFFFFF',
+          'color': '#333333',
           'textAlign': 'center',
           'backgroundColor': 'transparent',
         },
       ),
       CustomWidgetModel(
-        id: 'hero_subtitle_${DateTime.now().millisecondsSinceEpoch + 2}',
+        id: _uuid.v4(),
         type: WidgetType.text,
-        positionX: 50,
-        positionY: 170,
-        width: 300,
-        height: 40,
+        positionX: 20,
+        positionY: 280,
+        width: 360,
+        height: 80,
         properties: {
-          'text': '신랑 ♥ 신부',
-          'fontSize': 20.0,
-          'fontWeight': 'normal',
-          'color': '#FFFFFF',
-          'textAlign': 'center',
-          'backgroundColor': 'transparent',
-        },
-      ),
-      CustomWidgetModel(
-        id: 'hero_date_${DateTime.now().millisecondsSinceEpoch + 3}',
-        type: WidgetType.text,
-        positionX: 50,
-        positionY: 220,
-        width: 300,
-        height: 30,
-        properties: {
-          'text': '2024년 12월 25일',
+          'text': '2025년 5월 31일 토요일 오후 1시\n그랜드 호텔 3층 그랜드볼룸',
           'fontSize': 16.0,
           'fontWeight': 'normal',
-          'color': '#FFFFFF',
+          'color': '#666666',
           'textAlign': 'center',
           'backgroundColor': 'transparent',
         },
@@ -69,10 +74,10 @@ class WidgetTemplateService {
     ];
   }
 
-  static List<CustomWidgetModel> getGalleryTemplate() {
+  static List<CustomWidgetModel> _getGalleryTemplate() {
     return [
       CustomWidgetModel(
-        id: 'gallery_title_${DateTime.now().millisecondsSinceEpoch}',
+        id: _uuid.v4(),
         type: WidgetType.text,
         positionX: 20,
         positionY: 20,
@@ -87,58 +92,55 @@ class WidgetTemplateService {
           'backgroundColor': 'transparent',
         },
       ),
+      // Grid of 4 images
       CustomWidgetModel(
-        id: 'gallery_img1_${DateTime.now().millisecondsSinceEpoch + 1}',
+        id: _uuid.v4(),
         type: WidgetType.image,
         positionX: 20,
         positionY: 80,
-        width: 160,
-        height: 120,
+        width: 170,
+        height: 170,
         properties: {
-          'imageUrl':
-              'https://via.placeholder.com/160x120/e9ecef/6c757d?text=사진1',
+          'imageUrl': 'assets/images/placeholder.png',
           'fit': 'cover',
           'borderRadius': 8.0,
         },
       ),
       CustomWidgetModel(
-        id: 'gallery_img2_${DateTime.now().millisecondsSinceEpoch + 2}',
+        id: _uuid.v4(),
         type: WidgetType.image,
-        positionX: 200,
+        positionX: 210,
         positionY: 80,
-        width: 160,
-        height: 120,
+        width: 170,
+        height: 170,
         properties: {
-          'imageUrl':
-              'https://via.placeholder.com/160x120/e9ecef/6c757d?text=사진2',
+          'imageUrl': 'assets/images/placeholder.png',
           'fit': 'cover',
           'borderRadius': 8.0,
         },
       ),
       CustomWidgetModel(
-        id: 'gallery_img3_${DateTime.now().millisecondsSinceEpoch + 3}',
+        id: _uuid.v4(),
         type: WidgetType.image,
         positionX: 20,
-        positionY: 220,
-        width: 160,
-        height: 120,
+        positionY: 270,
+        width: 170,
+        height: 170,
         properties: {
-          'imageUrl':
-              'https://via.placeholder.com/160x120/e9ecef/6c757d?text=사진3',
+          'imageUrl': 'assets/images/placeholder.png',
           'fit': 'cover',
           'borderRadius': 8.0,
         },
       ),
       CustomWidgetModel(
-        id: 'gallery_img4_${DateTime.now().millisecondsSinceEpoch + 4}',
+        id: _uuid.v4(),
         type: WidgetType.image,
-        positionX: 200,
-        positionY: 220,
-        width: 160,
-        height: 120,
+        positionX: 210,
+        positionY: 270,
+        width: 170,
+        height: 170,
         properties: {
-          'imageUrl':
-              'https://via.placeholder.com/160x120/e9ecef/6c757d?text=사진4',
+          'imageUrl': 'assets/images/placeholder.png',
           'fit': 'cover',
           'borderRadius': 8.0,
         },
@@ -146,149 +148,160 @@ class WidgetTemplateService {
     ];
   }
 
-  // Widget categories for organized selection
-  static Map<String, List<Map<String, dynamic>>> getWidgetCategories() {
-    return {
-      '텍스트': [
-        {
-          'type': 'text',
-          'name': '텍스트',
-          'icon': 'text_fields',
-          'description': '제목, 본문, 설명 등',
+  static List<CustomWidgetModel> _getLocationTemplate() {
+    return [
+      CustomWidgetModel(
+        id: _uuid.v4(),
+        type: WidgetType.text,
+        positionX: 20,
+        positionY: 20,
+        width: 360,
+        height: 40,
+        properties: {
+          'text': '오시는 길',
+          'fontSize': 24.0,
+          'fontWeight': 'bold',
+          'color': '#333333',
+          'textAlign': 'center',
+          'backgroundColor': 'transparent',
         },
-        {
-          'type': 'title',
-          'name': '제목',
-          'icon': 'title',
-          'description': '큰 제목 텍스트',
+      ),
+      CustomWidgetModel(
+        id: _uuid.v4(),
+        type: WidgetType.map,
+        positionX: 20,
+        positionY: 80,
+        width: 360,
+        height: 250,
+        properties: {
+          'latitude': 37.5665,
+          'longitude': 126.9780,
+          'address': '서울시 중구 을지로 30',
+          'zoom': 15.0,
         },
-      ],
-      '이미지': [
-        {
-          'type': 'image',
-          'name': '이미지',
-          'icon': 'image',
-          'description': '사진 및 이미지',
+      ),
+      CustomWidgetModel(
+        id: _uuid.v4(),
+        type: WidgetType.text,
+        positionX: 20,
+        positionY: 350,
+        width: 360,
+        height: 80,
+        properties: {
+          'text': '📍 그랜드 호텔 3층 그랜드볼룸\n서울시 중구 을지로 30',
+          'fontSize': 16.0,
+          'fontWeight': 'normal',
+          'color': '#666666',
+          'textAlign': 'center',
+          'backgroundColor': 'transparent',
         },
-        {
-          'type': 'gallery',
-          'name': '갤러리',
-          'icon': 'photo_library',
-          'description': '여러 이미지 슬라이더',
+      ),
+      CustomWidgetModel(
+        id: _uuid.v4(),
+        type: WidgetType.button,
+        positionX: 20,
+        positionY: 450,
+        width: 360,
+        height: 50,
+        properties: {
+          'text': '네비게이션 앱으로 열기',
+          'fontSize': 16.0,
+          'color': '#FFFFFF',
+          'backgroundColor': '#FF6B6B',
+          'borderRadius': 25.0,
+          'action': 'openNavigation',
         },
-      ],
-      '인터랙티브': [
-        {
-          'type': 'button',
-          'name': '버튼',
-          'icon': 'smart_button',
-          'description': '클릭 가능한 버튼',
-        },
-        {
-          'type': 'map',
-          'name': '지도',
-          'icon': 'map',
-          'description': '위치 지도',
-        },
-        {
-          'type': 'countdown',
-          'name': '카운트다운',
-          'icon': 'timer',
-          'description': '결혼식까지 남은 시간',
-        },
-      ],
-      '장식': [
-        {
-          'type': 'divider',
-          'name': '구분선',
-          'icon': 'horizontal_rule',
-          'description': '섹션 구분선',
-        },
-        {
-          'type': 'spacer',
-          'name': '여백',
-          'icon': 'space_bar',
-          'description': '빈 공간',
-        },
-      ],
-    };
+      ),
+    ];
   }
 
-  // Get template by type
-  static List<CustomWidgetModel> getTemplate(String templateType) {
-    switch (templateType) {
-      case 'hero':
-        return getHeroTemplate();
-      case 'gallery':
-        return getGalleryTemplate();
-      default:
-        return [];
-    }
+  static List<CustomWidgetModel> _getMessageTemplate() {
+    return [
+      CustomWidgetModel(
+        id: _uuid.v4(),
+        type: WidgetType.text,
+        positionX: 20,
+        positionY: 20,
+        width: 360,
+        height: 40,
+        properties: {
+          'text': '축하 메시지를 남겨주세요',
+          'fontSize': 24.0,
+          'fontWeight': 'bold',
+          'color': '#333333',
+          'textAlign': 'center',
+          'backgroundColor': 'transparent',
+        },
+      ),
+      CustomWidgetModel(
+        id: _uuid.v4(),
+        type: WidgetType.text,
+        positionX: 20,
+        positionY: 80,
+        width: 360,
+        height: 60,
+        properties: {
+          'text': '여러분의 따뜻한 축하 메시지는\n저희에게 큰 힘이 됩니다.',
+          'fontSize': 14.0,
+          'fontWeight': 'normal',
+          'color': '#666666',
+          'textAlign': 'center',
+          'backgroundColor': 'transparent',
+        },
+      ),
+      CustomWidgetModel(
+        id: _uuid.v4(),
+        type: WidgetType.button,
+        positionX: 20,
+        positionY: 160,
+        width: 360,
+        height: 50,
+        properties: {
+          'text': '메시지 작성하기',
+          'fontSize': 16.0,
+          'color': '#FFFFFF',
+          'backgroundColor': '#4ECDC4',
+          'borderRadius': 25.0,
+          'action': 'writeMessage',
+        },
+      ),
+    ];
   }
 
-  // Create a default widget of specified type
-  static CustomWidgetModel createDefaultWidget(String type,
-      {double? positionX, double? positionY}) {
-    final x = positionX ?? 50.0;
-    final y = positionY ?? 50.0;
-    final id = '${type}_${DateTime.now().millisecondsSinceEpoch}';
-
-    switch (type) {
-      case 'text':
-        return CustomWidgetModel(
-          id: id,
-          type: WidgetType.text,
-          positionX: x,
-          positionY: y,
-          width: 200,
-          height: 40,
-          properties: {
-            'text': '텍스트를 입력하세요',
-            'fontSize': 16.0,
-            'fontWeight': 'normal',
-            'color': '#333333',
-            'textAlign': 'left',
-            'backgroundColor': 'transparent',
-          },
-        );
-
-      case 'title':
-        return CustomWidgetModel(
-          id: id,
-          type: WidgetType.text,
-          positionX: x,
-          positionY: y,
-          width: 300,
-          height: 50,
-          properties: {
-            'text': '제목을 입력하세요',
-            'fontSize': 24.0,
-            'fontWeight': 'bold',
-            'color': '#333333',
-            'textAlign': 'center',
-            'backgroundColor': 'transparent',
-          },
-        );
-
-      case 'image':
-        return CustomWidgetModel(
-          id: id,
-          type: WidgetType.image,
-          positionX: x,
-          positionY: y,
-          width: 200,
-          height: 150,
-          properties: {
-            'imageUrl':
-                'https://via.placeholder.com/200x150/e9ecef/6c757d?text=이미지',
-            'fit': 'cover',
-            'borderRadius': 8.0,
-          },
-        );
-
-      default:
-        return createDefaultWidget('text',
-            positionX: positionX, positionY: positionY);
-    }
+  static List<CustomWidgetModel> _getSimpleTemplate() {
+    return [
+      CustomWidgetModel(
+        id: _uuid.v4(),
+        type: WidgetType.text,
+        positionX: 20,
+        positionY: 50,
+        width: 360,
+        height: 60,
+        properties: {
+          'text': '제목을 입력하세요',
+          'fontSize': 24.0,
+          'fontWeight': 'bold',
+          'color': '#333333',
+          'textAlign': 'center',
+          'backgroundColor': 'transparent',
+        },
+      ),
+      CustomWidgetModel(
+        id: _uuid.v4(),
+        type: WidgetType.text,
+        positionX: 20,
+        positionY: 130,
+        width: 360,
+        height: 200,
+        properties: {
+          'text': '내용을 입력하세요',
+          'fontSize': 16.0,
+          'fontWeight': 'normal',
+          'color': '#666666',
+          'textAlign': 'center',
+          'backgroundColor': 'transparent',
+        },
+      ),
+    ];
   }
 }

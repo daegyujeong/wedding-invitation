@@ -67,7 +67,7 @@ class EditorViewModel extends ChangeNotifier {
           title: '메인',
           settings: {
             'backgroundColor': '#F8F9FA',
-            'backgroundImage': 'assets/images/main.jpg',
+            'backgroundImage': 'assets/images/placeholder.png',
             'showTitle': true,
             'titleColor': '#333333',
             'titleSize': 28.0,
@@ -129,7 +129,7 @@ class EditorViewModel extends ChangeNotifier {
               width: 160,
               height: 120,
               properties: {
-                'imageUrl': 'assets/images/gallery1.jpg',
+                'imageUrl': 'assets/images/placeholder.png',
                 'fit': 'cover',
                 'borderRadius': 8.0,
               },
@@ -142,7 +142,7 @@ class EditorViewModel extends ChangeNotifier {
               width: 160,
               height: 120,
               properties: {
-                'imageUrl': 'assets/images/gallery2.jpg',
+                'imageUrl': 'assets/images/placeholder.png',
                 'fit': 'cover',
                 'borderRadius': 8.0,
               },

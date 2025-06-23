@@ -60,7 +60,7 @@ class HomeViewModel extends ChangeNotifier {
             },
           )
         ],
-        backgroundImage: 'assets/images/background.png',
+        backgroundImage: 'assets/images/placeholder.png', // Using placeholder
         template: 'classic',
         supportedLanguages: ['ko', 'en'],
       );

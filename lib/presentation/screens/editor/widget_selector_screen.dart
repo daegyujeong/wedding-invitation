@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../viewmodels/editor_viewmodel.dart';
 import '../../../data/services/widget_template_service.dart';
 import '../../../data/models/editor_widget_model.dart';
+import 'package:uuid/uuid.dart';
 
 class WidgetSelectorScreen extends StatefulWidget {
   final String pageId;
@@ -21,6 +22,7 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
   final categories = WidgetTemplateService.getWidgetCategories();
+  final _uuid = const Uuid();
 
   @override
   void initState() {
@@ -303,7 +305,6 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
       onConfirm: () {
         final widgets = WidgetTemplateService.getTemplate(templateType);
         for (final widgetModel in widgets) {
-          // FIXED: Use WidgetSelectorScreen's pageId and viewModel
           widget.viewModel.addWidget(widget.pageId, widgetModel);
         }
         Navigator.pop(context);
@@ -313,13 +314,13 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
   }
 
   void _addWidget(String widgetType) {
-    // Create EditorWidget instead of CustomWidgetModel for compatibility
+    // Create EditorWidget based on widget type
     EditorWidget editorWidget;
 
     switch (widgetType) {
       case 'text':
         editorWidget = TextWidget(
-          id: 'text_${DateTime.now().millisecondsSinceEpoch}',
+          id: 'text_${_uuid.v4()}',
           data: {
             'text': {
               'translations': {'ko': '텍스트를 입력하세요'},
@@ -335,9 +336,10 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
           },
         );
         break;
+      
       case 'title':
         editorWidget = TextWidget(
-          id: 'title_${DateTime.now().millisecondsSinceEpoch}',
+          id: 'title_${_uuid.v4()}',
           data: {
             'text': {
               'translations': {'ko': '제목을 입력하세요'},
@@ -353,9 +355,25 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
           },
         );
         break;
+      
       case 'countdown':
+      case 'timer':
+        editorWidget = CountdownWidget(
+          id: 'countdown_${_uuid.v4()}',
+          data: {
+            'targetDate': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+            'format': '결혼식까지 {days}일 {hours}시간',
+            'position': {
+              'dx': 100.0,
+              'dy': 150.0,
+            },
+          },
+        );
+        break;
+      
+      case 'd-day':
         editorWidget = DDayWidget(
-          id: 'countdown_${DateTime.now().millisecondsSinceEpoch}',
+          id: 'dday_${_uuid.v4()}',
           data: {
             'eventId': '',
             'format': 'D-{days}',
@@ -367,10 +385,76 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
           },
         );
         break;
+      
+      case 'map':
+        editorWidget = MapWidget(
+          id: 'map_${_uuid.v4()}',
+          data: {
+            'venueId': 'main_venue',
+            'mapType': 'openstreetmap',
+            'showDirections': true,
+            'position': {
+              'dx': 50.0,
+              'dy': 200.0,
+            },
+          },
+        );
+        break;
+      
+      case 'image':
+        editorWidget = ImageWidget(
+          id: 'image_${_uuid.v4()}',
+          data: {
+            'imageUrl': 'assets/images/gallery1.jpg',
+            'width': 200.0,
+            'height': 200.0,
+            'position': {
+              'dx': 100.0,
+              'dy': 100.0,
+            },
+          },
+        );
+        break;
+      
+      case 'gallery':
+        editorWidget = GalleryWidget(
+          id: 'gallery_${_uuid.v4()}',
+          data: {
+            'imageUrls': [
+              'assets/images/gallery1.jpg',
+              'assets/images/gallery2.jpg',
+              'assets/images/gallery3.jpg',
+            ],
+            'layoutType': 'carousel',
+            'position': {
+              'dx': 50.0,
+              'dy': 100.0,
+            },
+          },
+        );
+        break;
+      
+      case 'schedule':
+        editorWidget = ScheduleWidget(
+          id: 'schedule_${_uuid.v4()}',
+          data: {
+            'events': [
+              {'time': '11:00', 'description': '신부 대기실'},
+              {'time': '12:00', 'description': '결혼식'},
+              {'time': '13:00', 'description': '식사'},
+            ],
+            'position': {
+              'dx': 100.0,
+              'dy': 100.0,
+            },
+          },
+        );
+        break;
+      
       default:
-        // Default to text widget
+        // Default to text widget for unknown types
         editorWidget = TextWidget(
-          id: 'widget_${DateTime.now().millisecondsSinceEpoch}',
+          id: 'widget_${_uuid.v4()}',
           data: {
             'text': {
               'translations': {'ko': '새로운 위젯'},

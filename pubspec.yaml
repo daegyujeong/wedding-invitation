@@ -64,7 +64,7 @@ dependencies:
   injectable: ^2.1.2  # 의존성 주입
   vm_service: ^14.2.1
   latlong2: ^0.9.0 # 위도/경도 처리
-  flutter_map: ^5.0.0 # 지도 표시
+  flutter_map: ^8.0.0 # 지도 표시 - Updated to latest version
 dev_dependencies:
   flutter_test:
     sdk: flutter

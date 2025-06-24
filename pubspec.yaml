@@ -62,12 +62,12 @@ dependencies:
   dio: ^5.3.0  # HTTP 클라이언트
   get_it: ^7.6.0  # 서비스 로케이터
   injectable: ^2.1.2  # 의존성 주입
-  vm_service: ^15.0.0
+  vm_service: ^14.2.1
   latlong2: ^0.9.0 # 위도/경도 처리
   flutter_map: ^5.0.0 # 지도 표시
 dev_dependencies:
-  # flutter_test:
-  #   sdk: flutter
+  flutter_test:
+    sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

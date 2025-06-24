@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+
 import '../../../data/models/editor_widget_model.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -8,9 +8,9 @@ class WidgetRenderer extends StatelessWidget {
   final EditorWidget widget;
 
   const WidgetRenderer({
-    Key? key,
+    super.key,
     required this.widget,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +54,8 @@ class WidgetRenderer extends StatelessWidget {
         style: TextStyle(
           fontFamily: textWidget.fontFamily,
           fontSize: textWidget.fontSize,
-          color: Color(int.parse('FF${textWidget.color.substring(1)}', radix: 16)),
+          color:
+              Color(int.parse('FF${textWidget.color.substring(1)}', radix: 16)),
         ),
       ),
     );
@@ -65,7 +66,7 @@ class WidgetRenderer extends StatelessWidget {
     final eventDate = DateTime(2025, 5, 31); // Get from wedding data
     final today = DateTime.now();
     final daysRemaining = eventDate.difference(today).inDays;
-    
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -80,7 +81,11 @@ class WidgetRenderer extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           Text(
-            daysRemaining > 0 ? 'D-$daysRemaining' : daysRemaining == 0 ? 'D-Day' : 'D+${-daysRemaining}',
+            daysRemaining > 0
+                ? 'D-$daysRemaining'
+                : daysRemaining == 0
+                    ? 'D-Day'
+                    : 'D+${-daysRemaining}',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -104,7 +109,7 @@ class WidgetRenderer extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         child: FlutterMap(
           options: MapOptions(
-            center: LatLng(37.5665, 126.9780), // Default to Seoul
+            center: const LatLng(37.5665, 126.9780), // Default to Seoul
             zoom: 13.0,
           ),
           children: [
@@ -115,7 +120,7 @@ class WidgetRenderer extends StatelessWidget {
             MarkerLayer(
               markers: [
                 Marker(
-                  point: LatLng(37.5665, 126.9780),
+                  point: const LatLng(37.5665, 126.9780),
                   width: 40,
                   height: 40,
                   builder: (context) => const Icon(
@@ -206,7 +211,7 @@ class WidgetRenderer extends StatelessWidget {
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -217,12 +222,12 @@ class WidgetRenderer extends StatelessWidget {
     final targetDate = countdownWidget.targetDate;
     final now = DateTime.now();
     final remaining = targetDate.difference(now);
-    
+
     final days = remaining.inDays;
     final hours = remaining.inHours % 24;
     final minutes = remaining.inMinutes % 60;
     final seconds = remaining.inSeconds % 60;
-    
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(

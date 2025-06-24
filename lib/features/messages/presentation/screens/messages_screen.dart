@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/widgets/empty_widget.dart';
 import '../../../../core/widgets/loading_widget.dart';
-import '../../../../core/utils/date_formatter.dart';
+
 import '../widgets/message_card.dart';
 import '../widgets/message_input_dialog.dart';
 
@@ -35,7 +35,7 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> {
       'likes': 3,
     },
   ];
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -53,14 +53,9 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> {
           ? const LoadingWidget(message: '메시지를 불러오고 있습니다...')
           : _messages.isEmpty
               ? EmptyWidget(
-                  title: '아직 축하 메시지가 없어요',
-                  subtitle: '첫 번째 축하 메시지를 남겨주세요',
+                  message: '아직 축하 메시지가 없어요\n첫 번째 축하 메시지를 남겨주세요',
                   icon: Icons.message_outlined,
-                  action: ElevatedButton.icon(
-                    onPressed: _showMessageInputDialog,
-                    icon: const Icon(Icons.add),
-                    label: const Text('메시지 남기기'),
-                  ),
+                  onRefresh: _showMessageInputDialog,
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(16),

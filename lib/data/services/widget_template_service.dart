@@ -4,6 +4,74 @@ import '../models/custom_widget_model.dart';
 class WidgetTemplateService {
   static const _uuid = Uuid();
 
+  static List<Map<String, dynamic>> getWidgetCategories() {
+    return [
+      {
+        'name': '기본',
+        'widgets': [
+          {
+            'type': 'text',
+            'name': '텍스트',
+            'icon': 'text_fields',
+            'description': '텍스트를 추가합니다'
+          },
+          {
+            'type': 'image',
+            'name': '이미지',
+            'icon': 'image',
+            'description': '이미지를 추가합니다'
+          },
+          {
+            'type': 'button',
+            'name': '버튼',
+            'icon': 'smart_button',
+            'description': '클릭 가능한 버튼을 추가합니다'
+          },
+        ],
+      },
+      {
+        'name': '정보',
+        'widgets': [
+          {
+            'type': 'map',
+            'name': '지도',
+            'icon': 'map',
+            'description': '위치 정보와 지도를 표시합니다'
+          },
+          {
+            'type': 'countdown',
+            'name': '디데이',
+            'icon': 'timer',
+            'description': '이벤트까지 남은 날짜를 표시합니다'
+          },
+          {
+            'type': 'schedule',
+            'name': '일정',
+            'icon': 'schedule',
+            'description': '행사 일정을 표시합니다'
+          },
+        ],
+      },
+      {
+        'name': '미디어',
+        'widgets': [
+          {
+            'type': 'gallery',
+            'name': '갤러리',
+            'icon': 'photo_library',
+            'description': '여러 이미지를 그리드로 표시합니다'
+          },
+          {
+            'type': 'video',
+            'name': '비디오',
+            'icon': 'video_library',
+            'description': '비디오를 재생할 수 있습니다'
+          },
+        ],
+      },
+    ];
+  }
+
   static List<CustomWidgetModel> getTemplate(String templateType) {
     switch (templateType) {
       case 'main':

@@ -36,8 +36,7 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
       ),
       body: _photos.isEmpty
           ? const EmptyWidget(
-              title: '사진이 없어요',
-              subtitle: '아직 갤러리에 사진이 업로드되지 않았습니다',
+              message: '아직 갤러리에 사진이 업로드되지 않았습니다',
               icon: Icons.photo_library_outlined,
             )
           : Column(

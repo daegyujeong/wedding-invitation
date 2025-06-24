@@ -50,9 +50,9 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
               icon: Icon(Icons.auto_awesome),
               text: '템플릿',
             ),
-            ...categories.keys.map((category) => Tab(
-                  icon: Icon(_getCategoryIcon(category)),
-                  text: category,
+            ...categories.map((category) => Tab(
+                  icon: Icon(_getCategoryIcon(category['name'])),
+                  text: category['name'],
                 )),
           ],
         ),
@@ -61,8 +61,8 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
         controller: _tabController,
         children: [
           _buildTemplateTab(),
-          ...categories.entries
-              .map((entry) => _buildWidgetCategoryTab(entry.key, entry.value)),
+          ...categories.map((category) =>
+              _buildWidgetCategoryTab(category['name'], category['widgets'])),
         ],
       ),
     );
@@ -240,7 +240,7 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
               ),
               const SizedBox(height: 4),
               Text(
-                widgetInfo['description'],
+                widgetInfo['description'] ?? '',
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.grey.shade600,

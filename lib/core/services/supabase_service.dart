@@ -1,8 +1,9 @@
+import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/invitation_model.dart';
 import '../models/message_model.dart';
 import '../models/template_model.dart';
-import '../config/app_config.dart';
+
 import 'package:uuid/uuid.dart';
 
 class SupabaseService {
@@ -47,11 +48,8 @@ class SupabaseService {
   }
 
   Future<InvitationModel?> getInvitation(String id) async {
-    final response = await _client
-        .from('invitations')
-        .select()
-        .eq('id', id)
-        .single();
+    final response =
+        await _client.from('invitations').select().eq('id', id).single();
 
     return InvitationModel.fromJson(response);
   }
@@ -101,7 +99,8 @@ class SupabaseService {
         .toList();
   }
 
-  Future<MessageModel> createMessage(String invitationId, String name, String message) async {
+  Future<MessageModel> createMessage(
+      String invitationId, String name, String message) async {
     final newMessage = MessageModel(
       id: _uuid.v4(),
       invitationId: invitationId,
@@ -121,7 +120,8 @@ class SupabaseService {
   }
 
   Future<void> likeMessage(String messageId) async {
-    await _client.rpc('increment_message_likes', params: {'message_id': messageId});
+    await _client
+        .rpc('increment_message_likes', params: {'message_id': messageId});
   }
 
   // Template methods
@@ -138,7 +138,8 @@ class SupabaseService {
   }
 
   // Storage methods
-  Future<String> uploadImage(String bucket, String path, List<int> fileBytes) async {
+  Future<String> uploadImage(
+      String bucket, String path, List<int> fileBytes) async {
     final fileName = '${_uuid.v4()}.jpg';
     final filePath = '$path/$fileName';
 

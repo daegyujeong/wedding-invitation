@@ -55,13 +55,13 @@ class MapService {
         break;
     }
 
-    if (await canLaunch(url)) {
-      await launch(url);
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
     } else {
       // 앱이 설치되어 있지 않은 경우 웹 버전으로 열기
       String webUrl =
           'https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}';
-      await launch(webUrl);
+      await launchUrl(Uri.parse(webUrl));
     }
   }
 }

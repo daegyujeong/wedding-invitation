@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/message_model.dart';
-import '../services/supabase_service.dart';
 import 'invitation_provider.dart';
 
 final messagesProvider = FutureProvider.family<List<MessageModel>, String>(
@@ -10,7 +9,8 @@ final messagesProvider = FutureProvider.family<List<MessageModel>, String>(
   },
 );
 
-final createMessageProvider = FutureProvider.family<MessageModel, Map<String, String>>(
+final createMessageProvider =
+    FutureProvider.family<MessageModel, Map<String, String>>(
   (ref, params) async {
     final service = ref.watch(supabaseServiceProvider);
     final message = await service.createMessage(

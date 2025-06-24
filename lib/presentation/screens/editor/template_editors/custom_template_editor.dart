@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../../../data/models/page_model.dart';
 import '../../../viewmodels/editor_viewmodel.dart';
 import '../widget_selector_screen.dart';

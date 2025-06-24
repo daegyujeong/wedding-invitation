@@ -155,11 +155,18 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
       case WidgetType.Map:
         _showMapEditDialog(widget as MapWidget, index);
         break;
-      // Add more edit dialogs for other widget types
-      default:
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('이 위젯 유형은 편집할 수 없습니다.')),
-        );
+      case WidgetType.Image:
+        _showImageEditDialog(widget as ImageWidget, index);
+        break;
+      case WidgetType.Gallery:
+        _showGalleryEditDialog(widget as GalleryWidget, index);
+        break;
+      case WidgetType.Schedule:
+        _showScheduleEditDialog(widget as ScheduleWidget, index);
+        break;
+      case WidgetType.CountdownTimer:
+        _showCountdownEditDialog(widget as CountdownWidget, index);
+        break;
     }
   }
 
@@ -333,88 +340,90 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('D-day 설정'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('표시 형식:'),
-              DropdownButton<String>(
-                value: format,
-                items: const [
-                  DropdownMenuItem(
-                    value: 'D-{days}',
-                    child: Text('D-{days}'),
-                  ),
-                  DropdownMenuItem(
-                    value: '결혼식까지 {days}일',
-                    child: Text('결혼식까지 {days}일'),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      format = value;
-                    });
-                  }
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('D-day 설정'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('표시 형식:'),
+                DropdownButton<String>(
+                  value: format,
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'D-{days}',
+                      child: Text('D-{days}'),
+                    ),
+                    DropdownMenuItem(
+                      value: '결혼식까지 {days}일',
+                      child: Text('결혼식까지 {days}일'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setDialogState(() {
+                        format = value;
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+                const Text('스타일:'),
+                DropdownButton<String>(
+                  value: style,
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'default',
+                      child: Text('기본'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'minimal',
+                      child: Text('미니멀'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'fancy',
+                      child: Text('장식'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setDialogState(() {
+                        style = value;
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
                 },
+                child: const Text('취소'),
               ),
-              const SizedBox(height: 16),
-              const Text('스타일:'),
-              DropdownButton<String>(
-                value: style,
-                items: const [
-                  DropdownMenuItem(
-                    value: 'default',
-                    child: Text('기본'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'minimal',
-                    child: Text('미니멀'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'fancy',
-                    child: Text('장식'),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      style = value;
-                    });
-                  }
+              TextButton(
+                onPressed: () {
+                  // Update the widget
+                  final updatedData = Map<String, dynamic>.from(widget.data);
+                  updatedData['format'] = format;
+                  updatedData['style'] = style;
+
+                  setState(() {
+                    _widgets[index] = DDayWidget(
+                      id: widget.id,
+                      data: updatedData,
+                    );
+                  });
+
+                  Navigator.pop(context);
                 },
+                child: const Text('저장'),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('취소'),
-            ),
-            TextButton(
-              onPressed: () {
-                // Update the widget
-                final updatedData = Map<String, dynamic>.from(widget.data);
-                updatedData['format'] = format;
-                updatedData['style'] = style;
-
-                setState(() {
-                  _widgets[index] = DDayWidget(
-                    id: widget.id,
-                    data: updatedData,
-                  );
-                });
-
-                Navigator.pop(context);
-              },
-              child: const Text('저장'),
-            ),
-          ],
-        );
+          );
+        });
       },
     );
   }
@@ -427,75 +436,486 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('지도 설정'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              DropdownButtonFormField<String>(
-                value: venueId.isEmpty ? 'main_venue' : venueId,
-                decoration: const InputDecoration(
-                  labelText: '장소',
-                  border: OutlineInputBorder(),
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('지도 설정'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DropdownButtonFormField<String>(
+                  value: venueId.isEmpty ? 'main_venue' : venueId,
+                  decoration: const InputDecoration(
+                    labelText: '장소',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'main_venue',
+                      child: Text('메인 결혼식장'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'after_party',
+                      child: Text('2차 장소'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setDialogState(() {
+                        venueId = value;
+                      });
+                    }
+                  },
                 ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'main_venue',
-                    child: Text('메인 결혼식장'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'after_party',
-                    child: Text('2차 장소'),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      venueId = value;
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  title: const Text('길 찾기 표시'),
+                  value: showDirections,
+                  onChanged: (value) {
+                    setDialogState(() {
+                      showDirections = value;
                     });
-                  }
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
                 },
+                child: const Text('취소'),
               ),
-              const SizedBox(height: 16),
-              SwitchListTile(
-                title: const Text('길 찾기 표시'),
-                value: showDirections,
-                onChanged: (value) {
+              TextButton(
+                onPressed: () {
+                  // Update the widget
+                  final updatedData = Map<String, dynamic>.from(widget.data);
+                  updatedData['venueId'] = venueId;
+                  updatedData['showDirections'] = showDirections;
+
                   setState(() {
-                    showDirections = value;
+                    _widgets[index] = MapWidget(
+                      id: widget.id,
+                      data: updatedData,
+                    );
                   });
+
+                  Navigator.pop(context);
                 },
+                child: const Text('저장'),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('취소'),
-            ),
-            TextButton(
-              onPressed: () {
-                // Update the widget
-                final updatedData = Map<String, dynamic>.from(widget.data);
-                updatedData['venueId'] = venueId;
-                updatedData['showDirections'] = showDirections;
+          );
+        });
+      },
+    );
+  }
 
-                setState(() {
-                  _widgets[index] = MapWidget(
-                    id: widget.id,
-                    data: updatedData,
-                  );
-                });
+  void _showImageEditDialog(ImageWidget widget, int index) {
+    final imageUrlController = TextEditingController(text: widget.imageUrl);
+    double width = widget.width;
+    double height = widget.height;
 
-                Navigator.pop(context);
-              },
-              child: const Text('저장'),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('이미지 편집'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: imageUrlController,
+                    decoration: const InputDecoration(
+                      labelText: '이미지 경로',
+                      hintText: 'assets/images/example.jpg',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Text('너비:'),
+                      Expanded(
+                        child: Slider(
+                          value: width,
+                          min: 50,
+                          max: 400,
+                          divisions: 35,
+                          label: width.round().toString(),
+                          onChanged: (value) {
+                            setDialogState(() {
+                              width = value;
+                            });
+                          },
+                        ),
+                      ),
+                      Text('${width.round()}'),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text('높이:'),
+                      Expanded(
+                        child: Slider(
+                          value: height,
+                          min: 50,
+                          max: 400,
+                          divisions: 35,
+                          label: height.round().toString(),
+                          onChanged: (value) {
+                            setDialogState(() {
+                              height = value;
+                            });
+                          },
+                        ),
+                      ),
+                      Text('${height.round()}'),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ],
-        );
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('취소'),
+              ),
+              TextButton(
+                onPressed: () {
+                  final updatedData = Map<String, dynamic>.from(widget.data);
+                  updatedData['imageUrl'] = imageUrlController.text;
+                  updatedData['width'] = width;
+                  updatedData['height'] = height;
+
+                  setState(() {
+                    _widgets[index] = ImageWidget(
+                      id: widget.id,
+                      data: updatedData,
+                    );
+                  });
+
+                  Navigator.pop(context);
+                },
+                child: const Text('저장'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  void _showGalleryEditDialog(GalleryWidget widget, int index) {
+    final imageUrls = List<String>.from(widget.imageUrls);
+    String layoutType = widget.layoutType;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('갤러리 편집'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('레이아웃 타입:'),
+                  DropdownButton<String>(
+                    value: layoutType,
+                    isExpanded: true,
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'carousel',
+                        child: Text('캐러셀'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'grid',
+                        child: Text('그리드'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'masonry',
+                        child: Text('메이슨리'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setDialogState(() {
+                          layoutType = value;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('이미지 목록:'),
+                  const SizedBox(height: 8),
+                  ...imageUrls.asMap().entries.map((entry) {
+                    final idx = entry.key;
+                    final url = entry.value;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: TextEditingController(text: url),
+                              decoration: InputDecoration(
+                                labelText: '이미지 ${idx + 1}',
+                                border: const OutlineInputBorder(),
+                              ),
+                              onChanged: (value) {
+                                imageUrls[idx] = value;
+                              },
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              setDialogState(() {
+                                imageUrls.removeAt(idx);
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  const SizedBox(height: 8),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('이미지 추가'),
+                    onPressed: () {
+                      setDialogState(() {
+                        imageUrls.add('assets/images/gallery${imageUrls.length + 1}.jpg');
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('취소'),
+              ),
+              TextButton(
+                onPressed: () {
+                  final updatedData = Map<String, dynamic>.from(widget.data);
+                  updatedData['imageUrls'] = imageUrls;
+                  updatedData['layoutType'] = layoutType;
+
+                  setState(() {
+                    _widgets[index] = GalleryWidget(
+                      id: widget.id,
+                      data: updatedData,
+                    );
+                  });
+
+                  Navigator.pop(context);
+                },
+                child: const Text('저장'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  void _showScheduleEditDialog(ScheduleWidget widget, int index) {
+    final events = List<Map<String, dynamic>>.from(widget.events);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('일정 편집'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('일정 목록:'),
+                  const SizedBox(height: 8),
+                  ...events.asMap().entries.map((entry) {
+                    final idx = entry.key;
+                    final event = entry.value;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: TextField(
+                              controller: TextEditingController(text: event['time']),
+                              decoration: const InputDecoration(
+                                labelText: '시간',
+                                border: OutlineInputBorder(),
+                              ),
+                              onChanged: (value) {
+                                events[idx]['time'] = value;
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            flex: 3,
+                            child: TextField(
+                              controller: TextEditingController(text: event['description']),
+                              decoration: const InputDecoration(
+                                labelText: '내용',
+                                border: OutlineInputBorder(),
+                              ),
+                              onChanged: (value) {
+                                events[idx]['description'] = value;
+                              },
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              setDialogState(() {
+                                events.removeAt(idx);
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  const SizedBox(height: 8),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('일정 추가'),
+                    onPressed: () {
+                      setDialogState(() {
+                        events.add({
+                          'time': '00:00',
+                          'description': '새 일정',
+                        });
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('취소'),
+              ),
+              TextButton(
+                onPressed: () {
+                  final updatedData = Map<String, dynamic>.from(widget.data);
+                  updatedData['events'] = events;
+
+                  setState(() {
+                    _widgets[index] = ScheduleWidget(
+                      id: widget.id,
+                      data: updatedData,
+                    );
+                  });
+
+                  Navigator.pop(context);
+                },
+                child: const Text('저장'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  void _showCountdownEditDialog(CountdownWidget widget, int index) {
+    DateTime targetDate = widget.targetDate;
+    String format = widget.format;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('카운트다운 편집'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('목표 날짜:'),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: targetDate,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+                    );
+                    if (picked != null) {
+                      setDialogState(() {
+                        targetDate = picked;
+                      });
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.calendar_today),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${targetDate.year}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.day.toString().padLeft(2, '0')}',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: TextEditingController(text: format),
+                  decoration: const InputDecoration(
+                    labelText: '표시 형식',
+                    hintText: '예: 결혼식까지 {days}일 {hours}시간',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (value) {
+                    format = value;
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('취소'),
+              ),
+              TextButton(
+                onPressed: () {
+                  final updatedData = Map<String, dynamic>.from(widget.data);
+                  updatedData['targetDate'] = targetDate.toIso8601String();
+                  updatedData['format'] = format;
+
+                  setState(() {
+                    _widgets[index] = CountdownWidget(
+                      id: widget.id,
+                      data: updatedData,
+                    );
+                  });
+
+                  Navigator.pop(context);
+                },
+                child: const Text('저장'),
+              ),
+            ],
+          );
+        });
       },
     );
   }
@@ -531,6 +951,38 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
         'position': {
           'dx': 100.0,
           'dy': 100.0,
+        },
+      },
+    );
+  }
+
+  // Create image widget with default properties
+  ImageWidget _createDefaultImageWidget() {
+    return ImageWidget(
+      id: _uuid.v4(),
+      data: {
+        'imageUrl': 'assets/images/gallery1.jpg',
+        'width': 200.0,
+        'height': 200.0,
+        'position': {
+          'dx': 100.0,
+          'dy': 100.0,
+        },
+      },
+    );
+  }
+
+  // Create map widget with default properties
+  MapWidget _createDefaultMapWidget() {
+    return MapWidget(
+      id: _uuid.v4(),
+      data: {
+        'venueId': 'main_venue',
+        'mapType': 'openstreetmap',
+        'showDirections': true,
+        'position': {
+          'dx': 100.0,
+          'dy': 200.0,
         },
       },
     );
@@ -628,13 +1080,20 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
                 tooltip: 'D-day 추가',
               ),
               IconButton(
-                icon: const Icon(Icons.photo_library),
+                icon: const Icon(Icons.image),
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('준비 중인 기능입니다.')),
-                  );
+                  // Add image widget
+                  _addWidget(_createDefaultImageWidget());
                 },
                 tooltip: '이미지 추가',
+              ),
+              IconButton(
+                icon: const Icon(Icons.map),
+                onPressed: () {
+                  // Add map widget
+                  _addWidget(_createDefaultMapWidget());
+                },
+                tooltip: '지도 추가',
               ),
             ],
           ),

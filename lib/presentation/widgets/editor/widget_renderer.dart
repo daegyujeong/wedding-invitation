@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/models/editor_widget_model.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+// import 'package:flutter_map/flutter_map.dart';
+// import 'package:latlong2/latlong.dart';
 
 class WidgetRenderer extends StatelessWidget {
   final EditorWidget widget;
@@ -97,42 +97,55 @@ class WidgetRenderer extends StatelessWidget {
   }
 
   Widget _buildMapWidget(MapWidget mapWidget) {
-    // Example with flutter_map
+    // Placeholder map widget - flutter_map will be configured later
     return Container(
       width: 200,
       height: 200,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey),
+        color: Colors.grey.shade100,
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: FlutterMap(
-          options: MapOptions(
-            center: const LatLng(37.5665, 126.9780), // Default to Seoul
-            zoom: 13.0,
-          ),
-          children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.example.wedding_invitation',
-            ),
-            MarkerLayer(
-              markers: [
-                Marker(
-                  point: const LatLng(37.5665, 126.9780),
-                  width: 40,
-                  height: 40,
-                  builder: (context) => const Icon(
-                    Icons.location_on,
-                    color: Colors.red,
-                    size: 40,
+      child: Stack(
+        children: [
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.map,
+                  size: 40,
+                  color: Colors.grey.shade600,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '지도',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '결혼식장 위치',
+                  style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 12,
                   ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          const Positioned(
+            bottom: 8,
+            right: 8,
+            child: Icon(
+              Icons.location_on,
+              color: Colors.red,
+              size: 24,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -144,10 +157,38 @@ class WidgetRenderer extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey),
-        image: DecorationImage(
-          image: NetworkImage(imageWidget.imageUrl),
-          fit: BoxFit.cover,
-        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: imageWidget.imageUrl.startsWith('assets/')
+            ? Image.asset(
+                imageWidget.imageUrl,
+                width: imageWidget.width,
+                height: imageWidget.height,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: imageWidget.width,
+                    height: imageWidget.height,
+                    color: Colors.grey.shade200,
+                    child: const Icon(Icons.error, color: Colors.red),
+                  );
+                },
+              )
+            : Image.network(
+                imageWidget.imageUrl,
+                width: imageWidget.width,
+                height: imageWidget.height,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: imageWidget.width,
+                    height: imageWidget.height,
+                    color: Colors.grey.shade200,
+                    child: const Icon(Icons.error, color: Colors.red),
+                  );
+                },
+              ),
       ),
     );
   }
@@ -165,13 +206,40 @@ class WidgetRenderer extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         itemCount: galleryWidget.imageUrls.length,
         itemBuilder: (context, index) {
+          final imageUrl = galleryWidget.imageUrls[index];
           return Padding(
             padding: const EdgeInsets.all(4.0),
-            child: Image.network(
-              galleryWidget.imageUrls[index],
-              width: 120,
-              height: 120,
-              fit: BoxFit.cover,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: imageUrl.startsWith('assets/')
+                  ? Image.asset(
+                      imageUrl,
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 120,
+                          height: 120,
+                          color: Colors.grey.shade200,
+                          child: const Icon(Icons.error, color: Colors.red),
+                        );
+                      },
+                    )
+                  : Image.network(
+                      imageUrl,
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 120,
+                          height: 120,
+                          color: Colors.grey.shade200,
+                          child: const Icon(Icons.error, color: Colors.red),
+                        );
+                      },
+                    ),
             ),
           );
         },

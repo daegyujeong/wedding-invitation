@@ -169,7 +169,7 @@ class WidgetTemplateService {
         width: 170,
         height: 170,
         properties: {
-          'imageUrl': 'assets/images/placeholder.png',
+          'imagePath': 'assets/images/placeholder.png',
           'fit': 'cover',
           'borderRadius': 8.0,
         },
@@ -182,7 +182,7 @@ class WidgetTemplateService {
         width: 170,
         height: 170,
         properties: {
-          'imageUrl': 'assets/images/placeholder.png',
+          'imagePath': 'assets/images/placeholder.png',
           'fit': 'cover',
           'borderRadius': 8.0,
         },
@@ -195,7 +195,7 @@ class WidgetTemplateService {
         width: 170,
         height: 170,
         properties: {
-          'imageUrl': 'assets/images/placeholder.png',
+          'imagePath': 'assets/images/placeholder.png',
           'fit': 'cover',
           'borderRadius': 8.0,
         },
@@ -208,7 +208,7 @@ class WidgetTemplateService {
         width: 170,
         height: 170,
         properties: {
-          'imageUrl': 'assets/images/placeholder.png',
+          'imagePath': 'assets/images/placeholder.png',
           'fit': 'cover',
           'borderRadius': 8.0,
         },

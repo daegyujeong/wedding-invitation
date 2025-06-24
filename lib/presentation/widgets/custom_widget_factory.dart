@@ -11,7 +11,7 @@ class CustomWidgetFactory {
   }) {
     // Wrap in a positioned widget if we're in the editor
     Widget widget = _buildWidgetByType(model);
-    
+
     if (onEdit != null) {
       // We're in edit mode, add a draggable container with edit controls
       return Positioned(
@@ -44,7 +44,8 @@ class CustomWidgetFactory {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.white, size: 14),
+                          icon: const Icon(Icons.edit,
+                              color: Colors.white, size: 14),
                           onPressed: () {
                             // Show edit dialog
                             if (onEditProperties != null) {
@@ -56,7 +57,8 @@ class CustomWidgetFactory {
                           constraints: const BoxConstraints(),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.white, size: 14),
+                          icon: const Icon(Icons.delete,
+                              color: Colors.white, size: 14),
                           onPressed: () {
                             // Delete widget
                             if (onDelete != null) {
@@ -78,8 +80,12 @@ class CustomWidgetFactory {
                   child: GestureDetector(
                     onPanUpdate: (details) {
                       final updatedModel = model.copyWith(
-                        width: model.width + details.delta.dx > 50 ? model.width + details.delta.dx : 50,
-                        height: model.height + details.delta.dy > 50 ? model.height + details.delta.dy : 50,
+                        width: model.width + details.delta.dx > 50
+                            ? model.width + details.delta.dx
+                            : 50,
+                        height: model.height + details.delta.dy > 50
+                            ? model.height + details.delta.dy
+                            : 50,
                       );
                       onEdit(updatedModel);
                     },
@@ -90,7 +96,8 @@ class CustomWidgetFactory {
                         color: Colors.blue,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.open_with, color: Colors.white, size: 12),
+                      child: const Icon(Icons.open_with,
+                          color: Colors.white, size: 12),
                     ),
                   ),
                 ),
@@ -141,7 +148,8 @@ class CustomWidgetFactory {
     final fontSize = (model.properties['fontSize'] as num?)?.toDouble() ?? 16.0;
     final fontWeightIndex = model.properties['fontWeight'] ?? 0;
     final colorValue = model.properties['color'] ?? Colors.black.value;
-    final textAlignIndex = model.properties['textAlign'] ?? TextAlign.center.index;
+    final textAlignIndex =
+        model.properties['textAlign'] ?? TextAlign.center.index;
 
     return Center(
       child: Text(
@@ -157,7 +165,9 @@ class CustomWidgetFactory {
   }
 
   static Widget _buildImageWidget(CustomWidgetModel model) {
-    final imagePath = model.properties['imagePath'] ?? 'assets/images/gallery1.jpg';
+    final imagePath = model.properties['imagePath'] ??
+        model.properties['imageUrl'] ??
+        'assets/images/placeholder.png';
     final fitIndex = model.properties['fit'] ?? BoxFit.cover.index;
 
     return Image.asset(
@@ -165,11 +175,33 @@ class CustomWidgetFactory {
       fit: BoxFit.values[fitIndex],
       width: model.width,
       height: model.height,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          width: model.width,
+          height: model.height,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.image_not_supported,
+                  size: 32, color: Colors.grey.shade600),
+              const SizedBox(height: 8),
+              Text('이미지 없음',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+            ],
+          ),
+        );
+      },
     );
   }
 
   static Widget _buildDividerWidget(CustomWidgetModel model) {
-    final thickness = (model.properties['thickness'] as num?)?.toDouble() ?? 1.0;
+    final thickness =
+        (model.properties['thickness'] as num?)?.toDouble() ?? 1.0;
     final colorValue = model.properties['color'] ?? Colors.grey.value;
 
     return Center(
@@ -203,8 +235,8 @@ class CustomWidgetFactory {
 
   static Widget _buildCountdownWidget(CustomWidgetModel model) {
     final title = model.properties['title'] ?? '결혼식까지';
-    final endDateStr = model.properties['endDate'] ?? 
-      DateTime.now().add(const Duration(days: 30)).toIso8601String();
+    final endDateStr = model.properties['endDate'] ??
+        DateTime.now().add(const Duration(days: 30)).toIso8601String();
     final endDate = DateTime.parse(endDateStr);
     final showSeconds = model.properties['showSeconds'] ?? true;
 
@@ -216,8 +248,10 @@ class CustomWidgetFactory {
   }
 
   static Widget _buildMapWidget(CustomWidgetModel model) {
-    final latitude = (model.properties['latitude'] as num?)?.toDouble() ?? 37.5665;
-    final longitude = (model.properties['longitude'] as num?)?.toDouble() ?? 126.978;
+    final latitude =
+        (model.properties['latitude'] as num?)?.toDouble() ?? 37.5665;
+    final longitude =
+        (model.properties['longitude'] as num?)?.toDouble() ?? 126.978;
     final title = model.properties['title'] ?? '위치';
     final description = model.properties['description'] ?? '';
 
@@ -233,10 +267,11 @@ class CustomWidgetFactory {
             const Icon(Icons.map, size: 50),
             const SizedBox(height: 8),
             Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            if (description.isNotEmpty) 
+            if (description.isNotEmpty)
               Text(description, style: const TextStyle(fontSize: 12)),
             const SizedBox(height: 8),
-            Text('위도: $latitude, 경도: $longitude', style: const TextStyle(fontSize: 12)),
+            Text('위도: $latitude, 경도: $longitude',
+                style: const TextStyle(fontSize: 12)),
           ],
         ),
       ),
@@ -244,8 +279,12 @@ class CustomWidgetFactory {
   }
 
   static Widget _buildGalleryWidget(CustomWidgetModel model) {
-    final images = model.properties['images'] ?? 
-      ['assets/images/gallery1.jpg', 'assets/images/gallery2.jpg', 'assets/images/gallery3.jpg'];
+    final images = model.properties['images'] ??
+        [
+          'assets/images/gallery1.jpg',
+          'assets/images/gallery2.jpg',
+          'assets/images/gallery3.jpg'
+        ];
     final showDots = model.properties['showDots'] ?? true;
     final autoScroll = model.properties['autoScroll'] ?? false;
 
@@ -260,7 +299,7 @@ class CustomWidgetFactory {
         autoPlayCurve: Curves.fastOutSlowIn,
         enlargeCenterPage: true,
         scrollDirection: Axis.horizontal,
-        aspectRatio: 16/9,
+        aspectRatio: 16 / 9,
       ),
       items: (images as List).map<Widget>((item) {
         return Builder(
@@ -352,11 +391,11 @@ class CountdownWidget extends StatelessWidget {
   final bool showSeconds;
 
   const CountdownWidget({
-    Key? key,
+    super.key,
     required this.title,
     required this.endDate,
     this.showSeconds = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -222,34 +222,41 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
         onTap: () => _addWidget(widgetInfo['type']),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 _getWidgetIcon(widgetInfo['icon']),
-                size: 32,
+                size: 28,
                 color: Colors.blue.shade600,
               ),
-              const SizedBox(height: 8),
-              Text(
-                widgetInfo['name'],
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+              const SizedBox(height: 6),
+              Flexible(
+                child: Text(
+                  widgetInfo['name'],
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 4),
-              Text(
-                widgetInfo['description'] ?? '',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
+              const SizedBox(height: 2),
+              Flexible(
+                child: Text(
+                  widgetInfo['description'] ?? '',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade600,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -336,7 +343,7 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
           },
         );
         break;
-      
+
       case 'title':
         editorWidget = TextWidget(
           id: 'title_${_uuid.v4()}',
@@ -355,13 +362,14 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
           },
         );
         break;
-      
+
       case 'countdown':
       case 'timer':
         editorWidget = CountdownWidget(
           id: 'countdown_${_uuid.v4()}',
           data: {
-            'targetDate': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+            'targetDate':
+                DateTime.now().add(const Duration(days: 30)).toIso8601String(),
             'format': '결혼식까지 {days}일 {hours}시간',
             'position': {
               'dx': 100.0,
@@ -370,7 +378,7 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
           },
         );
         break;
-      
+
       case 'd-day':
         editorWidget = DDayWidget(
           id: 'dday_${_uuid.v4()}',
@@ -385,7 +393,7 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
           },
         );
         break;
-      
+
       case 'map':
         editorWidget = MapWidget(
           id: 'map_${_uuid.v4()}',
@@ -400,7 +408,7 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
           },
         );
         break;
-      
+
       case 'image':
         editorWidget = ImageWidget(
           id: 'image_${_uuid.v4()}',
@@ -415,7 +423,7 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
           },
         );
         break;
-      
+
       case 'gallery':
         editorWidget = GalleryWidget(
           id: 'gallery_${_uuid.v4()}',
@@ -433,7 +441,7 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
           },
         );
         break;
-      
+
       case 'schedule':
         editorWidget = ScheduleWidget(
           id: 'schedule_${_uuid.v4()}',
@@ -450,7 +458,7 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
           },
         );
         break;
-      
+
       default:
         // Default to text widget for unknown types
         editorWidget = TextWidget(

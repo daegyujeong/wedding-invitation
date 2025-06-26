@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'dart:async';
 import '../../../data/models/editor_widget_model.dart';
-// import 'package:flutter_map/flutter_map.dart';
-// import 'package:latlong2/latlong.dart';
 
 class WidgetRenderer extends StatelessWidget {
   final EditorWidget widget;
@@ -43,6 +41,33 @@ class WidgetRenderer extends StatelessWidget {
   }
 
   Widget _buildTextWidget(TextWidget textWidget) {
+    // Handle text properly
+    String displayText = 'Enter text';
+    try {
+      displayText = textWidget.text.getText('ko');
+    } catch (e) {
+      // Fallback if MultiLanguageText is not available
+      if (textWidget.data['text'] is String) {
+        displayText = textWidget.data['text'];
+      } else if (textWidget.data['text'] is Map) {
+        displayText = textWidget.data['text']['ko'] ?? 
+                    textWidget.data['text']['en'] ?? 
+                    'Enter text';
+      }
+    }
+
+    // Handle color parsing
+    Color textColor = Colors.black;
+    try {
+      if (textWidget.color.startsWith('#')) {
+        textColor = Color(int.parse('FF${textWidget.color.substring(1)}', radix: 16));
+      } else {
+        textColor = Color(int.parse(textWidget.color));
+      }
+    } catch (e) {
+      textColor = Colors.black;
+    }
+
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -50,54 +75,50 @@ class WidgetRenderer extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        textWidget.text.getText('ko'), // Use current language
+        displayText,
         style: TextStyle(
-          fontFamily: textWidget.fontFamily,
-          fontSize: textWidget.fontSize,
-          color:
-              Color(int.parse('FF${textWidget.color.substring(1)}', radix: 16)),
+          fontFamily: textWidget.fontFamily.isNotEmpty ? textWidget.fontFamily : null,
+          fontSize: textWidget.fontSize > 0 ? textWidget.fontSize : 16,
+          color: textColor,
         ),
+        overflow: TextOverflow.ellipsis,
+        maxLines: 3,
       ),
     );
   }
 
   Widget _buildDDayWidget(DDayWidget ddayWidget) {
-    // Calculate days remaining (example implementation)
-    final eventDate = DateTime(2025, 5, 31); // Get from wedding data
+    // Get configurable date from widget data
+    DateTime eventDate;
+    try {
+      if (ddayWidget.data.containsKey('targetDate')) {
+        eventDate = DateTime.parse(ddayWidget.data['targetDate']);
+      } else if (ddayWidget.data.containsKey('eventDate')) {
+        eventDate = DateTime.parse(ddayWidget.data['eventDate']);
+      } else {
+        // Default fallback
+        eventDate = DateTime.now().add(const Duration(days: 30));
+      }
+    } catch (e) {
+      eventDate = DateTime.now().add(const Duration(days: 30));
+    }
+
     final today = DateTime.now();
     final daysRemaining = eventDate.difference(today).inDays;
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.pink.shade100,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'D-day',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          Text(
-            daysRemaining > 0
-                ? 'D-$daysRemaining'
-                : daysRemaining == 0
-                    ? 'D-Day'
-                    : 'D+${-daysRemaining}',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
+    // Get title from data
+    String title = ddayWidget.data['title'] ?? 'D-Day';
+    String format = ddayWidget.format ?? 'D-{days}';
+
+    return LiveDDayWidget(
+      eventDate: eventDate,
+      title: title,
+      format: format,
+      style: ddayWidget.style,
     );
   }
 
   Widget _buildMapWidget(MapWidget mapWidget) {
-    // Placeholder map widget - flutter_map will be configured later
     return Container(
       width: 200,
       height: 200,
@@ -152,8 +173,8 @@ class WidgetRenderer extends StatelessWidget {
 
   Widget _buildImageWidget(ImageWidget imageWidget) {
     return Container(
-      width: imageWidget.width,
-      height: imageWidget.height,
+      width: imageWidget.width > 0 ? imageWidget.width : 200,
+      height: imageWidget.height > 0 ? imageWidget.height : 200,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey),
@@ -171,7 +192,13 @@ class WidgetRenderer extends StatelessWidget {
                     width: imageWidget.width,
                     height: imageWidget.height,
                     color: Colors.grey.shade200,
-                    child: const Icon(Icons.error, color: Colors.red),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.image_not_supported, color: Colors.grey, size: 50),
+                        Text('이미지 없음', style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
                   );
                 },
               )
@@ -185,7 +212,13 @@ class WidgetRenderer extends StatelessWidget {
                     width: imageWidget.width,
                     height: imageWidget.height,
                     color: Colors.grey.shade200,
-                    child: const Icon(Icons.error, color: Colors.red),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.image_not_supported, color: Colors.grey, size: 50),
+                        Text('이미지 없음', style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
                   );
                 },
               ),
@@ -194,7 +227,28 @@ class WidgetRenderer extends StatelessWidget {
   }
 
   Widget _buildGalleryWidget(GalleryWidget galleryWidget) {
-    // Simplified gallery for now
+    if (galleryWidget.imageUrls.isEmpty) {
+      return Container(
+        width: 250,
+        height: 150,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey),
+          color: Colors.grey.shade100,
+        ),
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.photo_library, size: 50, color: Colors.grey),
+              SizedBox(height: 8),
+              Text('갤러리가 비어있습니다', style: TextStyle(color: Colors.grey)),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Container(
       width: 250,
       height: 150,
@@ -222,7 +276,7 @@ class WidgetRenderer extends StatelessWidget {
                           width: 120,
                           height: 120,
                           color: Colors.grey.shade200,
-                          child: const Icon(Icons.error, color: Colors.red),
+                          child: const Icon(Icons.broken_image, color: Colors.grey),
                         );
                       },
                     )
@@ -236,7 +290,7 @@ class WidgetRenderer extends StatelessWidget {
                           width: 120,
                           height: 120,
                           color: Colors.grey.shade200,
-                          child: const Icon(Icons.error, color: Colors.red),
+                          child: const Icon(Icons.broken_image, color: Colors.grey),
                         );
                       },
                     ),
@@ -271,11 +325,16 @@ class WidgetRenderer extends StatelessWidget {
               child: Row(
                 children: [
                   Text(
-                    event['time'],
+                    event['time']?.toString() ?? '00:00',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(width: 8),
-                  Text(event['description']),
+                  Expanded(
+                    child: Text(
+                      event['description']?.toString() ?? '일정',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
             );
@@ -286,15 +345,151 @@ class WidgetRenderer extends StatelessWidget {
   }
 
   Widget _buildCountdownWidget(CountdownWidget countdownWidget) {
-    // Calculate time remaining
-    final targetDate = countdownWidget.targetDate;
-    final now = DateTime.now();
-    final remaining = targetDate.difference(now);
+    return LiveCountdownWidget(
+      targetDate: countdownWidget.targetDate,
+      format: countdownWidget.format,
+    );
+  }
+}
 
-    final days = remaining.inDays;
-    final hours = remaining.inHours % 24;
-    final minutes = remaining.inMinutes % 60;
-    final seconds = remaining.inSeconds % 60;
+// Live D-Day widget that updates in real-time
+class LiveDDayWidget extends StatefulWidget {
+  final DateTime eventDate;
+  final String title;
+  final String format;
+  final String style;
+
+  const LiveDDayWidget({
+    super.key,
+    required this.eventDate,
+    required this.title,
+    required this.format,
+    required this.style,
+  });
+
+  @override
+  State<LiveDDayWidget> createState() => _LiveDDayWidgetState();
+}
+
+class _LiveDDayWidgetState extends State<LiveDDayWidget> {
+  Timer? _timer;
+  int _daysRemaining = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateDays();
+    _timer = Timer.periodic(const Duration(hours: 1), (timer) {
+      _updateDays();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _updateDays() {
+    final today = DateTime.now();
+    final remaining = widget.eventDate.difference(today).inDays;
+    if (mounted) {
+      setState(() {
+        _daysRemaining = remaining;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String displayText;
+    if (_daysRemaining > 0) {
+      displayText = widget.format.replaceAll('{days}', _daysRemaining.toString());
+    } else if (_daysRemaining == 0) {
+      displayText = 'D-Day';
+    } else {
+      displayText = widget.format.replaceAll('{days}', '+${-_daysRemaining}');
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.pink.shade100,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            widget.title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            displayText,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Live countdown widget that updates in real-time
+class LiveCountdownWidget extends StatefulWidget {
+  final DateTime targetDate;
+  final String format;
+
+  const LiveCountdownWidget({
+    super.key,
+    required this.targetDate,
+    required this.format,
+  });
+
+  @override
+  State<LiveCountdownWidget> createState() => _LiveCountdownWidgetState();
+}
+
+class _LiveCountdownWidgetState extends State<LiveCountdownWidget> {
+  Timer? _timer;
+  Duration _remaining = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateRemaining();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _updateRemaining();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _updateRemaining() {
+    final now = DateTime.now();
+    final remaining = widget.targetDate.difference(now);
+    if (mounted) {
+      setState(() {
+        _remaining = remaining.isNegative ? Duration.zero : remaining;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final days = _remaining.inDays;
+    final hours = _remaining.inHours % 24;
+    final minutes = _remaining.inMinutes % 60;
+    final seconds = _remaining.inSeconds % 60;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -311,17 +506,20 @@ class WidgetRenderer extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildCountdownBox(days.toString(), '일'),
-              const SizedBox(width: 4),
-              _buildCountdownBox(hours.toString().padLeft(2, '0'), '시간'),
-              const SizedBox(width: 4),
-              _buildCountdownBox(minutes.toString().padLeft(2, '0'), '분'),
-              const SizedBox(width: 4),
-              _buildCountdownBox(seconds.toString().padLeft(2, '0'), '초'),
-            ],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildCountdownBox(days.toString(), '일'),
+                const SizedBox(width: 4),
+                _buildCountdownBox(hours.toString().padLeft(2, '0'), '시간'),
+                const SizedBox(width: 4),
+                _buildCountdownBox(minutes.toString().padLeft(2, '0'), '분'),
+                const SizedBox(width: 4),
+                _buildCountdownBox(seconds.toString().padLeft(2, '0'), '초'),
+              ],
+            ),
           ),
         ],
       ),
@@ -332,7 +530,7 @@ class WidgetRenderer extends StatelessWidget {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
             color: Colors.pink.shade50,
             borderRadius: BorderRadius.circular(4),
@@ -341,14 +539,14 @@ class WidgetRenderer extends StatelessWidget {
             value,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: 14,
             ),
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           label,
-          style: const TextStyle(fontSize: 12),
+          style: const TextStyle(fontSize: 10),
         ),
       ],
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/models/custom_widget_model.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'dart:async';
 
 class CustomWidgetFactory {
   static Widget buildWidget(
@@ -144,22 +145,74 @@ class CustomWidgetFactory {
   }
 
   static Widget _buildTextWidget(CustomWidgetModel model) {
-    final text = model.properties['text'] ?? '';
+    final text = model.properties['text']?.toString() ?? '텍스트를 입력하세요';
     final fontSize = (model.properties['fontSize'] as num?)?.toDouble() ?? 16.0;
-    final fontWeightIndex = model.properties['fontWeight'] ?? 0;
+    
+    // Fix fontWeight handling
+    final fontWeightValue = model.properties['fontWeight'];
+    FontWeight fontWeight = FontWeight.normal;
+    if (fontWeightValue is int && fontWeightValue < FontWeight.values.length) {
+      fontWeight = FontWeight.values[fontWeightValue];
+    } else if (fontWeightValue is String) {
+      switch (fontWeightValue.toLowerCase()) {
+        case 'bold':
+          fontWeight = FontWeight.bold;
+          break;
+        case 'w100':
+          fontWeight = FontWeight.w100;
+          break;
+        case 'w200':
+          fontWeight = FontWeight.w200;
+          break;
+        case 'w300':
+          fontWeight = FontWeight.w300;
+          break;
+        case 'w400':
+          fontWeight = FontWeight.w400;
+          break;
+        case 'w500':
+          fontWeight = FontWeight.w500;
+          break;
+        case 'w600':
+          fontWeight = FontWeight.w600;
+          break;
+        case 'w700':
+          fontWeight = FontWeight.w700;
+          break;
+        case 'w800':
+          fontWeight = FontWeight.w800;
+          break;
+        case 'w900':
+          fontWeight = FontWeight.w900;
+          break;
+        default:
+          fontWeight = FontWeight.normal;
+      }
+    }
+    
     final colorValue = model.properties['color'] ?? Colors.black.value;
-    final textAlignIndex =
-        model.properties['textAlign'] ?? TextAlign.center.index;
+    
+    // Fix text alignment handling
+    final textAlignValue = model.properties['textAlign'];
+    TextAlign textAlign = TextAlign.center;
+    if (textAlignValue is int && textAlignValue < TextAlign.values.length) {
+      textAlign = TextAlign.values[textAlignValue];
+    }
 
-    return Center(
+    return Container(
+      width: model.width,
+      height: model.height,
+      padding: const EdgeInsets.all(8),
       child: Text(
         text,
         style: TextStyle(
           fontSize: fontSize,
-          fontWeight: FontWeight.values[fontWeightIndex],
-          color: Color(colorValue),
+          fontWeight: fontWeight,
+          color: Color(colorValue is int ? colorValue : Colors.black.value),
         ),
-        textAlign: TextAlign.values[textAlignIndex],
+        textAlign: textAlign,
+        overflow: TextOverflow.ellipsis,
+        maxLines: 10,
       ),
     );
   }
@@ -169,33 +222,43 @@ class CustomWidgetFactory {
         model.properties['imageUrl'] ??
         'assets/images/placeholder.png';
     final fitIndex = model.properties['fit'] ?? BoxFit.cover.index;
+    final boxFit = fitIndex is int && fitIndex < BoxFit.values.length 
+        ? BoxFit.values[fitIndex] 
+        : BoxFit.cover;
 
-    return Image.asset(
-      imagePath,
-      fit: BoxFit.values[fitIndex],
+    return Container(
       width: model.width,
       height: model.height,
-      errorBuilder: (context, error, stackTrace) {
-        return Container(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.asset(
+          imagePath,
+          fit: boxFit,
           width: model.width,
           height: model.height,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.image_not_supported,
-                  size: 32, color: Colors.grey.shade600),
-              const SizedBox(height: 8),
-              Text('이미지 없음',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-            ],
-          ),
-        );
-      },
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              width: model.width,
+              height: model.height,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.image_not_supported,
+                      size: 32, color: Colors.grey.shade600),
+                  const SizedBox(height: 8),
+                  Text('이미지 없음',
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -204,46 +267,67 @@ class CustomWidgetFactory {
         (model.properties['thickness'] as num?)?.toDouble() ?? 1.0;
     final colorValue = model.properties['color'] ?? Colors.grey.value;
 
-    return Center(
-      child: Container(
-        width: model.width,
-        height: thickness,
-        color: Color(colorValue),
+    return Container(
+      width: model.width,
+      height: model.height,
+      child: Center(
+        child: Container(
+          width: model.width,
+          height: thickness,
+          color: Color(colorValue is int ? colorValue : Colors.grey.value),
+        ),
       ),
     );
   }
 
   static Widget _buildButtonWidget(CustomWidgetModel model) {
-    final text = model.properties['text'] ?? '버튼';
+    final text = model.properties['text']?.toString() ?? '버튼';
     final colorValue = model.properties['color'] ?? Colors.blue.value;
     final textColorValue = model.properties['textColor'] ?? Colors.white.value;
 
-    return Center(
+    return Container(
+      width: model.width,
+      height: model.height,
       child: ElevatedButton(
         onPressed: () {
           // Handle button action based on model.properties['action']
+          final action = model.properties['action'];
+          final target = model.properties['actionTarget'];
+          
+          // In a real app, you would handle different actions here
+          print('Button pressed: $action, target: $target');
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Color(colorValue),
-          foregroundColor: Color(textColorValue),
+          backgroundColor: Color(colorValue is int ? colorValue : Colors.blue.value),
+          foregroundColor: Color(textColorValue is int ? textColorValue : Colors.white.value),
           minimumSize: Size(model.width, model.height),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
         ),
-        child: Text(text),
+        child: Text(
+          text,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 2,
+        ),
       ),
     );
   }
 
   static Widget _buildCountdownWidget(CustomWidgetModel model) {
-    final title = model.properties['title'] ?? '결혼식까지';
+    final title = model.properties['title']?.toString() ?? '결혼식까지';
     final endDateStr = model.properties['endDate'] ??
         DateTime.now().add(const Duration(days: 30)).toIso8601String();
-    final endDate = DateTime.parse(endDateStr);
+    final endDate = DateTime.tryParse(endDateStr) ?? 
+        DateTime.now().add(const Duration(days: 30));
     final showSeconds = model.properties['showSeconds'] ?? true;
 
     return CountdownWidget(
       title: title,
       endDate: endDate,
       showSeconds: showSeconds,
+      width: model.width,
+      height: model.height,
     );
   }
 
@@ -252,26 +336,35 @@ class CustomWidgetFactory {
         (model.properties['latitude'] as num?)?.toDouble() ?? 37.5665;
     final longitude =
         (model.properties['longitude'] as num?)?.toDouble() ?? 126.978;
-    final title = model.properties['title'] ?? '위치';
-    final description = model.properties['description'] ?? '';
+    final title = model.properties['title']?.toString() ?? '위치';
+    final description = model.properties['description']?.toString() ?? '';
 
     // Placeholder for actual map
     return Container(
       width: model.width,
       height: model.height,
-      color: Colors.grey[300],
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey),
+      ),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.map, size: 50),
             const SizedBox(height: 8),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(title, 
+                style: const TextStyle(fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis),
             if (description.isNotEmpty)
-              Text(description, style: const TextStyle(fontSize: 12)),
+              Text(description, 
+                  style: const TextStyle(fontSize: 12),
+                  overflow: TextOverflow.ellipsis),
             const SizedBox(height: 8),
-            Text('위도: $latitude, 경도: $longitude',
-                style: const TextStyle(fontSize: 12)),
+            Text('위도: ${latitude.toStringAsFixed(4)}, 경도: ${longitude.toStringAsFixed(4)}',
+                style: const TextStyle(fontSize: 12),
+                overflow: TextOverflow.ellipsis),
           ],
         ),
       ),
@@ -279,54 +372,96 @@ class CustomWidgetFactory {
   }
 
   static Widget _buildGalleryWidget(CustomWidgetModel model) {
-    final images = model.properties['images'] ??
-        [
-          'assets/images/gallery1.jpg',
-          'assets/images/gallery2.jpg',
-          'assets/images/gallery3.jpg'
-        ];
+    final images = model.properties['images'] ?? [
+      'assets/images/gallery1.jpg',
+      'assets/images/gallery2.jpg',
+      'assets/images/gallery3.jpg'
+    ];
     final showDots = model.properties['showDots'] ?? true;
     final autoScroll = model.properties['autoScroll'] ?? false;
 
-    return CarouselSlider(
-      options: CarouselOptions(
+    if (images is! List || images.isEmpty) {
+      return Container(
+        width: model.width,
         height: model.height,
-        autoPlay: autoScroll,
-        viewportFraction: 1.0,
-        enableInfiniteScroll: true,
-        autoPlayInterval: const Duration(seconds: 3),
-        autoPlayAnimationDuration: const Duration(milliseconds: 800),
-        autoPlayCurve: Curves.fastOutSlowIn,
-        enlargeCenterPage: true,
-        scrollDirection: Axis.horizontal,
-        aspectRatio: 16 / 9,
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.photo_library, size: 50, color: Colors.grey),
+              SizedBox(height: 8),
+              Text('갤러리가 비어있습니다', style: TextStyle(color: Colors.grey)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: model.width,
+      height: model.height,
+      child: CarouselSlider(
+        options: CarouselOptions(
+          height: model.height,
+          autoPlay: autoScroll,
+          viewportFraction: 1.0,
+          enableInfiniteScroll: images.length > 1,
+          autoPlayInterval: const Duration(seconds: 3),
+          autoPlayAnimationDuration: const Duration(milliseconds: 800),
+          autoPlayCurve: Curves.fastOutSlowIn,
+          enlargeCenterPage: false,
+          scrollDirection: Axis.horizontal,
+        ),
+        items: images.map<Widget>((item) {
+          return Builder(
+            builder: (BuildContext context) {
+              return Container(
+                width: model.width,
+                margin: const EdgeInsets.symmetric(horizontal: 2.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    item.toString(),
+                    fit: BoxFit.cover,
+                    width: model.width,
+                    height: model.height,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: model.width,
+                        height: model.height,
+                        color: Colors.grey[300],
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                            SizedBox(height: 8),
+                            Text('이미지 로드 실패', style: TextStyle(color: Colors.grey)),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          );
+        }).toList(),
       ),
-      items: (images as List).map<Widget>((item) {
-        return Builder(
-          builder: (BuildContext context) {
-            return Container(
-              width: model.width,
-              margin: const EdgeInsets.symmetric(horizontal: 5.0),
-              decoration: const BoxDecoration(
-                color: Colors.grey,
-              ),
-              child: Image.asset(
-                item,
-                fit: BoxFit.cover,
-              ),
-            );
-          },
-        );
-      }).toList(),
     );
   }
 
   static Widget _buildMessageBoxWidget(CustomWidgetModel model) {
-    final title = model.properties['title'] ?? '축하 메시지';
-    final placeholder = model.properties['placeholder'] ?? '메시지를 남겨주세요';
+    final title = model.properties['title']?.toString() ?? '축하 메시지';
+    final placeholder = model.properties['placeholder']?.toString() ?? '메시지를 남겨주세요';
     final showSubmitButton = model.properties['showSubmitButton'] ?? true;
 
     return Container(
+      width: model.width,
+      height: model.height,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -348,16 +483,20 @@ class CustomWidgetFactory {
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 16),
-          TextField(
-            decoration: InputDecoration(
-              hintText: placeholder,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+          Expanded(
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: placeholder,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
+              maxLines: null,
+              expands: true,
             ),
-            maxLines: 3,
           ),
           if (showSubmitButton) ...[
             const SizedBox(height: 16),
@@ -366,6 +505,7 @@ class CustomWidgetFactory {
               child: ElevatedButton(
                 onPressed: () {
                   // Handle message submission
+                  print('Message submitted');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
@@ -384,31 +524,68 @@ class CustomWidgetFactory {
   }
 }
 
-// Custom countdown widget
-class CountdownWidget extends StatelessWidget {
+// Updated countdown widget to be stateful for real-time updates
+class CountdownWidget extends StatefulWidget {
   final String title;
   final DateTime endDate;
   final bool showSeconds;
+  final double width;
+  final double height;
 
   const CountdownWidget({
     super.key,
     required this.title,
     required this.endDate,
     this.showSeconds = true,
+    required this.width,
+    required this.height,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final difference = endDate.difference(now);
+  State<CountdownWidget> createState() => _CountdownWidgetState();
+}
 
+class _CountdownWidgetState extends State<CountdownWidget> {
+  Timer? _timer;
+  Duration _remaining = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateRemaining();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _updateRemaining();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _updateRemaining() {
+    final now = DateTime.now();
+    final remaining = widget.endDate.difference(now);
+    
+    if (mounted) {
+      setState(() {
+        _remaining = remaining.isNegative ? Duration.zero : remaining;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Calculate remaining time
-    final days = difference.inDays;
-    final hours = difference.inHours.remainder(24);
-    final minutes = difference.inMinutes.remainder(60);
-    final seconds = difference.inSeconds.remainder(60);
+    final days = _remaining.inDays;
+    final hours = _remaining.inHours.remainder(24);
+    final minutes = _remaining.inMinutes.remainder(60);
+    final seconds = _remaining.inSeconds.remainder(60);
 
     return Container(
+      width: widget.width,
+      height: widget.height,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -422,28 +599,35 @@ class CountdownWidget extends StatelessWidget {
         ],
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            title,
+            widget.title,
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildTimeUnit(days, '일'),
-              _buildSeparator(),
-              _buildTimeUnit(hours, '시간'),
-              _buildSeparator(),
-              _buildTimeUnit(minutes, '분'),
-              if (showSeconds) ...[
-                _buildSeparator(),
-                _buildTimeUnit(seconds, '초'),
-              ],
-            ],
+          Flexible(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildTimeUnit(days, '일'),
+                  _buildSeparator(),
+                  _buildTimeUnit(hours, '시간'),
+                  _buildSeparator(),
+                  _buildTimeUnit(minutes, '분'),
+                  if (widget.showSeconds) ...[
+                    _buildSeparator(),
+                    _buildTimeUnit(seconds, '초'),
+                  ],
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -452,6 +636,7 @@ class CountdownWidget extends StatelessWidget {
 
   Widget _buildTimeUnit(int value, String label) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           padding: const EdgeInsets.all(8),
@@ -462,7 +647,7 @@ class CountdownWidget extends StatelessWidget {
           child: Text(
             value.toString().padLeft(2, '0'),
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -472,7 +657,7 @@ class CountdownWidget extends StatelessWidget {
         Text(
           label,
           style: const TextStyle(
-            fontSize: 12,
+            fontSize: 10,
           ),
         ),
       ],
@@ -481,11 +666,11 @@ class CountdownWidget extends StatelessWidget {
 
   Widget _buildSeparator() {
     return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8),
+      padding: EdgeInsets.symmetric(horizontal: 4),
       child: Text(
         ':',
         style: TextStyle(
-          fontSize: 24,
+          fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
       ),

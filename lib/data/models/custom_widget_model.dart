@@ -56,7 +56,7 @@ class CustomWidgetModel {
         break;
       case WidgetType.image:
         defaultProps = {
-          'imagePath': 'assets/images/gallery1.jpg',
+          'imagePath': 'assets/images/placeholder.png',
           'fit': BoxFit.cover.index,
         };
         defaultHeight = 200;
@@ -101,9 +101,7 @@ class CustomWidgetModel {
       case WidgetType.gallery:
         defaultProps = {
           'images': [
-            'assets/images/gallery1.jpg',
-            'assets/images/gallery2.jpg',
-            'assets/images/gallery3.jpg'
+            'assets/images/placeholder.png',
           ],
           'showDots': true,
           'autoScroll': false,
@@ -124,8 +122,8 @@ class CustomWidgetModel {
       id: uuid.v4(),
       type: type,
       properties: defaultProps,
-      positionX: 0,
-      positionY: 0,
+      positionX: 50,
+      positionY: 50,
       width: defaultWidth,
       height: defaultHeight,
     );
@@ -168,10 +166,25 @@ class CustomWidgetModel {
       id: json['id'],
       type: WidgetType.values[json['type']],
       properties: Map<String, dynamic>.from(json['properties']),
-      positionX: json['positionX'],
-      positionY: json['positionY'],
-      width: json['width'],
-      height: json['height'],
+      positionX: (json['positionX'] as num?)?.toDouble() ?? 0.0,
+      positionY: (json['positionY'] as num?)?.toDouble() ?? 0.0,
+      width: (json['width'] as num?)?.toDouble() ?? 100.0,
+      height: (json['height'] as num?)?.toDouble() ?? 100.0,
     );
   }
+
+  @override
+  String toString() {
+    return 'CustomWidgetModel{id: $id, type: $type, properties: $properties, position: ($positionX, $positionY), size: ($width, $height)}';
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CustomWidgetModel &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

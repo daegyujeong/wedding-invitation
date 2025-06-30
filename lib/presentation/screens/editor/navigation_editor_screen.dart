@@ -29,6 +29,119 @@ class NavigationEditorScreen extends StatelessWidget {
               ),
 
               const Divider(),
+              
+              // D-Day settings section
+              Card(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'D-Day 설정',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+                      SwitchListTile(
+                        title: const Text('D-Day 표시'),
+                        value: navigationBar.showDDay,
+                        onChanged: (value) {
+                          viewModel.updateNavigationBarDDay(
+                            showDDay: value,
+                            eventDate: navigationBar.eventDate,
+                            ddayFormat: navigationBar.ddayFormat,
+                          );
+                        },
+                      ),
+                      if (navigationBar.showDDay) ...[
+                        const SizedBox(height: 16),
+                        const Text('목표 날짜:'),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: InkWell(
+                            onTap: () async {
+                              final currentDate = navigationBar.eventDate ?? 
+                                  DateTime.now().add(const Duration(days: 30));
+                              
+                              final pickedDate = await showDatePicker(
+                                context: context,
+                                initialDate: currentDate,
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+                              );
+
+                              if (pickedDate != null) {
+                                final pickedTime = await showTimePicker(
+                                  context: context,
+                                  initialTime: TimeOfDay.fromDateTime(currentDate),
+                                );
+
+                                if (pickedTime != null) {
+                                  final newDateTime = DateTime(
+                                    pickedDate.year,
+                                    pickedDate.month,
+                                    pickedDate.day,
+                                    pickedTime.hour,
+                                    pickedTime.minute,
+                                  );
+                                  viewModel.updateNavigationBarDDay(
+                                    showDDay: navigationBar.showDDay,
+                                    eventDate: newDateTime,
+                                    ddayFormat: navigationBar.ddayFormat,
+                                  );
+                                }
+                              }
+                            },
+                            child: Row(
+                              children: [
+                                const Icon(Icons.calendar_today),
+                                const SizedBox(width: 12),
+                                Text(
+                                  navigationBar.eventDate != null
+                                      ? '${navigationBar.eventDate!.year}년 ${navigationBar.eventDate!.month}월 ${navigationBar.eventDate!.day}일'
+                                      : '날짜를 선택하세요',
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text('표시 형식:'),
+                        const SizedBox(height: 8),
+                        DropdownButton<String>(
+                          value: navigationBar.ddayFormat,
+                          isExpanded: true,
+                          items: const [
+                            DropdownMenuItem(value: 'D-{days}', child: Text('D-{days}')),
+                            DropdownMenuItem(value: '{days}일 남음', child: Text('{days}일 남음')),
+                            DropdownMenuItem(value: '결혼식까지 {days}일', child: Text('결혼식까지 {days}일')),
+                            DropdownMenuItem(value: '{days} days to go', child: Text('{days} days to go')),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              viewModel.updateNavigationBarDDay(
+                                showDDay: navigationBar.showDDay,
+                                eventDate: navigationBar.eventDate,
+                                ddayFormat: value,
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+
+              const Divider(),
               const Text('네비게이션 아이템', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
 
@@ -51,7 +164,7 @@ class NavigationEditorScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(IconData(int.parse('0xe${item.icon.hashCode.toRadixString(16).substring(0, 3)}'), fontFamily: 'MaterialIcons')),
+                Icon(_getIconFromString(item.icon)),
                 const SizedBox(width: 8),
                 Text(item.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 const Spacer(),
@@ -115,5 +228,26 @@ class NavigationEditorScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  IconData _getIconFromString(String iconName) {
+    switch (iconName) {
+      case 'photo_library':
+        return Icons.photo_library;
+      case 'location_on':
+        return Icons.location_on;
+      case 'message':
+        return Icons.message;
+      case 'home':
+        return Icons.home;
+      case 'info':
+        return Icons.info;
+      case 'calendar_today':
+        return Icons.calendar_today;
+      case 'favorite':
+        return Icons.favorite;
+      default:
+        return Icons.circle;
+    }
   }
 }

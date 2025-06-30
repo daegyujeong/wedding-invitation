@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/editor_widget_model.dart';
 import '../../widgets/editor/enhanced_size_editor.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class EditorWidgetDialog extends StatefulWidget {
   final EditorWidget widget;
@@ -67,6 +68,13 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
   }
 
   String _getWidgetTypeName(WidgetType type) {
+    // Check if it's a special text widget (button, video)
+    if (type == WidgetType.Text && _editedData['isVideo'] == true) {
+      return '비디오 설정';
+    } else if (type == WidgetType.Text && _editedData['action'] != null) {
+      return '버튼 설정';
+    }
+    
     switch (type) {
       case WidgetType.Text:
         return '텍스트 편집';
@@ -109,6 +117,15 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
   }
 
   Widget _buildEditorFields() {
+    // Check if it's a special text widget
+    if (_editedWidget.type == WidgetType.Text) {
+      if (_editedData['isVideo'] == true) {
+        return _buildVideoEditorFields();
+      } else if (_editedData['action'] != null) {
+        return _buildButtonEditorFields();
+      }
+    }
+    
     switch (_editedWidget.type) {
       case WidgetType.Text:
         return _buildTextEditorFields();
@@ -195,6 +212,134 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
               child: Text('색상 선택', style: TextStyle(color: Colors.white)),
             ),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildButtonEditorFields() {
+    String currentText = '';
+    if (_editedData['text'] is Map) {
+      currentText = _editedData['text']['ko'] ?? '';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('버튼 텍스트'),
+        TextField(
+          controller: TextEditingController(text: currentText),
+          decoration: const InputDecoration(
+            hintText: '버튼 텍스트를 입력하세요',
+            border: OutlineInputBorder(),
+          ),
+          onChanged: (value) {
+            _updateData('text', {'ko': value, 'en': value});
+          },
+        ),
+        const SizedBox(height: 16),
+        const Text('버튼 동작'),
+        DropdownButton<String>(
+          value: _editedData['action']?.toString() ?? 'url',
+          isExpanded: true,
+          items: const [
+            DropdownMenuItem(value: 'url', child: Text('URL 열기')),
+            DropdownMenuItem(value: 'phone', child: Text('전화 걸기')),
+            DropdownMenuItem(value: 'sms', child: Text('문자 보내기')),
+            DropdownMenuItem(value: 'email', child: Text('이메일 보내기')),
+            DropdownMenuItem(value: 'map', child: Text('지도 열기')),
+            DropdownMenuItem(value: 'bookmark', child: Text('북마크')),
+          ],
+          onChanged: (value) => _updateData('action', value),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: TextEditingController(
+              text: _editedData['actionTarget']?.toString() ?? ''),
+          decoration: const InputDecoration(
+            labelText: '대상 (URL/전화번호/이메일 등)',
+            hintText: '예: https://example.com',
+            border: OutlineInputBorder(),
+          ),
+          onChanged: (value) => _updateData('actionTarget', value),
+        ),
+        const SizedBox(height: 16),
+        const Text('배경 색상'),
+        Container(
+          width: double.infinity,
+          height: 50,
+          decoration: BoxDecoration(
+            color: _parseColor(_editedData['backgroundColor']?.toString() ?? '#4285F4'),
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: InkWell(
+            onTap: () => _showColorPicker('backgroundColor'),
+            child: const Center(
+              child: Text('배경 색상 선택', style: TextStyle(color: Colors.white)),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        const Text('텍스트 색상'),
+        Container(
+          width: double.infinity,
+          height: 50,
+          decoration: BoxDecoration(
+            color: _parseColor(_editedData['color']?.toString() ?? '#FFFFFF'),
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: InkWell(
+            onTap: () => _showColorPicker('color'),
+            child: Center(
+              child: Text(
+                '텍스트 색상 선택',
+                style: TextStyle(
+                  color: _getContrastingColor(
+                    _parseColor(_editedData['color']?.toString() ?? '#FFFFFF'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVideoEditorFields() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('비디오 URL'),
+        TextField(
+          controller: TextEditingController(
+              text: _editedData['videoUrl']?.toString() ?? ''),
+          decoration: const InputDecoration(
+            hintText: 'https://example.com/video.mp4',
+            helperText: 'MP4 형식의 비디오 URL을 입력하세요',
+            border: OutlineInputBorder(),
+          ),
+          onChanged: (value) => _updateData('videoUrl', value),
+        ),
+        const SizedBox(height: 16),
+        SwitchListTile(
+          title: const Text('자동 재생'),
+          value: _editedData['autoPlay'] ?? false,
+          onChanged: (value) => _updateData('autoPlay', value),
+        ),
+        SwitchListTile(
+          title: const Text('반복 재생'),
+          value: _editedData['loop'] ?? false,
+          onChanged: (value) => _updateData('loop', value),
+        ),
+        SwitchListTile(
+          title: const Text('음소거'),
+          value: _editedData['muted'] ?? false,
+          onChanged: (value) => _updateData('muted', value),
         ),
       ],
     );
@@ -402,6 +547,8 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
                 value: 'assets/images/gallery2.jpg', child: Text('갤러리 이미지 2')),
             DropdownMenuItem(
                 value: 'assets/images/gallery3.jpg', child: Text('갤러리 이미지 3')),
+            DropdownMenuItem(
+                value: 'assets/images/main.jpg', child: Text('메인 이미지')),
           ],
           onChanged: (value) => _updateData('imageUrl', value),
         ),
@@ -448,6 +595,20 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
+        const Text('갤러리 스타일:'),
+        const SizedBox(height: 8),
+        DropdownButton<String>(
+          value: _editedData['style']?.toString() ?? 'carousel',
+          isExpanded: true,
+          items: const [
+            DropdownMenuItem(value: 'carousel', child: Text('캐러셀 (슬라이드)')),
+            DropdownMenuItem(value: 'grid', child: Text('그리드 (격자)')),
+            DropdownMenuItem(value: 'masonry', child: Text('메이슨리 (벽돌)')),
+            DropdownMenuItem(value: 'modern', child: Text('모던 (오버레이)')),
+          ],
+          onChanged: (value) => _updateData('style', value),
+        ),
+        const SizedBox(height: 16),
         const Text('갤러리 이미지:'),
         const SizedBox(height: 8),
         SizedBox(
@@ -462,13 +623,15 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
                   margin: const EdgeInsets.only(right: 8),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: IconButton(
                     icon: const Icon(Icons.add),
                     onPressed: () {
-                      // Add more image selection logic here
-                      imageUrls.add('assets/images/placeholder.png');
-                      _updateData('imageUrls', imageUrls);
+                      _showImageSelectionDialog((selectedImage) {
+                        imageUrls.add(selectedImage);
+                        _updateData('imageUrls', imageUrls);
+                      });
                     },
                   ),
                 );
@@ -479,15 +642,18 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
                   Container(
                     width: 80,
                     margin: const EdgeInsets.only(right: 8),
-                    child: Image.asset(
-                      imageUrls[index],
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.broken_image),
-                        );
-                      },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.asset(
+                        imageUrls[index],
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.broken_image),
+                          );
+                        },
+                      ),
                     ),
                   ),
                   Positioned(
@@ -516,21 +682,84 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
             },
           ),
         ),
+        const SizedBox(height: 16),
+        if (_editedData['style'] == 'carousel') ...[
+          SwitchListTile(
+            title: const Text('인디케이터 표시'),
+            value: _editedData['showIndicators'] ?? true,
+            onChanged: (value) => _updateData('showIndicators', value),
+          ),
+          SwitchListTile(
+            title: const Text('자동 재생'),
+            value: _editedData['autoPlay'] ?? false,
+            onChanged: (value) => _updateData('autoPlay', value),
+          ),
+        ],
       ],
     );
   }
 
   Widget _buildMapEditorFields() {
+    double latitude = (_editedData['latitude'] as num?)?.toDouble() ?? 37.5665;
+    double longitude = (_editedData['longitude'] as num?)?.toDouble() ?? 126.9780;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
+        const Text('장소 이름:'),
+        TextField(
+          controller: TextEditingController(
+              text: _editedData['venue']?.toString() ?? ''),
+          decoration: const InputDecoration(
+            hintText: '예: 그랜드 호텔',
+            border: OutlineInputBorder(),
+          ),
+          onChanged: (value) {
+            _updateData('venue', value);
+            _updateData('title', value); // Also update title
+          },
+        ),
+        const SizedBox(height: 16),
+        const Text('위도:'),
+        TextField(
+          controller: TextEditingController(text: latitude.toString()),
+          decoration: const InputDecoration(
+            hintText: '예: 37.5665',
+            border: OutlineInputBorder(),
+          ),
+          keyboardType: TextInputType.number,
+          onChanged: (value) {
+            final doubleValue = double.tryParse(value);
+            if (doubleValue != null) {
+              _updateData('latitude', doubleValue);
+            }
+          },
+        ),
+        const SizedBox(height: 16),
+        const Text('경도:'),
+        TextField(
+          controller: TextEditingController(text: longitude.toString()),
+          decoration: const InputDecoration(
+            hintText: '예: 126.9780',
+            border: OutlineInputBorder(),
+          ),
+          keyboardType: TextInputType.number,
+          onChanged: (value) {
+            final doubleValue = double.tryParse(value);
+            if (doubleValue != null) {
+              _updateData('longitude', doubleValue);
+            }
+          },
+        ),
+        const SizedBox(height: 16),
         const Text('지도 유형:'),
         const SizedBox(height: 8),
         DropdownButton<String>(
-          value: _editedData['mapType']?.toString() ?? 'standard',
+          value: _editedData['mapType']?.toString() ?? 'openstreetmap',
           isExpanded: true,
           items: const [
+            DropdownMenuItem(value: 'openstreetmap', child: Text('오픈스트리트맵')),
             DropdownMenuItem(value: 'standard', child: Text('표준')),
             DropdownMenuItem(value: 'satellite', child: Text('위성')),
             DropdownMenuItem(value: 'terrain', child: Text('지형')),
@@ -542,6 +771,18 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
           title: const Text('길찾기 표시'),
           value: _editedData['showDirections'] == true,
           onChanged: (value) => _updateData('showDirections', value),
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton.icon(
+          onPressed: () {
+            // Popular wedding venues in Seoul
+            _showLocationPresetsDialog();
+          },
+          icon: const Icon(Icons.location_city),
+          label: const Text('인기 웨딩홀 선택'),
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 45),
+          ),
         ),
       ],
     );
@@ -619,14 +860,109 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
             ),
           );
         }),
-        ElevatedButton(
+        ElevatedButton.icon(
           onPressed: () {
             events.add({'time': '00:00', 'description': '새 일정'});
             _updateData('events', events);
           },
-          child: const Text('일정 추가'),
+          icon: const Icon(Icons.add),
+          label: const Text('일정 추가'),
         ),
       ],
+    );
+  }
+
+  void _showImageSelectionDialog(Function(String) onSelect) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('이미지 선택'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.image),
+              title: const Text('갤러리 이미지 1'),
+              onTap: () {
+                onSelect('assets/images/gallery1.jpg');
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.image),
+              title: const Text('갤러리 이미지 2'),
+              onTap: () {
+                onSelect('assets/images/gallery2.jpg');
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.image),
+              title: const Text('갤러리 이미지 3'),
+              onTap: () {
+                onSelect('assets/images/gallery3.jpg');
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.image),
+              title: const Text('메인 이미지'),
+              onTap: () {
+                onSelect('assets/images/main.jpg');
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.image_not_supported),
+              title: const Text('플레이스홀더'),
+              onTap: () {
+                onSelect('assets/images/placeholder.png');
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showLocationPresetsDialog() {
+    final presets = [
+      {'name': '그랜드 호텔 서울', 'lat': 37.5642, 'lng': 126.9758},
+      {'name': '신라호텔', 'lat': 37.5558, 'lng': 126.9998},
+      {'name': '롯데호텔 서울', 'lat': 37.5656, 'lng': 126.9810},
+      {'name': '그랜드 하얏트 서울', 'lat': 37.5392, 'lng': 127.0068},
+      {'name': '파크하얏트 서울', 'lat': 37.5345, 'lng': 127.0032},
+      {'name': '더 플라자', 'lat': 37.5650, 'lng': 126.9779},
+      {'name': 'JW 메리어트 서울', 'lat': 37.5050, 'lng': 127.0588},
+      {'name': '웨스틴조선 서울', 'lat': 37.5656, 'lng': 126.9810},
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('인기 웨딩홀 선택'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: presets.length,
+            itemBuilder: (context, index) {
+              final preset = presets[index];
+              return ListTile(
+                title: Text(preset['name'] as String),
+                onTap: () {
+                  _updateData('venue', preset['name']);
+                  _updateData('title', preset['name']);
+                  _updateData('latitude', preset['lat']);
+                  _updateData('longitude', preset['lng']);
+                  Navigator.pop(context);
+                },
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
 
@@ -642,45 +978,39 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
     }
   }
 
+  Color _getContrastingColor(Color color) {
+    double luminance =
+        (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255;
+    return luminance > 0.5 ? Colors.black : Colors.white;
+  }
+
   void _showColorPicker(String propertyKey) {
-    // Simple color picker - you can enhance this with flutter_colorpicker
+    Color currentColor = _parseColor(
+      _editedData[propertyKey]?.toString() ?? '#000000'
+    );
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('색상 선택'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildColorOption(Colors.black, '검정', propertyKey),
-            _buildColorOption(Colors.white, '흰색', propertyKey),
-            _buildColorOption(Colors.red, '빨강', propertyKey),
-            _buildColorOption(Colors.blue, '파랑', propertyKey),
-            _buildColorOption(Colors.green, '초록', propertyKey),
-            _buildColorOption(Colors.orange, '주황', propertyKey),
-            _buildColorOption(Colors.purple, '보라', propertyKey),
-          ],
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: currentColor,
+            onColorChanged: (Color color) {
+              setState(() {
+                _editedData[propertyKey] = '#${color.value.toRadixString(16).substring(2)}';
+              });
+            },
+            pickerAreaHeightPercent: 0.8,
+          ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('확인'),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildColorOption(Color color, String name, String propertyKey) {
-    return ListTile(
-      leading: Container(
-        width: 30,
-        height: 30,
-        decoration: BoxDecoration(
-          color: color,
-          border: Border.all(color: Colors.grey),
-          shape: BoxShape.circle,
-        ),
-      ),
-      title: Text(name),
-      onTap: () {
-        _updateData(
-            propertyKey, '#${color.value.toRadixString(16).substring(2)}');
-        Navigator.pop(context);
-      },
     );
   }
 }

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/editor_widget_model.dart';
+import '../../widgets/editor/enhanced_size_editor.dart';
 
 class EditorWidgetDialog extends StatefulWidget {
   final EditorWidget widget;
   final Function(EditorWidget) onSave;
 
   const EditorWidgetDialog({
-    Key? key,
+    super.key,
     required this.widget,
     required this.onSave,
-  }) : super(key: key);
+  });
 
   @override
   _EditorWidgetDialogState createState() => _EditorWidgetDialogState();
@@ -35,7 +36,7 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
   void _saveChanges() {
     // Create a new widget with updated data
     EditorWidget updatedWidget;
-    
+
     switch (_editedWidget.type) {
       case WidgetType.Text:
         updatedWidget = TextWidget(id: _editedWidget.id, data: _editedData);
@@ -44,7 +45,8 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
         updatedWidget = DDayWidget(id: _editedWidget.id, data: _editedData);
         break;
       case WidgetType.CountdownTimer:
-        updatedWidget = CountdownWidget(id: _editedWidget.id, data: _editedData);
+        updatedWidget =
+            CountdownWidget(id: _editedWidget.id, data: _editedData);
         break;
       case WidgetType.Image:
         updatedWidget = ImageWidget(id: _editedWidget.id, data: _editedData);
@@ -59,7 +61,7 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
         updatedWidget = ScheduleWidget(id: _editedWidget.id, data: _editedData);
         break;
     }
-    
+
     widget.onSave(updatedWidget);
     Navigator.of(context).pop();
   }
@@ -131,7 +133,8 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
     if (_editedData['text'] is String) {
       currentText = _editedData['text'];
     } else if (_editedData['text'] is Map) {
-      currentText = _editedData['text']['ko'] ?? _editedData['text']['en'] ?? '';
+      currentText =
+          _editedData['text']['ko'] ?? _editedData['text']['en'] ?? '';
     }
 
     return Column(
@@ -169,7 +172,8 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
           isExpanded: true,
           items: const [
             DropdownMenuItem(value: 'Roboto', child: Text('Roboto')),
-            DropdownMenuItem(value: 'Noto Sans KR', child: Text('Noto Sans KR')),
+            DropdownMenuItem(
+                value: 'Noto Sans KR', child: Text('Noto Sans KR')),
             DropdownMenuItem(value: 'Arial', child: Text('Arial')),
             DropdownMenuItem(value: 'Helvetica', child: Text('Helvetica')),
           ],
@@ -219,7 +223,8 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
                 value: '결혼식까지 {days}일', child: Text('결혼식까지 {days}일')),
             DropdownMenuItem(value: 'D-{days}', child: Text('D-{days}')),
             DropdownMenuItem(value: '{days}일 남음', child: Text('{days}일 남음')),
-            DropdownMenuItem(value: '{days} days to go', child: Text('{days} days to go')),
+            DropdownMenuItem(
+                value: '{days} days to go', child: Text('{days} days to go')),
           ],
           onChanged: (value) => _updateData('format', value),
         ),
@@ -288,7 +293,8 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
         ),
         const SizedBox(height: 16),
         TextField(
-          controller: TextEditingController(text: _editedData['title']?.toString() ?? 'D-Day'),
+          controller: TextEditingController(
+              text: _editedData['title']?.toString() ?? 'D-Day'),
           decoration: const InputDecoration(
             labelText: '제목',
             border: OutlineInputBorder(),
@@ -384,7 +390,8 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
         const Text('이미지 선택:'),
         const SizedBox(height: 8),
         DropdownButton<String>(
-          value: _editedData['imageUrl']?.toString() ?? 'assets/images/placeholder.png',
+          value: _editedData['imageUrl']?.toString() ??
+              'assets/images/placeholder.png',
           isExpanded: true,
           items: const [
             DropdownMenuItem(
@@ -398,25 +405,32 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
           ],
           onChanged: (value) => _updateData('imageUrl', value),
         ),
-        const SizedBox(height: 16),
-        const Text('너비:'),
-        Slider(
-          value: (_editedData['width'] as num?)?.toDouble() ?? 200.0,
-          min: 50,
-          max: 400,
-          divisions: 35,
-          label: "${(_editedData['width'] as num?)?.toDouble() ?? 200.0}",
-          onChanged: (value) => _updateData('width', value),
+        const SizedBox(height: 24),
+
+        // Enhanced Size Controls
+        const Text(
+          '이미지 크기',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
-        const SizedBox(height: 16),
-        const Text('높이:'),
-        Slider(
-          value: (_editedData['height'] as num?)?.toDouble() ?? 200.0,
-          min: 50,
-          max: 400,
-          divisions: 35,
-          label: "${(_editedData['height'] as num?)?.toDouble() ?? 200.0}",
-          onChanged: (value) => _updateData('height', value),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 350, // Fixed height for AlertDialog compatibility
+          child: SingleChildScrollView(
+            child: EnhancedSizeEditor(
+              width: (_editedData['width'] as num?)?.toDouble() ?? 200.0,
+              height: (_editedData['height'] as num?)?.toDouble() ?? 200.0,
+              onSizeChanged: (width, height) {
+                _updateData('width', width);
+                _updateData('height', height);
+              },
+              minWidth: 50,
+              maxWidth: 400,
+              minHeight: 50,
+              maxHeight: 400,
+              showRatioControls: true,
+              showPresets: true,
+            ),
+          ),
         ),
       ],
     );
@@ -459,7 +473,7 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
                   ),
                 );
               }
-              
+
               return Stack(
                 children: [
                   Container(
@@ -553,7 +567,7 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
         ...events.asMap().entries.map((entry) {
           final index = entry.key;
           final event = entry.value;
-          
+
           return Container(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(8),
@@ -566,7 +580,8 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
                 Expanded(
                   flex: 1,
                   child: TextField(
-                    controller: TextEditingController(text: event['time']?.toString() ?? ''),
+                    controller: TextEditingController(
+                        text: event['time']?.toString() ?? ''),
                     decoration: const InputDecoration(
                       labelText: '시간',
                       isDense: true,
@@ -581,7 +596,8 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
                 Expanded(
                   flex: 2,
                   child: TextField(
-                    controller: TextEditingController(text: event['description']?.toString() ?? ''),
+                    controller: TextEditingController(
+                        text: event['description']?.toString() ?? ''),
                     decoration: const InputDecoration(
                       labelText: '설명',
                       isDense: true,
@@ -661,7 +677,8 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
       ),
       title: Text(name),
       onTap: () {
-        _updateData(propertyKey, '#${color.value.toRadixString(16).substring(2)}');
+        _updateData(
+            propertyKey, '#${color.value.toRadixString(16).substring(2)}');
         Navigator.pop(context);
       },
     );

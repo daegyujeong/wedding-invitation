@@ -4,16 +4,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../../../data/models/custom_widget_model.dart';
+import '../../widgets/editor/enhanced_size_editor.dart';
 
 class WidgetEditorDialog extends StatefulWidget {
   final CustomWidgetModel widgetModel;
   final Function(CustomWidgetModel) onSave;
 
   const WidgetEditorDialog({
-    Key? key,
+    super.key,
     required this.widgetModel,
     required this.onSave,
-  }) : super(key: key);
+  });
 
   @override
   _WidgetEditorDialogState createState() => _WidgetEditorDialogState();
@@ -122,8 +123,8 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
       children: [
         TextField(
           decoration: const InputDecoration(labelText: '텍스트'),
-          controller:
-              TextEditingController(text: _editedProperties['text']?.toString() ?? ''),
+          controller: TextEditingController(
+              text: _editedProperties['text']?.toString() ?? ''),
           onChanged: (value) => _updateProperty('text', value),
           maxLines: 3,
         ),
@@ -141,18 +142,23 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
         const SizedBox(height: 16),
         const Text('글꼴 굵기'),
         DropdownButton<int>(
-          value: _editedProperties['fontWeight'] as int? ?? FontWeight.normal.index,
+          value: _editedProperties['fontWeight'] as int? ??
+              FontWeight.normal.index,
           items: [
-            DropdownMenuItem(value: FontWeight.normal.index, child: const Text('보통')),
-            DropdownMenuItem(value: FontWeight.bold.index, child: const Text('굵게')),
-            DropdownMenuItem(value: FontWeight.w900.index, child: const Text('더 굵게')),
+            DropdownMenuItem(
+                value: FontWeight.normal.index, child: const Text('보통')),
+            DropdownMenuItem(
+                value: FontWeight.bold.index, child: const Text('굵게')),
+            DropdownMenuItem(
+                value: FontWeight.w900.index, child: const Text('더 굵게')),
           ],
           onChanged: (value) => _updateProperty('fontWeight', value),
         ),
         const SizedBox(height: 16),
         const Text('텍스트 정렬'),
         DropdownButton<int>(
-          value: _editedProperties['textAlign'] as int? ?? TextAlign.center.index,
+          value:
+              _editedProperties['textAlign'] as int? ?? TextAlign.center.index,
           items: [
             DropdownMenuItem(
                 value: TextAlign.left.index, child: const Text('왼쪽')),
@@ -170,8 +176,8 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
           width: double.infinity,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  Color(_editedProperties['color'] as int? ?? Colors.black.value),
+              backgroundColor: Color(
+                  _editedProperties['color'] as int? ?? Colors.black.value),
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
             onPressed: () {
@@ -193,7 +199,8 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
         const Text('이미지 선택'),
         const SizedBox(height: 8),
         DropdownButton<String>(
-          value: _editedProperties['imagePath']?.toString() ?? 'assets/images/gallery1.jpg',
+          value: _editedProperties['imagePath']?.toString() ??
+              'assets/images/gallery1.jpg',
           isExpanded: true,
           items: const [
             DropdownMenuItem(
@@ -227,6 +234,37 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
           ],
           onChanged: (value) => _updateProperty('fit', value),
         ),
+        const SizedBox(height: 24),
+
+        // Enhanced Size Controls
+        const Text(
+          '이미지 크기',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 350, // Fixed height for AlertDialog compatibility
+          child: SingleChildScrollView(
+            child: EnhancedSizeEditor(
+              width: _editedModel.width,
+              height: _editedModel.height,
+              onSizeChanged: (width, height) {
+                setState(() {
+                  _editedModel = _editedModel.copyWith(
+                    width: width,
+                    height: height,
+                  );
+                });
+              },
+              minWidth: 50,
+              maxWidth: 400,
+              minHeight: 50,
+              maxHeight: 400,
+              showRatioControls: true,
+              showPresets: true,
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -253,8 +291,8 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
           width: double.infinity,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  Color(_editedProperties['color'] as int? ?? Colors.grey.value),
+              backgroundColor: Color(
+                  _editedProperties['color'] as int? ?? Colors.grey.value),
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
             onPressed: () {
@@ -274,8 +312,8 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
       children: [
         TextField(
           decoration: const InputDecoration(labelText: '버튼 텍스트'),
-          controller:
-              TextEditingController(text: _editedProperties['text']?.toString() ?? '버튼'),
+          controller: TextEditingController(
+              text: _editedProperties['text']?.toString() ?? '버튼'),
           onChanged: (value) => _updateProperty('text', value),
         ),
         const SizedBox(height: 16),
@@ -285,14 +323,15 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
           width: double.infinity,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  Color(_editedProperties['color'] as int? ?? Colors.blue.value),
+              backgroundColor: Color(
+                  _editedProperties['color'] as int? ?? Colors.blue.value),
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
             onPressed: () {
               _showColorPicker('color');
             },
-            child: const Text('배경 색상 선택', style: TextStyle(color: Colors.white)),
+            child:
+                const Text('배경 색상 선택', style: TextStyle(color: Colors.white)),
           ),
         ),
         const SizedBox(height: 16),
@@ -302,8 +341,8 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
           width: double.infinity,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  Color(_editedProperties['textColor'] as int? ?? Colors.white.value),
+              backgroundColor: Color(
+                  _editedProperties['textColor'] as int? ?? Colors.white.value),
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
             onPressed: () {
@@ -313,7 +352,8 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
               '텍스트 색상 선택',
               style: TextStyle(
                   color: _getContrastingColor(Color(
-                      _editedProperties['textColor'] as int? ?? Colors.white.value))),
+                      _editedProperties['textColor'] as int? ??
+                          Colors.white.value))),
             ),
           ),
         ),
@@ -362,7 +402,8 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
           onPressed: () async {
             final currentDateStr = _editedProperties['endDate']?.toString();
             final currentDate = currentDateStr != null
-                ? DateTime.tryParse(currentDateStr) ?? DateTime.now().add(const Duration(days: 30))
+                ? DateTime.tryParse(currentDateStr) ??
+                    DateTime.now().add(const Duration(days: 30))
                 : DateTime.now().add(const Duration(days: 30));
 
             final pickedDate = await showDatePicker(
@@ -390,11 +431,9 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
               }
             }
           },
-          child: Text(
-            _editedProperties['endDate'] != null 
-                ? '선택된 날짜: ${DateTime.tryParse(_editedProperties['endDate'].toString())?.toString().split(' ')[0] ?? '미선택'}'
-                : '날짜 및 시간 선택'
-          ),
+          child: Text(_editedProperties['endDate'] != null
+              ? '선택된 날짜: ${DateTime.tryParse(_editedProperties['endDate'].toString())?.toString().split(' ')[0] ?? '미선택'}'
+              : '날짜 및 시간 선택'),
         ),
         const SizedBox(height: 16),
         SwitchListTile(
@@ -414,7 +453,8 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
         TextField(
           decoration: const InputDecoration(labelText: '위도'),
           controller: TextEditingController(
-              text: (_editedProperties['latitude'] as num? ?? 37.5665).toString()),
+              text: (_editedProperties['latitude'] as num? ?? 37.5665)
+                  .toString()),
           keyboardType: TextInputType.number,
           onChanged: (value) {
             final doubleValue = double.tryParse(value);
@@ -427,7 +467,8 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
         TextField(
           decoration: const InputDecoration(labelText: '경도'),
           controller: TextEditingController(
-              text: (_editedProperties['longitude'] as num? ?? 126.978).toString()),
+              text: (_editedProperties['longitude'] as num? ?? 126.978)
+                  .toString()),
           keyboardType: TextInputType.number,
           onChanged: (value) {
             final doubleValue = double.tryParse(value);
@@ -439,8 +480,8 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
         const SizedBox(height: 16),
         TextField(
           decoration: const InputDecoration(labelText: '제목'),
-          controller:
-              TextEditingController(text: _editedProperties['title']?.toString() ?? '위치'),
+          controller: TextEditingController(
+              text: _editedProperties['title']?.toString() ?? '위치'),
           onChanged: (value) => _updateProperty('title', value),
         ),
         const SizedBox(height: 16),
@@ -460,17 +501,49 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
           label: "${(_editedProperties['zoom'] as num?)?.toDouble() ?? 15.0}",
           onChanged: (value) => _updateProperty('zoom', value),
         ),
+        const SizedBox(height: 24),
+
+        // Enhanced Size Controls
+        const Text(
+          '지도 크기',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 350, // Fixed height for AlertDialog compatibility
+          child: SingleChildScrollView(
+            child: EnhancedSizeEditor(
+              width: _editedModel.width,
+              height: _editedModel.height,
+              onSizeChanged: (width, height) {
+                setState(() {
+                  _editedModel = _editedModel.copyWith(
+                    width: width,
+                    height: height,
+                  );
+                });
+              },
+              minWidth: 100,
+              maxWidth: 400,
+              minHeight: 100,
+              maxHeight: 400,
+              showRatioControls: true,
+              showPresets: true,
+            ),
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildGalleryEditorFields() {
     // In a real app, this would use an image picker to add/remove images
-    final images = _editedProperties['images'] ?? [
-      'assets/images/gallery1.jpg', 
-      'assets/images/gallery2.jpg',
-      'assets/images/gallery3.jpg'
-    ];
+    final images = _editedProperties['images'] ??
+        [
+          'assets/images/gallery1.jpg',
+          'assets/images/gallery2.jpg',
+          'assets/images/gallery3.jpg'
+        ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -535,7 +608,8 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
                                 title: const Text('플레이스홀더'),
                                 onTap: () {
                                   List<String> newImages = List.from(images);
-                                  newImages.add('assets/images/placeholder.png');
+                                  newImages
+                                      .add('assets/images/placeholder.png');
                                   _updateProperty('images', newImages);
                                   Navigator.pop(context);
                                 },
@@ -608,6 +682,37 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
           value: _editedProperties['autoScroll'] as bool? ?? false,
           onChanged: (value) => _updateProperty('autoScroll', value),
         ),
+        const SizedBox(height: 24),
+
+        // Enhanced Size Controls
+        const Text(
+          '갤러리 크기',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 350, // Fixed height for AlertDialog compatibility
+          child: SingleChildScrollView(
+            child: EnhancedSizeEditor(
+              width: _editedModel.width,
+              height: _editedModel.height,
+              onSizeChanged: (width, height) {
+                setState(() {
+                  _editedModel = _editedModel.copyWith(
+                    width: width,
+                    height: height,
+                  );
+                });
+              },
+              minWidth: 150,
+              maxWidth: 400,
+              minHeight: 100,
+              maxHeight: 350,
+              showRatioControls: true,
+              showPresets: true,
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -627,7 +732,8 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
         TextField(
           decoration: const InputDecoration(labelText: '안내 문구'),
           controller: TextEditingController(
-              text: _editedProperties['placeholder']?.toString() ?? '메시지를 남겨주세요'),
+              text:
+                  _editedProperties['placeholder']?.toString() ?? '메시지를 남겨주세요'),
           onChanged: (value) => _updateProperty('placeholder', value),
         ),
         const SizedBox(height: 16),
@@ -671,8 +777,9 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
 
   Color _getContrastingColor(Color color) {
     // Calculate the perceptive luminance (based on ITU-R BT.709)
-    double luminance = (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255;
-    
+    double luminance =
+        (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255;
+
     // Return black for bright colors and white for dark colors
     return luminance > 0.5 ? Colors.black : Colors.white;
   }

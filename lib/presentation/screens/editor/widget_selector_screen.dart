@@ -401,6 +401,11 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
             'venueId': 'main_venue',
             'mapType': 'openstreetmap',
             'showDirections': true,
+            'latitude':
+                37.5642, // The Plaza Hotel Seoul (popular wedding venue)
+            'longitude': 126.9758,
+            'venue': '그랜드 호텔',
+            'title': '그랜드 호텔',
             'position': {
               'dx': 50.0,
               'dy': 200.0,

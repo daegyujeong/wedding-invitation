@@ -242,9 +242,10 @@ class WidgetTemplateService {
         width: 360,
         height: 250,
         properties: {
-          'latitude': 37.5665,
-          'longitude': 126.9780,
-          'address': '서울시 중구 을지로 30',
+          'latitude': 37.5642,
+          'longitude': 126.9758,
+          'title': '그랜드 호텔',
+          'address': '서울시 중구 소공로 119',
           'zoom': 15.0,
         },
       ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../data/models/page_model.dart';
 import '../../../viewmodels/editor_viewmodel.dart';
-import '../widget_selector_screen.dart';
 import 'custom_draggable_editor.dart';
 
 class CustomTemplateEditor extends StatefulWidget {
@@ -104,14 +103,6 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
           _buildSettingsTab(),
         ],
       ),
-      floatingActionButton: _tabController.index == 0
-          ? FloatingActionButton.extended(
-              heroTag: "customTemplateEditorFAB",
-              onPressed: _showWidgetSelector,
-              icon: const Icon(Icons.add),
-              label: const Text('위젯 추가'),
-            )
-          : null,
     );
   }
 
@@ -245,7 +236,11 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
                         image: DecorationImage(
-                          image: NetworkImage(widget.page.backgroundImage),
+                          image:
+                              widget.page.backgroundImage.startsWith('assets/')
+                                  ? AssetImage(widget.page.backgroundImage)
+                                  : NetworkImage(widget.page.backgroundImage),
+                          // todo: upload feature
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -386,18 +381,6 @@ class _CustomTemplateEditorState extends State<CustomTemplateEditor>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showWidgetSelector() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => WidgetSelectorScreen(
-          pageId: widget.page.id,
-          viewModel: widget.viewModel,
-        ),
       ),
     );
   }

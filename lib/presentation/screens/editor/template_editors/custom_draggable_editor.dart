@@ -6,6 +6,7 @@ import '../../../../data/models/editor_widget_model.dart';
 import '../../../../data/models/page_model.dart';
 import '../../../viewmodels/editor_viewmodel.dart';
 import '../../../widgets/editor/draggable_widget.dart';
+import '../../../widgets/editor/enhanced_size_editor.dart';
 import '../widget_selector_screen.dart';
 
 class CustomDraggableEditor extends StatefulWidget {
@@ -533,46 +534,36 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
                       hintText: 'assets/images/example.jpg',
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      const Text('너비:'),
-                      Expanded(
-                        child: Slider(
-                          value: width,
-                          min: 50,
-                          max: 400,
-                          divisions: 35,
-                          label: width.round().toString(),
-                          onChanged: (value) {
-                            setDialogState(() {
-                              width = value;
-                            });
-                          },
-                        ),
-                      ),
-                      Text('${width.round()}'),
-                    ],
+                  const SizedBox(height: 24),
+
+                  // Enhanced Size Controls
+                  const Text(
+                    '이미지 크기',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
-                  Row(
-                    children: [
-                      const Text('높이:'),
-                      Expanded(
-                        child: Slider(
-                          value: height,
-                          min: 50,
-                          max: 400,
-                          divisions: 35,
-                          label: height.round().toString(),
-                          onChanged: (value) {
-                            setDialogState(() {
-                              height = value;
-                            });
-                          },
-                        ),
+                  const SizedBox(height: 8),
+                  // Wrap in Container with height constraint for AlertDialog compatibility
+                  SizedBox(
+                    height:
+                        400, // Fixed height to prevent viewport issues in AlertDialog
+                    child: SingleChildScrollView(
+                      child: EnhancedSizeEditor(
+                        width: width,
+                        height: height,
+                        onSizeChanged: (newWidth, newHeight) {
+                          setDialogState(() {
+                            width = newWidth;
+                            height = newHeight;
+                          });
+                        },
+                        minWidth: 50,
+                        maxWidth: 400,
+                        minHeight: 50,
+                        maxHeight: 400,
+                        showRatioControls: true,
+                        showPresets: true,
                       ),
-                      Text('${height.round()}'),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -681,14 +672,15 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                   const SizedBox(height: 8),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.add),
                     label: const Text('이미지 추가'),
                     onPressed: () {
                       setDialogState(() {
-                        imageUrls.add('assets/images/gallery${imageUrls.length + 1}.jpg');
+                        imageUrls.add(
+                            'assets/images/gallery${imageUrls.length + 1}.jpg');
                       });
                     },
                   ),
@@ -750,7 +742,8 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
                           Expanded(
                             flex: 2,
                             child: TextField(
-                              controller: TextEditingController(text: event['time']),
+                              controller:
+                                  TextEditingController(text: event['time']),
                               decoration: const InputDecoration(
                                 labelText: '시간',
                                 border: OutlineInputBorder(),
@@ -764,7 +757,8 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
                           Expanded(
                             flex: 3,
                             child: TextField(
-                              controller: TextEditingController(text: event['description']),
+                              controller: TextEditingController(
+                                  text: event['description']),
                               decoration: const InputDecoration(
                                 labelText: '내용',
                                 border: OutlineInputBorder(),
@@ -785,7 +779,7 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                   const SizedBox(height: 8),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.add),
@@ -852,7 +846,8 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
                       context: context,
                       initialDate: targetDate,
                       firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+                      lastDate:
+                          DateTime.now().add(const Duration(days: 365 * 2)),
                     );
                     if (picked != null) {
                       setDialogState(() {
@@ -980,6 +975,10 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
         'venueId': 'main_venue',
         'mapType': 'openstreetmap',
         'showDirections': true,
+        'latitude': 37.5642, // The Plaza Hotel Seoul (popular wedding venue)
+        'longitude': 126.9758,
+        'venue': '그랜드 호텔',
+        'title': '그랜드 호텔',
         'position': {
           'dx': 100.0,
           'dy': 200.0,

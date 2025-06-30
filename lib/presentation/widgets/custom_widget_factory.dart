@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../../data/models/custom_widget_model.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'dart:async';
@@ -147,7 +149,7 @@ class CustomWidgetFactory {
   static Widget _buildTextWidget(CustomWidgetModel model) {
     final text = model.properties['text']?.toString() ?? '텍스트를 입력하세요';
     final fontSize = (model.properties['fontSize'] as num?)?.toDouble() ?? 16.0;
-    
+
     // Fix fontWeight handling
     final fontWeightValue = model.properties['fontWeight'];
     FontWeight fontWeight = FontWeight.normal;
@@ -189,9 +191,9 @@ class CustomWidgetFactory {
           fontWeight = FontWeight.normal;
       }
     }
-    
+
     final colorValue = model.properties['color'] ?? Colors.black.value;
-    
+
     // Fix text alignment handling
     final textAlignValue = model.properties['textAlign'];
     TextAlign textAlign = TextAlign.center;
@@ -222,11 +224,11 @@ class CustomWidgetFactory {
         model.properties['imageUrl'] ??
         'assets/images/placeholder.png';
     final fitIndex = model.properties['fit'] ?? BoxFit.cover.index;
-    final boxFit = fitIndex is int && fitIndex < BoxFit.values.length 
-        ? BoxFit.values[fitIndex] 
+    final boxFit = fitIndex is int && fitIndex < BoxFit.values.length
+        ? BoxFit.values[fitIndex]
         : BoxFit.cover;
 
-    return Container(
+    return SizedBox(
       width: model.width,
       height: model.height,
       child: ClipRRect(
@@ -252,7 +254,8 @@ class CustomWidgetFactory {
                       size: 32, color: Colors.grey.shade600),
                   const SizedBox(height: 8),
                   Text('이미지 없음',
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                 ],
               ),
             );
@@ -267,7 +270,7 @@ class CustomWidgetFactory {
         (model.properties['thickness'] as num?)?.toDouble() ?? 1.0;
     final colorValue = model.properties['color'] ?? Colors.grey.value;
 
-    return Container(
+    return SizedBox(
       width: model.width,
       height: model.height,
       child: Center(
@@ -285,7 +288,7 @@ class CustomWidgetFactory {
     final colorValue = model.properties['color'] ?? Colors.blue.value;
     final textColorValue = model.properties['textColor'] ?? Colors.white.value;
 
-    return Container(
+    return SizedBox(
       width: model.width,
       height: model.height,
       child: ElevatedButton(
@@ -293,13 +296,15 @@ class CustomWidgetFactory {
           // Handle button action based on model.properties['action']
           final action = model.properties['action'];
           final target = model.properties['actionTarget'];
-          
+
           // In a real app, you would handle different actions here
           print('Button pressed: $action, target: $target');
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Color(colorValue is int ? colorValue : Colors.blue.value),
-          foregroundColor: Color(textColorValue is int ? textColorValue : Colors.white.value),
+          backgroundColor:
+              Color(colorValue is int ? colorValue : Colors.blue.value),
+          foregroundColor: Color(
+              textColorValue is int ? textColorValue : Colors.white.value),
           minimumSize: Size(model.width, model.height),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -318,7 +323,7 @@ class CustomWidgetFactory {
     final title = model.properties['title']?.toString() ?? '결혼식까지';
     final endDateStr = model.properties['endDate'] ??
         DateTime.now().add(const Duration(days: 30)).toIso8601String();
-    final endDate = DateTime.tryParse(endDateStr) ?? 
+    final endDate = DateTime.tryParse(endDateStr) ??
         DateTime.now().add(const Duration(days: 30));
     final showSeconds = model.properties['showSeconds'] ?? true;
 
@@ -339,32 +344,74 @@ class CustomWidgetFactory {
     final title = model.properties['title']?.toString() ?? '위치';
     final description = model.properties['description']?.toString() ?? '';
 
-    // Placeholder for actual map
     return Container(
       width: model.width,
       height: model.height,
       decoration: BoxDecoration(
-        color: Colors.grey[300],
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey),
       ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: FlutterMap(
+          options: MapOptions(
+            center: LatLng(latitude, longitude),
+            zoom: 15.0,
+            maxZoom: 18.0,
+            minZoom: 10.0,
+            interactiveFlags:
+                InteractiveFlag.none, // Disable interaction in preview
+          ),
           children: [
-            const Icon(Icons.map, size: 50),
-            const SizedBox(height: 8),
-            Text(title, 
-                style: const TextStyle(fontWeight: FontWeight.bold),
-                overflow: TextOverflow.ellipsis),
-            if (description.isNotEmpty)
-              Text(description, 
-                  style: const TextStyle(fontSize: 12),
-                  overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 8),
-            Text('위도: ${latitude.toStringAsFixed(4)}, 경도: ${longitude.toStringAsFixed(4)}',
-                style: const TextStyle(fontSize: 12),
-                overflow: TextOverflow.ellipsis),
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.example.wedding_invitation',
+            ),
+            MarkerLayer(
+              markers: [
+                Marker(
+                  point: LatLng(latitude, longitude),
+                  width: 80,
+                  height: 80,
+                  builder: (ctx) => Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.location_on,
+                        color: Colors.red,
+                        size: 30,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -372,11 +419,12 @@ class CustomWidgetFactory {
   }
 
   static Widget _buildGalleryWidget(CustomWidgetModel model) {
-    final images = model.properties['images'] ?? [
-      'assets/images/gallery1.jpg',
-      'assets/images/gallery2.jpg',
-      'assets/images/gallery3.jpg'
-    ];
+    final images = model.properties['images'] ??
+        [
+          'assets/images/gallery1.jpg',
+          'assets/images/gallery2.jpg',
+          'assets/images/gallery3.jpg'
+        ];
     final showDots = model.properties['showDots'] ?? true;
     final autoScroll = model.properties['autoScroll'] ?? false;
 
@@ -401,7 +449,7 @@ class CustomWidgetFactory {
       );
     }
 
-    return Container(
+    return SizedBox(
       width: model.width,
       height: model.height,
       child: CarouselSlider(
@@ -437,9 +485,11 @@ class CustomWidgetFactory {
                         child: const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                            Icon(Icons.broken_image,
+                                size: 50, color: Colors.grey),
                             SizedBox(height: 8),
-                            Text('이미지 로드 실패', style: TextStyle(color: Colors.grey)),
+                            Text('이미지 로드 실패',
+                                style: TextStyle(color: Colors.grey)),
                           ],
                         ),
                       );
@@ -456,7 +506,8 @@ class CustomWidgetFactory {
 
   static Widget _buildMessageBoxWidget(CustomWidgetModel model) {
     final title = model.properties['title']?.toString() ?? '축하 메시지';
-    final placeholder = model.properties['placeholder']?.toString() ?? '메시지를 남겨주세요';
+    final placeholder =
+        model.properties['placeholder']?.toString() ?? '메시지를 남겨주세요';
     final showSubmitButton = model.properties['showSubmitButton'] ?? true;
 
     return Container(
@@ -567,7 +618,7 @@ class _CountdownWidgetState extends State<CountdownWidget> {
   void _updateRemaining() {
     final now = DateTime.now();
     final remaining = widget.endDate.difference(now);
-    
+
     if (mounted) {
       setState(() {
         _remaining = remaining.isNegative ? Duration.zero : remaining;

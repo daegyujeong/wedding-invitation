@@ -50,7 +50,7 @@ abstract class EditorWidget {
   // Factory methods for creating default widgets
   static EditorWidget createDefault(WidgetType type) {
     final String id = DateTime.now().millisecondsSinceEpoch.toString();
-    
+
     switch (type) {
       case WidgetType.Text:
         return TextWidget(
@@ -70,14 +70,16 @@ abstract class EditorWidget {
             'format': '결혼식까지 {days}일',
             'style': '기본',
             'title': 'D-Day',
-            'targetDate': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+            'targetDate':
+                DateTime.now().add(const Duration(days: 30)).toIso8601String(),
           },
         );
       case WidgetType.CountdownTimer:
         return CountdownWidget(
           id: id,
           data: {
-            'targetDate': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+            'targetDate':
+                DateTime.now().add(const Duration(days: 30)).toIso8601String(),
             'format': 'countdown',
           },
         );
@@ -133,12 +135,15 @@ class TextWidget extends EditorWidget {
     } catch (e) {
       // Fallback if MultiLanguageText is not available
       return MultiLanguageText(
-        ko: data['text']?.toString() ?? '텍스트를 입력하세요',
-        en: data['text']?.toString() ?? 'Enter text',
+        translations: {
+          'ko': data['text']?.toString() ?? '텍스트를 입력하세요',
+          'en': data['text']?.toString() ?? 'Enter text',
+        },
+        defaultLanguage: 'ko',
       );
     }
   }
-  
+
   String get fontFamily => data['fontFamily']?.toString() ?? 'Roboto';
   double get fontSize => (data['fontSize'] as num?)?.toDouble() ?? 16.0;
   String get color => data['color']?.toString() ?? '#000000';
@@ -170,7 +175,7 @@ class DDayWidget extends EditorWidget {
   String get format => data['format']?.toString() ?? '결혼식까지 {days}일';
   String get style => data['style']?.toString() ?? '기본';
   String get title => data['title']?.toString() ?? 'D-Day';
-  
+
   DateTime get targetDate {
     try {
       return DateTime.parse(data['targetDate']?.toString() ?? '');
@@ -233,7 +238,8 @@ class ImageWidget extends EditorWidget {
     required super.data,
   }) : super(type: WidgetType.Image);
 
-  String get imageUrl => data['imageUrl']?.toString() ?? 'assets/images/placeholder.png';
+  String get imageUrl =>
+      data['imageUrl']?.toString() ?? 'assets/images/placeholder.png';
   double get width => (data['width'] as num?)?.toDouble() ?? 200.0;
   double get height => (data['height'] as num?)?.toDouble() ?? 200.0;
 
@@ -267,7 +273,7 @@ class CountdownWidget extends EditorWidget {
       return DateTime.now().add(const Duration(days: 30));
     }
   }
-  
+
   String get format => data['format']?.toString() ?? 'countdown';
 
   void setTargetDate(DateTime date) {
@@ -304,7 +310,7 @@ class GalleryWidget extends EditorWidget {
       return ['assets/images/placeholder.png'];
     }
   }
-  
+
   String get layoutType => data['layoutType']?.toString() ?? 'horizontal';
 
   @override

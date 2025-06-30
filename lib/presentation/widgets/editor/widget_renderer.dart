@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../../../data/models/editor_widget_model.dart';
 
 class WidgetRenderer extends StatelessWidget {
@@ -50,9 +52,9 @@ class WidgetRenderer extends StatelessWidget {
       if (textWidget.data['text'] is String) {
         displayText = textWidget.data['text'];
       } else if (textWidget.data['text'] is Map) {
-        displayText = textWidget.data['text']['ko'] ?? 
-                    textWidget.data['text']['en'] ?? 
-                    'Enter text';
+        displayText = textWidget.data['text']['ko'] ??
+            textWidget.data['text']['en'] ??
+            'Enter text';
       }
     }
 
@@ -60,7 +62,8 @@ class WidgetRenderer extends StatelessWidget {
     Color textColor = Colors.black;
     try {
       if (textWidget.color.startsWith('#')) {
-        textColor = Color(int.parse('FF${textWidget.color.substring(1)}', radix: 16));
+        textColor =
+            Color(int.parse('FF${textWidget.color.substring(1)}', radix: 16));
       } else {
         textColor = Color(int.parse(textWidget.color));
       }
@@ -77,7 +80,8 @@ class WidgetRenderer extends StatelessWidget {
       child: Text(
         displayText,
         style: TextStyle(
-          fontFamily: textWidget.fontFamily.isNotEmpty ? textWidget.fontFamily : null,
+          fontFamily:
+              textWidget.fontFamily.isNotEmpty ? textWidget.fontFamily : null,
           fontSize: textWidget.fontSize > 0 ? textWidget.fontSize : 16,
           color: textColor,
         ),
@@ -119,57 +123,100 @@ class WidgetRenderer extends StatelessWidget {
   }
 
   Widget _buildMapWidget(MapWidget mapWidget) {
+    // Get coordinates from the widget data, with defaults for Seoul
+    double latitude = 37.5665; // Default: Seoul
+    double longitude = 126.9780; // Default: Seoul
+    String venue = '결혼식장 위치';
+
+    // Try to get coordinates from different possible data keys
+    if (mapWidget.data.containsKey('latitude') &&
+        mapWidget.data.containsKey('longitude')) {
+      latitude = (mapWidget.data['latitude'] as num?)?.toDouble() ?? latitude;
+      longitude =
+          (mapWidget.data['longitude'] as num?)?.toDouble() ?? longitude;
+    }
+
+    // Get venue name if available
+    if (mapWidget.data.containsKey('venue')) {
+      venue = mapWidget.data['venue']?.toString() ?? venue;
+    } else if (mapWidget.data.containsKey('title')) {
+      venue = mapWidget.data['title']?.toString() ?? venue;
+    }
+
     return Container(
       width: 200,
       height: 200,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey),
-        color: Colors.grey.shade100,
       ),
-      child: Stack(
-        children: [
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.map,
-                  size: 40,
-                  color: Colors.grey.shade600,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '지도',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '결혼식장 위치',
-                  style: TextStyle(
-                    color: Colors.grey.shade500,
-                    fontSize: 12,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: FlutterMap(
+          options: MapOptions(
+            center: LatLng(latitude, longitude),
+            zoom: 15.0,
+            maxZoom: 18.0,
+            minZoom: 10.0,
+            interactiveFlags:
+                InteractiveFlag.none, // Disable interaction in preview
+          ),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.example.wedding_invitation',
+            ),
+            MarkerLayer(
+              markers: [
+                Marker(
+                  point: LatLng(latitude, longitude),
+                  width: 80,
+                  height: 80,
+                  builder: (ctx) => Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          venue,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.location_on,
+                        color: Colors.red,
+                        size: 30,
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-          const Positioned(
-            bottom: 8,
-            right: 8,
-            child: Icon(
-              Icons.location_on,
-              color: Colors.red,
-              size: 24,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+// todo: Research Alternative Map editor
 
   Widget _buildImageWidget(ImageWidget imageWidget) {
     return Container(
@@ -195,7 +242,8 @@ class WidgetRenderer extends StatelessWidget {
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.image_not_supported, color: Colors.grey, size: 50),
+                        Icon(Icons.image_not_supported,
+                            color: Colors.grey, size: 50),
                         Text('이미지 없음', style: TextStyle(color: Colors.grey)),
                       ],
                     ),
@@ -215,7 +263,8 @@ class WidgetRenderer extends StatelessWidget {
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.image_not_supported, color: Colors.grey, size: 50),
+                        Icon(Icons.image_not_supported,
+                            color: Colors.grey, size: 50),
                         Text('이미지 없음', style: TextStyle(color: Colors.grey)),
                       ],
                     ),
@@ -276,7 +325,8 @@ class WidgetRenderer extends StatelessWidget {
                           width: 120,
                           height: 120,
                           color: Colors.grey.shade200,
-                          child: const Icon(Icons.broken_image, color: Colors.grey),
+                          child: const Icon(Icons.broken_image,
+                              color: Colors.grey),
                         );
                       },
                     )
@@ -290,7 +340,8 @@ class WidgetRenderer extends StatelessWidget {
                           width: 120,
                           height: 120,
                           color: Colors.grey.shade200,
-                          child: const Icon(Icons.broken_image, color: Colors.grey),
+                          child: const Icon(Icons.broken_image,
+                              color: Colors.grey),
                         );
                       },
                     ),
@@ -404,7 +455,8 @@ class _LiveDDayWidgetState extends State<LiveDDayWidget> {
   Widget build(BuildContext context) {
     String displayText;
     if (_daysRemaining > 0) {
-      displayText = widget.format.replaceAll('{days}', _daysRemaining.toString());
+      displayText =
+          widget.format.replaceAll('{days}', _daysRemaining.toString());
     } else if (_daysRemaining == 0) {
       displayText = 'D-Day';
     } else {

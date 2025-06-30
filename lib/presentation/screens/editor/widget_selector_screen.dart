@@ -275,6 +275,12 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
         return Icons.touch_app;
       case '장식':
         return Icons.palette;
+      case '미디어':
+        return Icons.perm_media;
+      case '기본':
+        return Icons.widgets;
+      case '정보':
+        return Icons.info;
       default:
         return Icons.widgets;
     }
@@ -300,24 +306,104 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
         return Icons.horizontal_rule;
       case 'space_bar':
         return Icons.space_bar;
+      case 'video_library':
+        return Icons.video_library;
+      case 'schedule':
+        return Icons.schedule;
       default:
         return Icons.widgets;
     }
   }
 
   void _addTemplate(String templateType) {
-    _showConfirmationDialog(
-      title: '템플릿 추가',
-      content: '선택한 템플릿의 모든 위젯이 페이지에 추가됩니다. 계속하시겠습니까?',
-      onConfirm: () {
-        final widgets = WidgetTemplateService.getTemplate(templateType);
-        for (final widgetModel in widgets) {
-          widget.viewModel.addWidget(widget.pageId, widgetModel);
-        }
-        Navigator.pop(context);
-        _showSuccessSnackBar('템플릿이 추가되었습니다.');
-      },
-    );
+    if (templateType == 'hero') {
+      // Create hero section with multiple widgets
+      final List<EditorWidget> widgets = [
+        // Background image
+        ImageWidget(
+          id: 'hero_bg_${_uuid.v4()}',
+          data: {
+            'imageUrl': 'assets/images/main.jpg',
+            'width': 400.0,
+            'height': 300.0,
+            'position': {
+              'dx': 0.0,
+              'dy': 0.0,
+            },
+          },
+        ),
+        // Title
+        TextWidget(
+          id: 'hero_title_${_uuid.v4()}',
+          data: {
+            'text': {
+              'translations': {'ko': '우리 결혼합니다'},
+              'default_language': 'ko',
+            },
+            'fontFamily': 'Roboto',
+            'fontSize': 32.0,
+            'color': '#FFFFFF',
+            'position': {
+              'dx': 50.0,
+              'dy': 50.0,
+            },
+          },
+        ),
+        // Names
+        TextWidget(
+          id: 'hero_names_${_uuid.v4()}',
+          data: {
+            'text': {
+              'translations': {'ko': '신랑 김철수 & 신부 이영희'},
+              'default_language': 'ko',
+            },
+            'fontFamily': 'Roboto',
+            'fontSize': 24.0,
+            'color': '#FFFFFF',
+            'position': {
+              'dx': 50.0,
+              'dy': 120.0,
+            },
+          },
+        ),
+        // Date
+        TextWidget(
+          id: 'hero_date_${_uuid.v4()}',
+          data: {
+            'text': {
+              'translations': {'ko': '2025년 5월 31일 토요일 오후 1시'},
+              'default_language': 'ko',
+            },
+            'fontFamily': 'Roboto',
+            'fontSize': 18.0,
+            'color': '#FFFFFF',
+            'position': {
+              'dx': 50.0,
+              'dy': 180.0,
+            },
+          },
+        ),
+      ];
+
+      // Add all widgets
+      for (final widget in widgets) {
+        Navigator.pop(context, widget);
+      }
+      _showSuccessSnackBar('히어로 섹션이 추가되었습니다.');
+    } else {
+      _showConfirmationDialog(
+        title: '템플릿 추가',
+        content: '선택한 템플릿의 모든 위젯이 페이지에 추가됩니다. 계속하시겠습니까?',
+        onConfirm: () {
+          final widgets = WidgetTemplateService.getTemplate(templateType);
+          for (final widgetModel in widgets) {
+            widget.viewModel.addWidget(widget.pageId, widgetModel);
+          }
+          Navigator.pop(context);
+          _showSuccessSnackBar('템플릿이 추가되었습니다.');
+        },
+      );
+    }
   }
 
   void _addWidget(String widgetType) {
@@ -363,6 +449,31 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
         );
         break;
 
+      case 'button':
+        // Create a button widget using TextWidget with button styling
+        editorWidget = TextWidget(
+          id: 'button_${_uuid.v4()}',
+          data: {
+            'text': {
+              'translations': {'ko': '버튼 텍스트'},
+              'default_language': 'ko',
+            },
+            'fontFamily': 'Roboto',
+            'fontSize': 16.0,
+            'color': '#FFFFFF',
+            'backgroundColor': '#4285F4',
+            'borderRadius': 8.0,
+            'padding': 16.0,
+            'action': 'url',
+            'actionTarget': 'https://example.com',
+            'position': {
+              'dx': 100.0,
+              'dy': 100.0,
+            },
+          },
+        );
+        break;
+
       case 'countdown':
       case 'timer':
         editorWidget = CountdownWidget(
@@ -383,9 +494,12 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
         editorWidget = DDayWidget(
           id: 'dday_${_uuid.v4()}',
           data: {
-            'eventId': '',
+            'eventId': 'wedding',
             'format': 'D-{days}',
             'style': 'default',
+            'title': 'D-Day',
+            'targetDate':
+                DateTime.now().add(const Duration(days: 30)).toIso8601String(),
             'position': {
               'dx': 100.0,
               'dy': 150.0,
@@ -439,8 +553,36 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
               'assets/images/gallery3.jpg',
             ],
             'layoutType': 'carousel',
+            'style': 'modern', // Add style property
+            'showIndicators': true,
+            'autoPlay': false,
             'position': {
               'dx': 50.0,
+              'dy': 100.0,
+            },
+          },
+        );
+        break;
+
+      case 'video':
+        // Create a placeholder for video widget
+        editorWidget = TextWidget(
+          id: 'video_${_uuid.v4()}',
+          data: {
+            'text': {
+              'translations': {'ko': '비디오 플레이어\n(URL을 설정해주세요)'},
+              'default_language': 'ko',
+            },
+            'fontFamily': 'Roboto',
+            'fontSize': 16.0,
+            'color': '#666666',
+            'backgroundColor': '#F0F0F0',
+            'borderRadius': 8.0,
+            'padding': 20.0,
+            'videoUrl': '',
+            'isVideo': true,
+            'position': {
+              'dx': 100.0,
               'dy': 100.0,
             },
           },
@@ -470,7 +612,7 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
           id: 'widget_${_uuid.v4()}',
           data: {
             'text': {
-              'translations': {'ko': '새로운 위젯'},
+              'translations': {'ko': '위젯'},
               'default_language': 'ko',
             },
             'fontFamily': 'Roboto',

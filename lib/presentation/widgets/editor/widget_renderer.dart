@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../data/models/editor_widget_model.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:video_player/video_player.dart';
 
 class WidgetRenderer extends StatelessWidget {
   final EditorWidget widget;
@@ -30,6 +32,14 @@ class WidgetRenderer extends StatelessWidget {
       case WidgetType.CountdownTimer:
         return _buildCountdownWidget(widget as CountdownWidget);
       default:
+        // Check if it's a video or button widget in text widget data
+        if (widget is TextWidget) {
+          if (widget.data['isVideo'] == true) {
+            return _buildVideoWidget(widget);
+          } else if (widget.data['action'] != null) {
+            return _buildButtonWidget(widget);
+          }
+        }
         return Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -60,6 +70,7 @@ class WidgetRenderer extends StatelessWidget {
 
     // Handle color parsing
     Color textColor = Colors.black;
+    Color? backgroundColor;
     try {
       if (textWidget.color.startsWith('#')) {
         textColor =
@@ -67,15 +78,23 @@ class WidgetRenderer extends StatelessWidget {
       } else {
         textColor = Color(int.parse(textWidget.color));
       }
+      
+      // Check for background color
+      if (textWidget.data['backgroundColor'] != null) {
+        final bgColor = textWidget.data['backgroundColor'];
+        if (bgColor is String && bgColor.startsWith('#')) {
+          backgroundColor = Color(int.parse('FF${bgColor.substring(1)}', radix: 16));
+        }
+      }
     } catch (e) {
       textColor = Colors.black;
     }
 
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.all(textWidget.data['padding']?.toDouble() ?? 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(8),
+        color: backgroundColor ?? Colors.white.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(textWidget.data['borderRadius']?.toDouble() ?? 8),
       ),
       child: Text(
         displayText,
@@ -89,6 +108,82 @@ class WidgetRenderer extends StatelessWidget {
         maxLines: 3,
       ),
     );
+  }
+
+  Widget _buildButtonWidget(TextWidget buttonWidget) {
+    String displayText = '버튼';
+    try {
+      displayText = buttonWidget.text.getText('ko');
+    } catch (e) {
+      if (buttonWidget.data['text'] is Map) {
+        displayText = buttonWidget.data['text']['ko'] ?? '버튼';
+      }
+    }
+
+    Color backgroundColor = Colors.blue;
+    Color textColor = Colors.white;
+    
+    try {
+      if (buttonWidget.data['backgroundColor'] != null) {
+        final bgColor = buttonWidget.data['backgroundColor'];
+        if (bgColor is String && bgColor.startsWith('#')) {
+          backgroundColor = Color(int.parse('FF${bgColor.substring(1)}', radix: 16));
+        }
+      }
+      
+      if (buttonWidget.color.startsWith('#')) {
+        textColor = Color(int.parse('FF${buttonWidget.color.substring(1)}', radix: 16));
+      }
+    } catch (e) {
+      // Use defaults
+    }
+
+    return ElevatedButton(
+      onPressed: () {
+        // Handle button action
+        final action = buttonWidget.data['action'];
+        final target = buttonWidget.data['actionTarget'];
+        print('Button pressed: $action, target: $target');
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: backgroundColor,
+        foregroundColor: textColor,
+        padding: EdgeInsets.all(buttonWidget.data['padding']?.toDouble() ?? 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(buttonWidget.data['borderRadius']?.toDouble() ?? 8),
+        ),
+      ),
+      child: Text(
+        displayText,
+        style: TextStyle(fontSize: buttonWidget.fontSize),
+      ),
+    );
+  }
+
+  Widget _buildVideoWidget(TextWidget videoWidget) {
+    final videoUrl = videoWidget.data['videoUrl']?.toString() ?? '';
+    
+    if (videoUrl.isEmpty) {
+      return Container(
+        width: 300,
+        height: 200,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey),
+        ),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.video_library, size: 50, color: Colors.grey),
+            SizedBox(height: 8),
+            Text('비디오 URL을 설정해주세요', style: TextStyle(color: Colors.grey)),
+          ],
+        ),
+      );
+    }
+
+    return VideoPlayerWidget(videoUrl: videoUrl);
   }
 
   Widget _buildDDayWidget(DDayWidget ddayWidget) {
@@ -216,7 +311,6 @@ class WidgetRenderer extends StatelessWidget {
       ),
     );
   }
-// todo: Research Alternative Map editor
 
   Widget _buildImageWidget(ImageWidget imageWidget) {
     return Container(
@@ -298,6 +392,25 @@ class WidgetRenderer extends StatelessWidget {
       );
     }
 
+    // Get style from data
+    final style = galleryWidget.data['style']?.toString() ?? 'carousel';
+    final showIndicators = galleryWidget.data['showIndicators'] ?? true;
+    final autoPlay = galleryWidget.data['autoPlay'] ?? false;
+
+    switch (style) {
+      case 'grid':
+        return _buildGridGallery(galleryWidget);
+      case 'masonry':
+        return _buildMasonryGallery(galleryWidget);
+      case 'modern':
+        return _buildModernGallery(galleryWidget);
+      case 'carousel':
+      default:
+        return _buildCarouselGallery(galleryWidget, showIndicators, autoPlay);
+    }
+  }
+
+  Widget _buildCarouselGallery(GalleryWidget galleryWidget, bool showIndicators, bool autoPlay) {
     return Container(
       width: 250,
       height: 150,
@@ -305,49 +418,212 @@ class WidgetRenderer extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey),
       ),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: galleryWidget.imageUrls.length,
-        itemBuilder: (context, index) {
-          final imageUrl = galleryWidget.imageUrls[index];
-          return Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: imageUrl.startsWith('assets/')
+      child: CarouselSlider(
+        options: CarouselOptions(
+          height: 150,
+          autoPlay: autoPlay,
+          viewportFraction: 1.0,
+          enableInfiniteScroll: galleryWidget.imageUrls.length > 1,
+          autoPlayInterval: const Duration(seconds: 3),
+        ),
+        items: galleryWidget.imageUrls.map((imageUrl) {
+          return Builder(
+            builder: (BuildContext context) {
+              return Container(
+                width: MediaQuery.of(context).size.width,
+                margin: const EdgeInsets.symmetric(horizontal: 2.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: imageUrl.startsWith('assets/')
+                      ? Image.asset(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey.shade200,
+                              child: const Icon(Icons.broken_image,
+                                  color: Colors.grey),
+                            );
+                          },
+                        )
+                      : Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey.shade200,
+                              child: const Icon(Icons.broken_image,
+                                  color: Colors.grey),
+                            );
+                          },
+                        ),
+                ),
+              );
+            },
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildGridGallery(GalleryWidget galleryWidget) {
+    return Container(
+      width: 250,
+      height: 200,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 4,
+            mainAxisSpacing: 4,
+          ),
+          itemCount: galleryWidget.imageUrls.length.clamp(0, 4),
+          itemBuilder: (context, index) {
+            final imageUrl = galleryWidget.imageUrls[index];
+            return imageUrl.startsWith('assets/')
+                ? Image.asset(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey.shade200,
+                        child: const Icon(Icons.broken_image, color: Colors.grey),
+                      );
+                    },
+                  )
+                : Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey.shade200,
+                        child: const Icon(Icons.broken_image, color: Colors.grey),
+                      );
+                    },
+                  );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMasonryGallery(GalleryWidget galleryWidget) {
+    return Container(
+      width: 250,
+      height: 200,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          children: galleryWidget.imageUrls.map((imageUrl) {
+            return Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: AspectRatio(
+                aspectRatio: 0.7,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: imageUrl.startsWith('assets/')
+                      ? Image.asset(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey.shade200,
+                              child: const Icon(Icons.broken_image, color: Colors.grey),
+                            );
+                          },
+                        )
+                      : Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey.shade200,
+                              child: const Icon(Icons.broken_image, color: Colors.grey),
+                            );
+                          },
+                        ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernGallery(GalleryWidget galleryWidget) {
+    if (galleryWidget.imageUrls.isEmpty) return const SizedBox();
+    
+    return Container(
+      width: 250,
+      height: 200,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Stack(
+          children: [
+            // Main image
+            Positioned.fill(
+              child: galleryWidget.imageUrls[0].startsWith('assets/')
                   ? Image.asset(
-                      imageUrl,
-                      width: 120,
-                      height: 120,
+                      galleryWidget.imageUrls[0],
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          width: 120,
-                          height: 120,
                           color: Colors.grey.shade200,
-                          child: const Icon(Icons.broken_image,
-                              color: Colors.grey),
+                          child: const Icon(Icons.broken_image, color: Colors.grey),
                         );
                       },
                     )
                   : Image.network(
-                      imageUrl,
-                      width: 120,
-                      height: 120,
+                      galleryWidget.imageUrls[0],
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          width: 120,
-                          height: 120,
                           color: Colors.grey.shade200,
-                          child: const Icon(Icons.broken_image,
-                              color: Colors.grey),
+                          child: const Icon(Icons.broken_image, color: Colors.grey),
                         );
                       },
                     ),
             ),
-          );
-        },
+            // Overlay with more images indicator
+            if (galleryWidget.imageUrls.length > 1)
+              Positioned(
+                bottom: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.photo_library, color: Colors.white, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        '+${galleryWidget.imageUrls.length - 1}',
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -399,6 +675,95 @@ class WidgetRenderer extends StatelessWidget {
     return LiveCountdownWidget(
       targetDate: countdownWidget.targetDate,
       format: countdownWidget.format,
+    );
+  }
+}
+
+// Video Player Widget
+class VideoPlayerWidget extends StatefulWidget {
+  final String videoUrl;
+
+  const VideoPlayerWidget({super.key, required this.videoUrl});
+
+  @override
+  State<VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
+}
+
+class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
+  late VideoPlayerController _controller;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.network(widget.videoUrl)
+      ..initialize().then((_) {
+        setState(() {
+          _isInitialized = true;
+        });
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return Container(
+        width: 300,
+        height: 200,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
+
+    return Container(
+      width: 300,
+      height: 200,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              child: VideoPlayer(_controller),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.3),
+              ),
+              child: IconButton(
+                icon: Icon(
+                  _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                  color: Colors.white,
+                  size: 50,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _controller.value.isPlaying
+                        ? _controller.pause()
+                        : _controller.play();
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

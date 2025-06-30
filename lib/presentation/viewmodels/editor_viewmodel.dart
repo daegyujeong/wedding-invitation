@@ -31,7 +31,7 @@ class EditorViewModel extends ChangeNotifier {
       // For now, we'll create some sample data
       await Future.delayed(const Duration(seconds: 1)); // Simulate loading
 
-      // Sample navigation bar
+      // Sample navigation bar with D-day settings
       _navigationBar = NavigationBarModel(
         id: 'nav_1',
         items: [
@@ -58,6 +58,9 @@ class EditorViewModel extends ChangeNotifier {
           ),
         ],
         isEnabled: true,
+        showDDay: true,
+        eventDate: DateTime.now().add(const Duration(days: 30)),
+        ddayFormat: 'D-{days}',
       );
 
       // Sample pages using new structure
@@ -252,6 +255,22 @@ class EditorViewModel extends ChangeNotifier {
   void toggleNavigationBar(bool isEnabled) {
     if (_navigationBar != null) {
       _navigationBar = _navigationBar!.copyWith(isEnabled: isEnabled);
+      notifyListeners();
+    }
+  }
+
+  // Update navigation bar D-day settings
+  void updateNavigationBarDDay({
+    required bool showDDay,
+    DateTime? eventDate,
+    required String ddayFormat,
+  }) {
+    if (_navigationBar != null) {
+      _navigationBar = _navigationBar!.copyWith(
+        showDDay: showDDay,
+        eventDate: eventDate,
+        ddayFormat: ddayFormat,
+      );
       notifyListeners();
     }
   }

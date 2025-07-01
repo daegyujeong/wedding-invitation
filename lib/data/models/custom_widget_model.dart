@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 enum WidgetType {
   text,
   image,
+  video,
   divider,
   button,
   countdown,
@@ -58,6 +59,16 @@ class CustomWidgetModel {
         defaultProps = {
           'imagePath': 'assets/images/placeholder.png',
           'fit': BoxFit.cover.index,
+        };
+        defaultHeight = 200;
+        break;
+      case WidgetType.video:
+        defaultProps = {
+          'videoUrl': '',
+          'autoPlay': false,
+          'showControls': true,
+          'loop': false,
+          'muted': false,
         };
         defaultHeight = 200;
         break;

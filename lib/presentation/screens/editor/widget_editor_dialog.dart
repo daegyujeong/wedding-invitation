@@ -74,6 +74,8 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
         return '텍스트';
       case WidgetType.image:
         return '이미지';
+      case WidgetType.video:
+        return '비디오';
       case WidgetType.divider:
         return '구분선';
       case WidgetType.button:
@@ -97,6 +99,8 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
         return _buildTextEditorFields();
       case WidgetType.image:
         return _buildImageEditorFields();
+      case WidgetType.video:
+        return _buildVideoEditorFields();
       case WidgetType.divider:
         return _buildDividerEditorFields();
       case WidgetType.button:
@@ -269,6 +273,76 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
     );
   }
 
+  Widget _buildVideoEditorFields() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextField(
+          decoration: const InputDecoration(
+            labelText: '비디오 URL',
+            hintText: 'https://example.com/video.mp4',
+          ),
+          controller: TextEditingController(
+              text: _editedProperties['videoUrl']?.toString() ?? ''),
+          onChanged: (value) => _updateProperty('videoUrl', value),
+        ),
+        const SizedBox(height: 16),
+        SwitchListTile(
+          title: const Text('자동 재생'),
+          value: _editedProperties['autoPlay'] as bool? ?? false,
+          onChanged: (value) => _updateProperty('autoPlay', value),
+        ),
+        SwitchListTile(
+          title: const Text('컨트롤 표시'),
+          value: _editedProperties['showControls'] as bool? ?? true,
+          onChanged: (value) => _updateProperty('showControls', value),
+        ),
+        SwitchListTile(
+          title: const Text('반복 재생'),
+          value: _editedProperties['loop'] as bool? ?? false,
+          onChanged: (value) => _updateProperty('loop', value),
+        ),
+        SwitchListTile(
+          title: const Text('음소거'),
+          value: _editedProperties['muted'] as bool? ?? false,
+          onChanged: (value) => _updateProperty('muted', value),
+        ),
+        const SizedBox(height: 24),
+
+        // Enhanced Size Controls
+        const Text(
+          '비디오 크기',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 350, // Fixed height for AlertDialog compatibility
+          child: SingleChildScrollView(
+            child: EnhancedSizeEditor(
+              width: _editedModel.width,
+              height: _editedModel.height,
+              onSizeChanged: (width, height) {
+                setState(() {
+                  _editedModel = _editedModel.copyWith(
+                    width: width,
+                    height: height,
+                  );
+                });
+              },
+              minWidth: 150,
+              maxWidth: 400,
+              minHeight: 100,
+              maxHeight: 400,
+              showRatioControls: true,
+              showPresets: true,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildDividerEditorFields() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,14 +448,56 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
         ),
         if (_editedProperties['action']?.toString() != 'none' &&
             _editedProperties['action'] != null)
-          TextField(
-            decoration: const InputDecoration(labelText: '대상 (URL/전화번호/이메일 등)'),
-            controller: TextEditingController(
-                text: _editedProperties['actionTarget']?.toString() ?? ''),
-            onChanged: (value) => _updateProperty('actionTarget', value),
+          Column(
+            children: [
+              const SizedBox(height: 16),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: _getActionTargetLabel(_editedProperties['action']?.toString()),
+                  hintText: _getActionTargetHint(_editedProperties['action']?.toString()),
+                ),
+                controller: TextEditingController(
+                    text: _editedProperties['actionTarget']?.toString() ?? ''),
+                onChanged: (value) => _updateProperty('actionTarget', value),
+              ),
+            ],
           ),
       ],
     );
+  }
+
+  String _getActionTargetLabel(String? action) {
+    switch (action) {
+      case 'url':
+        return 'URL';
+      case 'phone':
+        return '전화번호';
+      case 'sms':
+        return '전화번호';
+      case 'email':
+        return '이메일 주소';
+      case 'map':
+        return '좌표 (위도,경도)';
+      default:
+        return '대상';
+    }
+  }
+
+  String _getActionTargetHint(String? action) {
+    switch (action) {
+      case 'url':
+        return 'https://example.com';
+      case 'phone':
+        return '010-1234-5678';
+      case 'sms':
+        return '010-1234-5678';
+      case 'email':
+        return 'example@email.com';
+      case 'map':
+        return '37.5665,126.978';
+      default:
+        return '';
+    }
   }
 
   Widget _buildCountdownEditorFields() {

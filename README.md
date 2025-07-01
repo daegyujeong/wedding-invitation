@@ -1,138 +1,252 @@
 # Flutter Mobile Wedding Invitation
-모바일 청첩장을 쉽게 만들고 공유할 수 있는 Flutter 기반 애플리케이션입니다.
 
-## 📱 프로젝트 소개
-이 프로젝트는 결혼을 앞둔 커플들이 모바일 청첩장을 직접 디자인하고 맞춤화하여 친구 및 가족들과 쉽게 공유할 수 있도록 도와주는 애플리케이션입니다. 사용자 친화적인 인터페이스와 풍부한 커스터마이징 옵션을 제공합니다.
+A beautiful, customizable mobile wedding invitation application built with Flutter. Create stunning digital wedding invitations with photos, videos, location maps, and interactive features.
 
-## ✨ 주요 기능
-### 1. 직관적인 청첩장 에디터
-- 드래그 앤 드롭 방식의 위젯 편집
-- 실시간 미리보기
-- 다양한 위젯 타입 지원 (텍스트, 이미지, 지도 등)
+## 🌟 Features
 
-### 2. 페이지 관리 시스템
-- 무제한 페이지 생성
-- 페이지 순서 변경 (드래그 앤 드롭)
-- 페이지 복사 및 삭제 기능
+### Core Features
+- **🎨 Intuitive Editor**: Drag-and-drop visual editor for creating custom layouts
+- **📱 Mobile-First Design**: Optimized for mobile viewing and sharing
+- **🖼️ Photo Gallery**: Beautiful image carousels and galleries
+- **🎥 Video Support**: Embed wedding videos with custom players
+- **🗺️ Interactive Maps**: Location sharing with navigation integration
+- **⏰ Countdown Timer**: Real-time countdown to the wedding day
+- **💌 Guest Messages**: Collect congratulations from friends and family
+- **🔗 Social Sharing**: Easy sharing via KakaoTalk, SMS, and social media
 
-### 3. 사진 갤러리
-- 웨딩 사진 슬라이더
-- 이미지 확대 보기
-- 다양한 레이아웃 옵션
+### Widget Types
+- **Text Widgets**: Customizable fonts, colors, and alignment
+- **Image Widgets**: Support for local assets and network images
+- **Video Widgets**: Built-in video player with controls
+- **Map Widgets**: OpenStreetMap integration with custom markers
+- **Gallery Widgets**: Image carousels with auto-play options
+- **Button Widgets**: Interactive buttons with various actions (phone, email, navigation)
+- **Countdown Widgets**: Animated countdown timers
+- **Message Widgets**: Guest message collection forms
 
-### 4. 오시는 길 안내
-- 지도 통합 (Flutter Map)
-- 대중교통 및 자가용 경로 안내
-- 주요 네비게이션 앱 연동 (카카오맵, 네이버맵, 구글맵)
+## 🚀 Getting Started
 
-### 5. 축하 메시지 기능
-- 실시간 방명록
-- 이모티콘 지원
-- 메시지 좋아요 기능
+### Prerequisites
+- Flutter 3.0.0 or higher
+- Dart 2.17.0 or higher
+- iOS 12.0+ / Android API level 21+
 
-### 6. 공유 기능
-- QR 코드 생성
-- 카카오톡, 라인 등 SNS 공유
-- 개인화된 링크 생성
+### Installation
 
-## 🛠 기술 스택
-- **프론트엔드**: Flutter 3.4.1+
-- **백엔드**: Supabase (준비 중)
-- **저장소**: Supabase Storage
-- **인증**: Supabase Auth
-- **지도**: Flutter Map
-- **상태 관리**: Provider
-- **아키텍처**: MVVM (Model-View-ViewModel)
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/daegyujeong/wedding-invitation.git
+   cd wedding-invitation
+   ```
 
-## 📋 필수 요구사항
-- Flutter 3.4.1 이상
-- Dart 2.17.0 이상
-- 인터넷 연결
+2. **Install dependencies**
+   ```bash
+   flutter pub get
+   ```
 
-## 🚀 설치 및 실행 방법
+3. **Run the application**
+   ```bash
+   flutter run
+   ```
 
-### 1. 저장소 복제
-```bash
-git clone https://github.com/daegyujeong/wedding-invitation.git
-cd wedding-invitation
-```
+### Setup for Development
 
-### 2. 의존성 설치
-```bash
-flutter pub get
-```
+1. **Configure Supabase (Optional)**
+   - Create a Supabase project
+   - Update the configuration in `lib/core/config/supabase_config.dart`
 
-### 3. 앱 실행
-```bash
-# iOS
-flutter run -d ios
+2. **Add your images**
+   - Place your wedding photos in `assets/images/`
+   - Update the asset references in `pubspec.yaml`
 
-# Android
-flutter run -d android
+3. **Customize the app**
+   - Update bride and groom names in the data models
+   - Modify colors and themes in the UI components
 
-# Web
-flutter run -d chrome
-```
+## 🛠️ Technology Stack
 
-## 📁 프로젝트 구조
-```
-lib/
-├── core/                    # 핵심 유틸리티 및 상수
-├── data/                    # 데이터 레이어
-│   ├── models/             # 데이터 모델
-│   ├── repositories/       # 데이터 저장소
-│   └── services/           # 외부 서비스 연동
-├── features/               # 기능별 모듈
-├── presentation/           # UI 레이어
-│   ├── screens/           # 화면 컴포넌트
-│   ├── viewmodels/        # 뷰모델 (비즈니스 로직)
-│   └── widgets/           # 재사용 가능한 위젯
-└── main.dart              # 앱 진입점
-```
+- **Frontend**: Flutter
+- **Backend**: Supabase (Optional)
+- **Storage**: Supabase Storage (Optional)
+- **Authentication**: Supabase Auth (Optional)
+- **Maps**: Flutter Map with OpenStreetMap
+- **Video**: Video Player & Chewie
+- **State Management**: Provider & Riverpod
+- **Architecture**: MVVM (Model-View-ViewModel)
 
-## 🐛 알려진 이슈 및 해결 방법
+## 📱 Usage
 
-### 1. Asset 이미지 누락
-현재 placeholder 이미지를 사용하고 있습니다. 실제 이미지를 추가하려면:
-```bash
-# assets/images/ 폴더에 이미지 추가
-# pubspec.yaml에 이미지 경로 등록
-```
+### Creating a Wedding Invitation
 
-### 2. Supabase 초기화
-Supabase 설정이 필요합니다:
+1. **Launch the app** and navigate to the editor
+2. **Choose a template** or start from scratch
+3. **Add widgets** by tapping the "+" button and selecting from categories:
+   - **Basic**: Text, Images, Buttons
+   - **Info**: Maps, Countdown, Schedule
+   - **Media**: Gallery, Video
+4. **Customize widgets** by tapping on them and editing properties
+5. **Preview** your invitation in real-time
+6. **Share** your invitation via URL or QR code
+
+### Widget Customization
+
+#### Text Widgets
+- Font size, weight, and color
+- Text alignment and formatting
+- Background colors and transparency
+
+#### Image Widgets
+- Image source (local or network)
+- Fit modes (cover, contain, fill)
+- Border radius and effects
+
+#### Video Widgets
+- Video URL configuration
+- Auto-play and loop settings
+- Custom controls and muting options
+
+#### Map Widgets
+- Location coordinates (latitude/longitude)
+- Zoom level and map style
+- Custom markers and descriptions
+
+#### Button Widgets
+- Action types: URL, Phone, SMS, Email, Navigation
+- Custom styling and colors
+- Icon and text combinations
+
+### Navigation Features
+
+The app includes dedicated screens for:
+- **Gallery**: Photo slideshow with navigation
+- **Location**: Interactive map with directions
+- **Messages**: Guest message collection
+- **Editor**: Full customization interface
+
+## 🎨 Customization
+
+### Themes and Colors
+The app uses a romantic pink color scheme by default. You can customize:
+
 ```dart
-// lib/main.dart에서 주석 해제
-final supabaseService = await SupabaseService.initialize();
+// In your theme configuration
+primarySwatch: Colors.pink,
+accentColor: Colors.pinkAccent,
 ```
 
-### 3. 지도 기능
-실제 지도 표시를 위해서는 Flutter Map 타일 서버 설정이 필요합니다.
+### Fonts
+Configure custom fonts in `pubspec.yaml`:
 
-## 🔮 향후 개발 계획
-- [ ] Supabase 백엔드 연동
-- [ ] 더 많은 템플릿 추가
-- [ ] 애니메이션 효과 추가
-- [ ] 다국어 지원 확대
-- [ ] 오프라인 모드 지원
-- [ ] 이미지 최적화 및 압축
-- [ ] 초대장 통계 기능
-- [ ] 게스트 RSVP 기능
+```yaml
+fonts:
+  - family: YourCustomFont
+    fonts:
+      - asset: assets/fonts/YourCustomFont-Regular.ttf
+      - asset: assets/fonts/YourCustomFont-Bold.ttf
+        weight: 700
+```
 
-## 🤝 기여하기
-프로젝트에 기여하고 싶으시다면:
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
+### Background Images
+Replace the default background in `assets/images/background.png` with your custom image.
+
+## 🔧 Configuration
+
+### Environment Setup
+
+1. **iOS Configuration**
+   - Update `Info.plist` for camera and location permissions
+   - Configure URL schemes for sharing
+
+2. **Android Configuration**
+   - Update `AndroidManifest.xml` for permissions
+   - Configure intent filters for sharing
+
+### Video Configuration
+
+For video widgets, ensure you have proper video URLs. Supported formats:
+- MP4 (recommended)
+- WebM
+- HLS streams
+
+Example video configuration:
+```dart
+VideoWidget(
+  videoUrl: 'https://example.com/your-video.mp4',
+  autoPlay: false,
+  showControls: true,
+  loop: false,
+  muted: false,
+)
+```
+
+### Map Configuration
+
+For map widgets, configure your location:
+```dart
+MapWidget(
+  latitude: 37.5665,  // Your venue latitude
+  longitude: 126.978, // Your venue longitude
+  title: 'Wedding Venue',
+  description: 'Beautiful venue description',
+  zoom: 15.0,
+)
+```
+
+## 📸 Screenshots
+
+<img src="screenshots/home.png" width="250" alt="Home Screen"> <img src="screenshots/editor.png" width="250" alt="Editor Screen"> <img src="screenshots/gallery.png" width="250" alt="Gallery Screen">
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📝 라이센스
-이 프로젝트는 MIT 라이센스 하에 배포됩니다.
+## 📝 License
 
-## 📞 문의
-프로젝트에 대한 문의사항이 있으시면 이슈를 생성해주세요.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Flutter team for the amazing framework
+- Supabase for backend infrastructure
+- OpenStreetMap for map services
+- Contributors and wedding couples who inspired this project
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Video not playing**
+   - Ensure the video URL is accessible
+   - Check network connectivity
+   - Verify video format compatibility
+
+2. **Map not loading**
+   - Check internet connection
+   - Verify latitude/longitude coordinates
+   - Ensure location permissions are granted
+
+3. **Images not displaying**
+   - Verify image paths in `pubspec.yaml`
+   - Check if images exist in the assets folder
+   - Ensure images are in supported formats (PNG, JPG, WebP)
+
+### Performance Tips
+
+- Optimize images before adding them to assets
+- Use appropriate video resolutions for mobile viewing
+- Limit the number of widgets per page for smooth performance
+
+## 📞 Support
+
+For support and questions:
+- Open an issue on GitHub
+- Check the documentation
+- Join our community discussions
 
 ---
 
-**Made with ❤️ by Daegyu Jeong**
+Made with ❤️ for couples starting their beautiful journey together.

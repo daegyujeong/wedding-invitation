@@ -40,7 +40,7 @@
 - **백엔드**: Supabase (준비 중)
 - **저장소**: Supabase Storage
 - **인증**: Supabase Auth
-- **지도**: Flutter Map
+- **지도**: Google Map, Kakao Map, Naver Map etc..
 - **상태 관리**: Provider
 - **아키텍처**: MVVM (Model-View-ViewModel)
 

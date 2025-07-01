@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../viewmodels/editor_viewmodel.dart';
+import '../../widgets/wedding_invitation_widgets.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,13 +13,48 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late Timer _timer;
+  late AnimationController _fadeController;
+  late AnimationController _slideController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
   final String _currentLanguage = 'ko';
 
   @override
   void initState() {
     super.initState();
+    
+    // Initialize animation controllers
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    ));
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.5),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    // Start animations
+    _fadeController.forward();
+    _slideController.forward();
+
     // 데이터 로드
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<HomeViewModel>(context, listen: false).loadInvitation('1');
@@ -34,6 +70,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _timer.cancel();
+    _fadeController.dispose();
+    _slideController.dispose();
     super.dispose();
   }
 
@@ -43,15 +81,44 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Consumer2<HomeViewModel, EditorViewModel>(
         builder: (context, homeViewModel, editorViewModel, child) {
           if (homeViewModel.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
+              ),
+            );
           }
 
           if (homeViewModel.errorMessage != null) {
-            return Center(child: Text('오류: ${homeViewModel.errorMessage}'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
+                  const SizedBox(height: 16),
+                  Text(
+                    '오류: ${homeViewModel.errorMessage}',
+                    style: TextStyle(color: Colors.red.shade600),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            );
           }
 
           if (homeViewModel.invitation == null) {
-            return const Center(child: Text('데이터를 불러올 수 없습니다.'));
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.no_photography, size: 64, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text(
+                    '데이터를 불러올 수 없습니다.',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            );
           }
 
           final invitation = homeViewModel.invitation!;
@@ -87,180 +154,127 @@ class _HomeScreenState extends State<HomeScreen> {
             }
           }
 
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                // 메인 이미지
-                Container(
-                  height: 300,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(invitation.backgroundImage),
-                      fit: BoxFit.cover,
+          return Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFFFF5F5),
+                  Color(0xFFFFE4E6),
+                  Color(0xFFFFF0F0),
+                ],
+              ),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Elegant Header with decorative elements
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SlideTransition(
+                      position: _slideAnimation,
+                      child: WeddingHeader(
+                        backgroundImage: invitation.backgroundImage,
+                        groomName: invitation.groomName.getText(_currentLanguage),
+                        brideName: invitation.brideName.getText(_currentLanguage),
+                        weddingDate: weddingVenue.eventDate,
+                        venue: weddingVenue.name,
+                      ),
                     ),
                   ),
-                ),
 
-                // 초대 문구 (에디터에서 편집된 내용)
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    greetingText,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 18),
+                  // Invitation Message
+                  Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: WeddingInvitationCard(
+                        greetingText: greetingText,
+                      ),
+                    ),
                   ),
-                ),
 
-                // 신랑 신부 정보
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        invitation.groomName.getText(_currentLanguage),
-                        style: const TextStyle(fontSize: 20),
+                  // Countdown Timer
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: WeddingCountdown(
+                        timeUntilWedding: timeUntilWedding,
                       ),
-                      const Text(' 그리고 ', style: TextStyle(fontSize: 16)),
-                      Text(
-                        invitation.brideName.getText(_currentLanguage),
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
 
-                // 카운트다운 타이머
-                Container(
-                  margin: const EdgeInsets.all(24),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.pink.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      const Text('결혼식까지 남은 시간', style: TextStyle(fontSize: 16)),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildCountdownItem(timeUntilWedding.inDays, '일'),
-                          _buildCountdownItem(
-                              timeUntilWedding.inHours % 24, '시간'),
-                          _buildCountdownItem(
-                              timeUntilWedding.inMinutes % 60, '분'),
-                          _buildCountdownItem(
-                              timeUntilWedding.inSeconds % 60, '초'),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                  const SizedBox(height: 32),
 
-                // 결혼식 정보
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    children: [
-                      Text(
-                        DateFormat('yyyy년 MM월 dd일 EEEE', 'ko_KR')
-                            .format(weddingVenue.eventDate),
-                        style: const TextStyle(fontSize: 18),
+                  // Wedding Details
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: WeddingDetails(
+                        weddingDate: weddingVenue.eventDate,
+                        venue: weddingVenue.name,
                       ),
-                      Text(
-                        DateFormat('aa hh시 mm분', 'ko_KR')
-                            .format(weddingVenue.eventDate),
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        weddingVenue.name,
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
 
-                // 네비게이션 버튼들
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildNavButton(
-                        context,
-                        Icons.photo_library,
-                        '갤러리',
-                        () => Navigator.pushNamed(context, '/gallery'),
+                  const SizedBox(height: 40),
+
+                  // Navigation Buttons
+                  Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: WeddingNavigationButtons(
+                        onGalleryPressed: () => Navigator.pushNamed(context, '/gallery'),
+                        onLocationPressed: () => Navigator.pushNamed(context, '/location'),
+                        onMessagePressed: () => Navigator.pushNamed(context, '/message'),
+                        onEditorPressed: () => Navigator.pushNamed(context, '/editor'),
                       ),
-                      _buildNavButton(
-                        context,
-                        Icons.location_on,
-                        '오시는 길',
-                        () => Navigator.pushNamed(context, '/location'),
-                      ),
-                      _buildNavButton(
-                        context,
-                        Icons.message,
-                        '축하 메시지',
-                        () => Navigator.pushNamed(context, '/message'),
-                      ),
-                      _buildNavButton(
-                        context,
-                        Icons.edit,
-                        '에디터',
-                        () => Navigator.pushNamed(context, '/editor'),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 32),
+
+                  // Footer
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 1,
+                          color: Colors.pink.shade200,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          '함께해 주셔서 감사합니다',
+                          style: TextStyle(
+                            color: Colors.pink.shade700,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w300,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '💕',
+                          style: TextStyle(
+                            fontSize: 24,
+                            color: Colors.pink.shade400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
       ),
-    );
-  }
-
-  Widget _buildCountdownItem(int value, String label) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              value.toString().padLeft(2, '0'),
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 14)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavButton(BuildContext context, IconData icon, String label,
-      VoidCallback onPressed) {
-    return Column(
-      children: [
-        ElevatedButton(
-          onPressed: onPressed,
-          style: ElevatedButton.styleFrom(
-            shape: const CircleBorder(),
-            padding: const EdgeInsets.all(16),
-          ),
-          child: Icon(icon, size: 30),
-        ),
-        const SizedBox(height: 8),
-        Text(label),
-      ],
     );
   }
 }

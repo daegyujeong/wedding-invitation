@@ -51,7 +51,7 @@ class HomeViewModel extends ChangeNotifier {
             longitude: 126.9780,
             country: 'Korea',
             eventType: 'Wedding',
-            eventDate: DateTime(2025, 5, 31, 13, 0),
+            eventDate: DateTime(2025, 9, 12, 19, 0),
             mapLinks: {
               'google':
                   'https://www.google.com/maps/search/?api=1&query=37.5665,126.9780',

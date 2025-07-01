@@ -317,79 +317,27 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
 
   void _addTemplate(String templateType) {
     if (templateType == 'hero') {
-      // Create hero section with multiple widgets
-      final List<EditorWidget> widgets = [
-        // Background image
-        ImageWidget(
-          id: 'hero_bg_${_uuid.v4()}',
-          data: {
-            'imageUrl': 'assets/images/main.jpg',
-            'width': 400.0,
-            'height': 300.0,
-            'position': {
-              'dx': 0.0,
-              'dy': 0.0,
+      _showConfirmationDialog(
+        title: '히어로 섹션 추가',
+        content: '배경 이미지와 텍스트가 포함된 히어로 섹션을 추가합니다. 계속하시겠습니까?',
+        onConfirm: () {
+          // Create hero section with a simple background image
+          final widget = ImageWidget(
+            id: 'hero_bg_${_uuid.v4()}',
+            data: {
+              'imageUrl': 'assets/images/background.png',
+              'width': 400.0,
+              'height': 300.0,
+              'position': {
+                'dx': 0.0,
+                'dy': 0.0,
+              },
             },
-          },
-        ),
-        // Title
-        TextWidget(
-          id: 'hero_title_${_uuid.v4()}',
-          data: {
-            'text': {
-              'translations': {'ko': '우리 결혼합니다'},
-              'default_language': 'ko',
-            },
-            'fontFamily': 'Roboto',
-            'fontSize': 32.0,
-            'color': '#FFFFFF',
-            'position': {
-              'dx': 50.0,
-              'dy': 50.0,
-            },
-          },
-        ),
-        // Names
-        TextWidget(
-          id: 'hero_names_${_uuid.v4()}',
-          data: {
-            'text': {
-              'translations': {'ko': '신랑 김철수 & 신부 이영희'},
-              'default_language': 'ko',
-            },
-            'fontFamily': 'Roboto',
-            'fontSize': 24.0,
-            'color': '#FFFFFF',
-            'position': {
-              'dx': 50.0,
-              'dy': 120.0,
-            },
-          },
-        ),
-        // Date
-        TextWidget(
-          id: 'hero_date_${_uuid.v4()}',
-          data: {
-            'text': {
-              'translations': {'ko': '2025년 5월 31일 토요일 오후 1시'},
-              'default_language': 'ko',
-            },
-            'fontFamily': 'Roboto',
-            'fontSize': 18.0,
-            'color': '#FFFFFF',
-            'position': {
-              'dx': 50.0,
-              'dy': 180.0,
-            },
-          },
-        ),
-      ];
-
-      // Add all widgets
-      for (final widget in widgets) {
-        Navigator.pop(context, widget);
-      }
-      _showSuccessSnackBar('히어로 섹션이 추가되었습니다.');
+          );
+          Navigator.pop(context, widget);
+          _showSuccessSnackBar('히어로 섹션 배경이 추가되었습니다. 텍스트는 별도로 추가해주세요.');
+        },
+      );
     } else {
       _showConfirmationDialog(
         title: '템플릿 추가',

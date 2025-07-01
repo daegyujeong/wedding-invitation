@@ -210,7 +210,7 @@ class _WidgetEditorDialogState extends State<WidgetEditorDialog> {
             DropdownMenuItem(
                 value: 'assets/images/gallery3.jpg', child: Text('갤러리 이미지 3')),
             DropdownMenuItem(
-                value: 'assets/images/main.jpg', child: Text('메인 이미지')),
+                value: 'assets/images/background.png', child: Text('배경 이미지')),
             DropdownMenuItem(
                 value: 'assets/images/placeholder.png', child: Text('플레이스홀더')),
           ],

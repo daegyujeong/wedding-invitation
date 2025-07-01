@@ -74,7 +74,7 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
     } else if (type == WidgetType.Text && _editedData['action'] != null) {
       return '버튼 설정';
     }
-    
+
     switch (type) {
       case WidgetType.Text:
         return '텍스트 편집';
@@ -125,7 +125,7 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
         return _buildButtonEditorFields();
       }
     }
-    
+
     switch (_editedWidget.type) {
       case WidgetType.Text:
         return _buildTextEditorFields();
@@ -270,7 +270,8 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
           width: double.infinity,
           height: 50,
           decoration: BoxDecoration(
-            color: _parseColor(_editedData['backgroundColor']?.toString() ?? '#4285F4'),
+            color: _parseColor(
+                _editedData['backgroundColor']?.toString() ?? '#4285F4'),
             border: Border.all(color: Colors.grey),
             borderRadius: BorderRadius.circular(8),
           ),
@@ -548,7 +549,7 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
             DropdownMenuItem(
                 value: 'assets/images/gallery3.jpg', child: Text('갤러리 이미지 3')),
             DropdownMenuItem(
-                value: 'assets/images/main.jpg', child: Text('메인 이미지')),
+                value: 'assets/images/background.png', child: Text('배경 이미지')),
           ],
           onChanged: (value) => _updateData('imageUrl', value),
         ),
@@ -701,7 +702,8 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
 
   Widget _buildMapEditorFields() {
     double latitude = (_editedData['latitude'] as num?)?.toDouble() ?? 37.5665;
-    double longitude = (_editedData['longitude'] as num?)?.toDouble() ?? 126.9780;
+    double longitude =
+        (_editedData['longitude'] as num?)?.toDouble() ?? 126.9780;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -908,7 +910,7 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
               leading: const Icon(Icons.image),
               title: const Text('메인 이미지'),
               onTap: () {
-                onSelect('assets/images/main.jpg');
+                onSelect('assets/images/background.png');
                 Navigator.pop(context);
               },
             ),
@@ -985,9 +987,8 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
   }
 
   void _showColorPicker(String propertyKey) {
-    Color currentColor = _parseColor(
-      _editedData[propertyKey]?.toString() ?? '#000000'
-    );
+    Color currentColor =
+        _parseColor(_editedData[propertyKey]?.toString() ?? '#000000');
 
     showDialog(
       context: context,
@@ -998,7 +999,8 @@ class _EditorWidgetDialogState extends State<EditorWidgetDialog> {
             pickerColor: currentColor,
             onColorChanged: (Color color) {
               setState(() {
-                _editedData[propertyKey] = '#${color.value.toRadixString(16).substring(2)}';
+                _editedData[propertyKey] =
+                    '#${color.value.toRadixString(16).substring(2)}';
               });
             },
             pickerAreaHeightPercent: 0.8,

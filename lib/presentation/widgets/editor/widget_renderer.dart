@@ -4,7 +4,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../data/models/editor_widget_model.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:video_player/video_player.dart';
 
 class WidgetRenderer extends StatelessWidget {
   final EditorWidget widget;
@@ -34,10 +33,11 @@ class WidgetRenderer extends StatelessWidget {
       default:
         // Check if it's a video or button widget in text widget data
         if (widget is TextWidget) {
-          if (widget.data['isVideo'] == true) {
-            return _buildVideoWidget(widget);
-          } else if (widget.data['action'] != null) {
-            return _buildButtonWidget(widget);
+          final textWidget = widget as TextWidget;
+          if (textWidget.data['isVideo'] == true) {
+            return _buildVideoWidget(textWidget);
+          } else if (textWidget.data['action'] != null) {
+            return _buildButtonWidget(textWidget);
           }
         }
         return Container(
@@ -78,12 +78,13 @@ class WidgetRenderer extends StatelessWidget {
       } else {
         textColor = Color(int.parse(textWidget.color));
       }
-      
+
       // Check for background color
       if (textWidget.data['backgroundColor'] != null) {
         final bgColor = textWidget.data['backgroundColor'];
         if (bgColor is String && bgColor.startsWith('#')) {
-          backgroundColor = Color(int.parse('FF${bgColor.substring(1)}', radix: 16));
+          backgroundColor =
+              Color(int.parse('FF${bgColor.substring(1)}', radix: 16));
         }
       }
     } catch (e) {
@@ -94,7 +95,8 @@ class WidgetRenderer extends StatelessWidget {
       padding: EdgeInsets.all(textWidget.data['padding']?.toDouble() ?? 8),
       decoration: BoxDecoration(
         color: backgroundColor ?? Colors.white.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(textWidget.data['borderRadius']?.toDouble() ?? 8),
+        borderRadius: BorderRadius.circular(
+            textWidget.data['borderRadius']?.toDouble() ?? 8),
       ),
       child: Text(
         displayText,
@@ -122,17 +124,19 @@ class WidgetRenderer extends StatelessWidget {
 
     Color backgroundColor = Colors.blue;
     Color textColor = Colors.white;
-    
+
     try {
       if (buttonWidget.data['backgroundColor'] != null) {
         final bgColor = buttonWidget.data['backgroundColor'];
         if (bgColor is String && bgColor.startsWith('#')) {
-          backgroundColor = Color(int.parse('FF${bgColor.substring(1)}', radix: 16));
+          backgroundColor =
+              Color(int.parse('FF${bgColor.substring(1)}', radix: 16));
         }
       }
-      
+
       if (buttonWidget.color.startsWith('#')) {
-        textColor = Color(int.parse('FF${buttonWidget.color.substring(1)}', radix: 16));
+        textColor =
+            Color(int.parse('FF${buttonWidget.color.substring(1)}', radix: 16));
       }
     } catch (e) {
       // Use defaults
@@ -150,7 +154,8 @@ class WidgetRenderer extends StatelessWidget {
         foregroundColor: textColor,
         padding: EdgeInsets.all(buttonWidget.data['padding']?.toDouble() ?? 16),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(buttonWidget.data['borderRadius']?.toDouble() ?? 8),
+          borderRadius: BorderRadius.circular(
+              buttonWidget.data['borderRadius']?.toDouble() ?? 8),
         ),
       ),
       child: Text(
@@ -162,28 +167,34 @@ class WidgetRenderer extends StatelessWidget {
 
   Widget _buildVideoWidget(TextWidget videoWidget) {
     final videoUrl = videoWidget.data['videoUrl']?.toString() ?? '';
-    
-    if (videoUrl.isEmpty) {
-      return Container(
-        width: 300,
-        height: 200,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey),
-        ),
-        child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.video_library, size: 50, color: Colors.grey),
-            SizedBox(height: 8),
-            Text('비디오 URL을 설정해주세요', style: TextStyle(color: Colors.grey)),
-          ],
-        ),
-      );
-    }
 
-    return VideoPlayerWidget(videoUrl: videoUrl);
+    return Container(
+      width: 300,
+      height: 200,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.video_library, size: 50, color: Colors.grey),
+          const SizedBox(height: 8),
+          Text(
+            videoUrl.isEmpty ? '비디오 URL을 설정해주세요' : '비디오: $videoUrl',
+            style: const TextStyle(color: Colors.grey),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '비디오 플레이어 기능은\n개발 중입니다',
+            style: TextStyle(color: Colors.grey, fontSize: 12),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildDDayWidget(DDayWidget ddayWidget) {
@@ -410,7 +421,8 @@ class WidgetRenderer extends StatelessWidget {
     }
   }
 
-  Widget _buildCarouselGallery(GalleryWidget galleryWidget, bool showIndicators, bool autoPlay) {
+  Widget _buildCarouselGallery(
+      GalleryWidget galleryWidget, bool showIndicators, bool autoPlay) {
     return Container(
       width: 250,
       height: 150,
@@ -492,7 +504,8 @@ class WidgetRenderer extends StatelessWidget {
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         color: Colors.grey.shade200,
-                        child: const Icon(Icons.broken_image, color: Colors.grey),
+                        child:
+                            const Icon(Icons.broken_image, color: Colors.grey),
                       );
                     },
                   )
@@ -502,7 +515,8 @@ class WidgetRenderer extends StatelessWidget {
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         color: Colors.grey.shade200,
-                        child: const Icon(Icons.broken_image, color: Colors.grey),
+                        child:
+                            const Icon(Icons.broken_image, color: Colors.grey),
                       );
                     },
                   );
@@ -538,7 +552,8 @@ class WidgetRenderer extends StatelessWidget {
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
                               color: Colors.grey.shade200,
-                              child: const Icon(Icons.broken_image, color: Colors.grey),
+                              child: const Icon(Icons.broken_image,
+                                  color: Colors.grey),
                             );
                           },
                         )
@@ -548,7 +563,8 @@ class WidgetRenderer extends StatelessWidget {
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
                               color: Colors.grey.shade200,
-                              child: const Icon(Icons.broken_image, color: Colors.grey),
+                              child: const Icon(Icons.broken_image,
+                                  color: Colors.grey),
                             );
                           },
                         ),
@@ -563,7 +579,7 @@ class WidgetRenderer extends StatelessWidget {
 
   Widget _buildModernGallery(GalleryWidget galleryWidget) {
     if (galleryWidget.imageUrls.isEmpty) return const SizedBox();
-    
+
     return Container(
       width: 250,
       height: 200,
@@ -584,7 +600,8 @@ class WidgetRenderer extends StatelessWidget {
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
                           color: Colors.grey.shade200,
-                          child: const Icon(Icons.broken_image, color: Colors.grey),
+                          child: const Icon(Icons.broken_image,
+                              color: Colors.grey),
                         );
                       },
                     )
@@ -594,7 +611,8 @@ class WidgetRenderer extends StatelessWidget {
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
                           color: Colors.grey.shade200,
-                          child: const Icon(Icons.broken_image, color: Colors.grey),
+                          child: const Icon(Icons.broken_image,
+                              color: Colors.grey),
                         );
                       },
                     ),
@@ -605,18 +623,21 @@ class WidgetRenderer extends StatelessWidget {
                 bottom: 8,
                 right: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.black.withOpacity(0.7),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.photo_library, color: Colors.white, size: 16),
+                      const Icon(Icons.photo_library,
+                          color: Colors.white, size: 16),
                       const SizedBox(width: 4),
                       Text(
                         '+${galleryWidget.imageUrls.length - 1}',
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 14),
                       ),
                     ],
                   ),
@@ -675,95 +696,6 @@ class WidgetRenderer extends StatelessWidget {
     return LiveCountdownWidget(
       targetDate: countdownWidget.targetDate,
       format: countdownWidget.format,
-    );
-  }
-}
-
-// Video Player Widget
-class VideoPlayerWidget extends StatefulWidget {
-  final String videoUrl;
-
-  const VideoPlayerWidget({super.key, required this.videoUrl});
-
-  @override
-  State<VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
-}
-
-class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
-  late VideoPlayerController _controller;
-  bool _isInitialized = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = VideoPlayerController.network(widget.videoUrl)
-      ..initialize().then((_) {
-        setState(() {
-          _isInitialized = true;
-        });
-      });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!_isInitialized) {
-      return Container(
-        width: 300,
-        height: 200,
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
-      );
-    }
-
-    return Container(
-      width: 300,
-      height: 200,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(_controller),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.3),
-              ),
-              child: IconButton(
-                icon: Icon(
-                  _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-                  color: Colors.white,
-                  size: 50,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _controller.value.isPlaying
-                        ? _controller.pause()
-                        : _controller.play();
-                  });
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

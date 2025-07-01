@@ -28,8 +28,8 @@ class _MainTemplateEditorState extends State<MainTemplateEditor> {
       text: widget.page.settings['greeting_text'] ??
           '저희 두 사람이 사랑과 믿음으로 새로운 가정을 이루게 되었습니다.',
     );
-    _backgroundImage =
-        widget.page.settings['background_image'] ?? 'assets/images/main.jpg';
+    _backgroundImage = widget.page.settings['background_image'] ??
+        'assets/images/background.png';
   }
 
   @override
@@ -90,7 +90,7 @@ class _MainTemplateEditorState extends State<MainTemplateEditor> {
                 // In a real app, this would open an image picker
                 // For now, just set a default
                 setState(() {
-                  _backgroundImage = 'assets/images/main.jpg';
+                  _backgroundImage = 'assets/images/background.png';
                 });
               },
               icon: const Icon(Icons.image),

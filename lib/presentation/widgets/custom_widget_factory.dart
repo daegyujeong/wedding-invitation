@@ -3,6 +3,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../data/models/custom_widget_model.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 
 class CustomWidgetFactory {
@@ -127,6 +130,8 @@ class CustomWidgetFactory {
         return _buildTextWidget(model);
       case WidgetType.image:
         return _buildImageWidget(model);
+      case WidgetType.video:
+        return _buildVideoWidget(model);
       case WidgetType.divider:
         return _buildDividerWidget(model);
       case WidgetType.button:
@@ -265,6 +270,49 @@ class CustomWidgetFactory {
     );
   }
 
+  static Widget _buildVideoWidget(CustomWidgetModel model) {
+    final videoUrl = model.properties['videoUrl']?.toString() ?? '';
+    final autoPlay = model.properties['autoPlay'] ?? false;
+    final showControls = model.properties['showControls'] ?? true;
+    final loop = model.properties['loop'] ?? false;
+    final muted = model.properties['muted'] ?? false;
+
+    if (videoUrl.isEmpty) {
+      return Container(
+        width: model.width,
+        height: model.height,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.videocam_off, size: 48, color: Colors.grey.shade600),
+            const SizedBox(height: 8),
+            Text('비디오 URL을 설정해주세요',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+          ],
+        ),
+      );
+    }
+
+    return SizedBox(
+      width: model.width,
+      height: model.height,
+      child: VideoPlayerWidget(
+        videoUrl: videoUrl,
+        autoPlay: autoPlay,
+        showControls: showControls,
+        loop: loop,
+        muted: muted,
+        width: model.width,
+        height: model.height,
+      ),
+    );
+  }
+
   static Widget _buildDividerWidget(CustomWidgetModel model) {
     final thickness =
         (model.properties['thickness'] as num?)?.toDouble() ?? 1.0;
@@ -292,13 +340,12 @@ class CustomWidgetFactory {
       width: model.width,
       height: model.height,
       child: ElevatedButton(
-        onPressed: () {
+        onPressed: () async {
           // Handle button action based on model.properties['action']
           final action = model.properties['action'];
-          final target = model.properties['actionTarget'];
+          final target = model.properties['actionTarget']?.toString() ?? '';
 
-          // In a real app, you would handle different actions here
-          print('Button pressed: $action, target: $target');
+          await _handleButtonAction(action, target);
         },
         style: ElevatedButton.styleFrom(
           backgroundColor:
@@ -317,6 +364,57 @@ class CustomWidgetFactory {
         ),
       ),
     );
+  }
+
+  static Future<void> _handleButtonAction(String? action, String target) async {
+    if (action == null || target.isEmpty) return;
+
+    try {
+      switch (action) {
+        case 'url':
+          final uri = Uri.parse(target);
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri);
+          }
+          break;
+        case 'phone':
+          final uri = Uri.parse('tel:$target');
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri);
+          }
+          break;
+        case 'sms':
+          final uri = Uri.parse('sms:$target');
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri);
+          }
+          break;
+        case 'email':
+          final uri = Uri.parse('mailto:$target');
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri);
+          }
+          break;
+        case 'map':
+          // Parse coordinates from target (format: "lat,lng")
+          final coords = target.split(',');
+          if (coords.length == 2) {
+            final lat = double.tryParse(coords[0].trim());
+            final lng = double.tryParse(coords[1].trim());
+            if (lat != null && lng != null) {
+              final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri);
+              }
+            }
+          }
+          break;
+        default:
+          print('Unknown action: $action');
+      }
+    } catch (e) {
+      print('Error handling button action: $e');
+    }
   }
 
   static Widget _buildCountdownWidget(CustomWidgetModel model) {
@@ -341,6 +439,7 @@ class CustomWidgetFactory {
         (model.properties['latitude'] as num?)?.toDouble() ?? 37.5665;
     final longitude =
         (model.properties['longitude'] as num?)?.toDouble() ?? 126.978;
+    final zoom = (model.properties['zoom'] as num?)?.toDouble() ?? 15.0;
     final title = model.properties['title']?.toString() ?? '위치';
     final description = model.properties['description']?.toString() ?? '';
 
@@ -356,11 +455,10 @@ class CustomWidgetFactory {
         child: FlutterMap(
           options: MapOptions(
             center: LatLng(latitude, longitude),
-            zoom: 15.0,
+            zoom: zoom,
             maxZoom: 18.0,
             minZoom: 10.0,
-            interactiveFlags:
-                InteractiveFlag.none, // Disable interaction in preview
+            interactiveFlags: InteractiveFlag.all,
           ),
           children: [
             TileLayer(
@@ -570,6 +668,124 @@ class CustomWidgetFactory {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+// Video player widget
+class VideoPlayerWidget extends StatefulWidget {
+  final String videoUrl;
+  final bool autoPlay;
+  final bool showControls;
+  final bool loop;
+  final bool muted;
+  final double width;
+  final double height;
+
+  const VideoPlayerWidget({
+    super.key,
+    required this.videoUrl,
+    this.autoPlay = false,
+    this.showControls = true,
+    this.loop = false,
+    this.muted = false,
+    required this.width,
+    required this.height,
+  });
+
+  @override
+  State<VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
+}
+
+class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
+  VideoPlayerController? _videoPlayerController;
+  ChewieController? _chewieController;
+  bool _isError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePlayer();
+  }
+
+  @override
+  void dispose() {
+    _videoPlayerController?.dispose();
+    _chewieController?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializePlayer() async {
+    try {
+      _videoPlayerController = VideoPlayerController.network(widget.videoUrl);
+      await _videoPlayerController!.initialize();
+
+      _chewieController = ChewieController(
+        videoPlayerController: _videoPlayerController!,
+        autoPlay: widget.autoPlay,
+        looping: widget.loop,
+        showControls: widget.showControls,
+        startAt: Duration.zero,
+        aspectRatio: widget.width / widget.height,
+      );
+
+      if (widget.muted) {
+        await _videoPlayerController!.setVolume(0.0);
+      }
+
+      setState(() {});
+    } catch (e) {
+      setState(() {
+        _isError = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isError) {
+      return Container(
+        width: widget.width,
+        height: widget.height,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error, size: 48, color: Colors.red.shade600),
+            const SizedBox(height: 8),
+            Text('비디오 로드 실패',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+          ],
+        ),
+      );
+    }
+
+    if (_chewieController == null) {
+      return Container(
+        width: widget.width,
+        height: widget.height,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return SizedBox(
+      width: widget.width,
+      height: widget.height,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Chewie(controller: _chewieController!),
       ),
     );
   }

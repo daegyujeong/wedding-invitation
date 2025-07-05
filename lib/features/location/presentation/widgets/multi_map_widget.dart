@@ -49,22 +49,33 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (widget.isEditMode) _buildMapProviderSelector(context),
-        Container(
-          height: widget.height,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade300),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: _buildMap(),
-          ),
-        ),
-        if (widget.showDirections) _buildNavigationButtons(context),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Ensure we have a finite width
+        final double mapWidth = constraints.maxWidth.isFinite 
+            ? constraints.maxWidth 
+            : MediaQuery.of(context).size.width;
+            
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (widget.isEditMode) _buildMapProviderSelector(context),
+            Container(
+              width: mapWidth, // Explicitly set width
+              height: widget.height,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: _buildMap(),
+              ),
+            ),
+            if (widget.showDirections) _buildNavigationButtons(context),
+          ],
+        );
+      },
     );
   }
 

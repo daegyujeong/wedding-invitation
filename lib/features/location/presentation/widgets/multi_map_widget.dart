@@ -55,21 +55,37 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
         final double mapWidth = constraints.maxWidth.isFinite 
             ? constraints.maxWidth 
             : MediaQuery.of(context).size.width;
+
+        // Calculate available height for map after accounting for other elements
+        double availableMapHeight = widget.height;
+        
+        // Account for selector height if in edit mode
+        if (widget.isEditMode) {
+          availableMapHeight -= 48; // Selector height + margin
+        }
+        
+        // Account for navigation buttons height if showing directions
+        if (widget.showDirections) {
+          availableMapHeight -= 80; // Navigation buttons height + margin
+        }
+        
+        // Ensure minimum map height
+        availableMapHeight = availableMapHeight.clamp(150.0, widget.height);
             
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (widget.isEditMode) _buildMapProviderSelector(context),
             Container(
-              width: mapWidth, // Explicitly set width
-              height: widget.height,
+              width: mapWidth,
+              height: availableMapHeight, // Use calculated height instead of widget.height
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.grey.shade300),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: _buildMap(),
+                child: _buildMap(availableMapHeight),
               ),
             ),
             if (widget.showDirections) _buildNavigationButtons(context),
@@ -81,6 +97,7 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
 
   Widget _buildMapProviderSelector(BuildContext context) {
     return Container(
+      height: 40, // Fixed height for predictable layout
       margin: const EdgeInsets.only(bottom: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -146,7 +163,7 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
     );
   }
 
-  Widget _buildMap() {
+  Widget _buildMap(double mapHeight) {
     switch (_currentProvider) {
       case MapProvider.google:
         return GoogleMapWidget(
@@ -154,7 +171,7 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
           longitude: widget.longitude,
           venue: widget.venue,
           showControls: widget.showControls,
-          height: widget.height,
+          height: mapHeight, // Pass calculated height
         );
       case MapProvider.naver:
         return NaverMapWidget(
@@ -162,7 +179,7 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
           longitude: widget.longitude,
           venue: widget.venue,
           showControls: widget.showControls,
-          height: widget.height,
+          height: mapHeight, // Pass calculated height
         );
       case MapProvider.kakao:
         return KakaoMapWidget(
@@ -170,14 +187,15 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
           longitude: widget.longitude,
           venue: widget.venue,
           showControls: widget.showControls,
-          height: widget.height,
+          height: mapHeight, // Pass calculated height
         );
     }
   }
 
   Widget _buildNavigationButtons(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(top: 16),
+      height: 72, // Fixed height for predictable layout
+      margin: const EdgeInsets.only(top: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -229,21 +247,22 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: color),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color),
-            const SizedBox(height: 4),
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
                 color: color,
-                fontSize: 12,
+                fontSize: 10,
                 fontWeight: FontWeight.w500,
               ),
             ),

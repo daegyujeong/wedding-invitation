@@ -4,6 +4,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../data/models/editor_widget_model.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import '../../../features/location/presentation/widgets/multi_map_widget.dart';
+import '../../../features/location/presentation/widgets/multi_map_widget.dart' show MapProvider;
 
 class WidgetRenderer extends StatelessWidget {
   final EditorWidget widget;
@@ -233,97 +235,32 @@ class WidgetRenderer extends StatelessWidget {
   }
 
   Widget _buildMapWidget(MapWidget mapWidget) {
-    // Get coordinates from the widget data, with defaults for Seoul
-    double latitude = 37.5665; // Default: Seoul
-    double longitude = 126.9780; // Default: Seoul
-    String venue = '결혼식장 위치';
-
-    // Try to get coordinates from different possible data keys
-    if (mapWidget.data.containsKey('latitude') &&
-        mapWidget.data.containsKey('longitude')) {
-      latitude = (mapWidget.data['latitude'] as num?)?.toDouble() ?? latitude;
-      longitude =
-          (mapWidget.data['longitude'] as num?)?.toDouble() ?? longitude;
+    // Parse map provider
+    MapProvider provider = MapProvider.google;
+    switch (mapWidget.mapProvider.toLowerCase()) {
+      case 'naver':
+        provider = MapProvider.naver;
+        break;
+      case 'kakao':
+        provider = MapProvider.kakao;
+        break;
+      default:
+        provider = MapProvider.google;
     }
 
-    // Get venue name if available
-    if (mapWidget.data.containsKey('venue')) {
-      venue = mapWidget.data['venue']?.toString() ?? venue;
-    } else if (mapWidget.data.containsKey('title')) {
-      venue = mapWidget.data['title']?.toString() ?? venue;
-    }
-
-    return Container(
-      width: 200,
-      height: 200,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: FlutterMap(
-          options: MapOptions(
-            center: LatLng(latitude, longitude),
-            zoom: 15.0,
-            maxZoom: 18.0,
-            minZoom: 10.0,
-            interactiveFlags:
-                InteractiveFlag.none, // Disable interaction in preview
-          ),
-          children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.example.wedding_invitation',
-            ),
-            MarkerLayer(
-              markers: [
-                Marker(
-                  point: LatLng(latitude, longitude),
-                  width: 80,
-                  height: 80,
-                  builder: (ctx) => Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(4),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 2,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          venue,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const Icon(
-                        Icons.location_on,
-                        color: Colors.red,
-                        size: 30,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+    return MultiMapWidget(
+      latitude: mapWidget.latitude,
+      longitude: mapWidget.longitude,
+      venue: mapWidget.venue,
+      provider: provider,
+      showControls: !isEditMode && mapWidget.showControls,
+      showDirections: !isEditMode && mapWidget.showDirections,
+      height: mapWidget.height,
+      isEditMode: isEditMode,
+      onMapTap: isEditMode ? () {
+        // In edit mode, you might want to open a dialog to select map provider
+        debugPrint('Map provider selection in edit mode');
+      } : null,
     );
   }
 

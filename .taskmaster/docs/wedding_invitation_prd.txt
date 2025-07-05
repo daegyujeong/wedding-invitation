@@ -1,0 +1,154 @@
+<context>
+# Overview  
+A beautiful, interactive Flutter wedding invitation app that provides guests with all wedding information, photo galleries, messaging capabilities, and sharing functionality. The app serves as a digital wedding invitation that can be easily shared and provides an engaging experience for wedding guests.
+
+# Core Features  
+## Invitation Display
+- Beautiful, animated invitation view with wedding details
+- Dynamic content loading from data models
+- Responsive design for different screen sizes
+- Typography following design system
+
+## Photo Gallery
+- Interactive photo gallery with smooth navigation
+- Pinch-to-zoom functionality
+- Swipe navigation between photos
+- Efficient photo loading and caching
+
+## Location & Maps
+- Interactive map widget with venue information
+- Custom markers for wedding locations
+- Integration with navigation apps
+- Transportation information display
+
+## Guest Messages
+- Real-time guest messaging system
+- Message submission and display
+- Message moderation capabilities
+- Support for different message lengths
+
+## Sharing Functionality
+- Multiple sharing options (social media, messaging apps)
+- QR code generation for easy invitation sharing
+- Deep linking support
+- Cross-platform sharing capabilities
+
+## Customizable Editor System
+- Drag-and-drop widget editor for invitation customization
+- Widget customization options
+- Live preview functionality
+- Save and restore custom layouts
+
+# User Experience  
+## User Personas
+- Wedding guests receiving and viewing invitations
+- Couple customizing their wedding invitation
+- Family members sharing the invitation
+
+## Key User Flows
+1. Receive invitation link → View beautiful invitation → Browse gallery → Leave message → Share
+2. Customize invitation → Drag widgets → Preview changes → Save layout
+3. View location → Get directions → Plan transportation
+
+## UI/UX Considerations
+- Smooth animations and transitions
+- Intuitive navigation
+- Cultural considerations (Korean/English support)
+- Mobile-first responsive design
+</context>
+
+<PRD>
+# Technical Architecture  
+## System Components
+- Flutter frontend with Material Design
+- Modular architecture with features separation
+- State management using ViewModels
+- Repository pattern for data access
+
+## Data Models
+- InvitationModel for wedding details
+- MessageModel for guest messages
+- VenueModel for location information
+- CustomWidgetModel for editor components
+- LanguageModel for internationalization
+
+## APIs and Integrations
+- Map services (Google Maps or similar)
+- Sharing APIs for social platforms
+- Message storage and real-time updates
+- Image hosting for gallery photos
+
+## Infrastructure Requirements
+- Flutter SDK with multi-platform support
+- Image optimization and caching
+- Real-time messaging backend
+- Internationalization support (Korean/English)
+
+# Development Roadmap  
+## Phase 1: Core MVP
+- Basic invitation display screen with animations
+- Photo gallery with navigation and zoom
+- Location screen with map integration
+- Basic message system
+- Sharing functionality
+
+## Phase 2: Advanced Features
+- Drag-and-drop editor system
+- Custom widget library expansion
+- Performance optimizations
+- Enhanced UX improvements
+
+## Phase 3: Polish & Optimization
+- Complete internationalization
+- Advanced sharing options
+- Performance tuning
+- Bug fixes and stability improvements
+
+# Logical Dependency Chain
+## Foundation First
+1. Core data models and repository setup
+2. Basic navigation and routing
+3. Invitation display screen (most visible feature)
+
+## Building Upon Foundation
+1. Photo gallery (standalone feature, high impact)
+2. Location/maps integration (independent feature)
+3. Message system (requires backend consideration)
+4. Sharing functionality (builds on core invitation)
+
+## Advanced Features
+1. Editor system foundation (drag-drop widgets)
+2. Custom widget expansion
+3. Editor UX improvements
+4. Performance optimizations
+
+# Risks and Mitigations  
+## Technical Challenges
+- Widget rendering bugs in editor system → Comprehensive testing strategy
+- Performance issues with complex layouts → Optimization and profiling
+- Cross-platform compatibility → Thorough testing on multiple devices
+
+## MVP Definition
+- Focus on core invitation viewing experience first
+- Prioritize high-impact, standalone features
+- Defer complex editor features to later phases
+
+## Resource Constraints
+- Modular development approach allows for incremental delivery
+- Clear priority levels guide feature development
+- Performance benchmarks ensure quality delivery
+
+# Appendix  
+## Technical Specifications
+- Flutter framework with Dart language
+- Material Design components
+- Multi-platform deployment (iOS, Android, Web)
+- Internationalization with l10n package
+- State management with MVVM pattern
+
+## Current Implementation Status
+- Basic app structure exists with feature modules
+- Core screens implemented but need enhancement
+- Widget editor system partially implemented
+- Internationalization structure in place
+</PRD> 

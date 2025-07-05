@@ -7,10 +7,12 @@ import 'package:carousel_slider/carousel_slider.dart';
 
 class WidgetRenderer extends StatelessWidget {
   final EditorWidget widget;
+  final bool isEditMode;
 
   const WidgetRenderer({
     super.key,
     required this.widget,
+    this.isEditMode = true, // Default to edit mode for the editor
   });
 
   @override
@@ -30,16 +32,11 @@ class WidgetRenderer extends StatelessWidget {
         return _buildScheduleWidget(widget as ScheduleWidget);
       case WidgetType.CountdownTimer:
         return _buildCountdownWidget(widget as CountdownWidget);
+      case WidgetType.Video:
+        return _buildVideoWidget(widget as VideoWidget);
+      case WidgetType.Button:
+        return _buildButtonWidget(widget as ButtonWidget);
       default:
-        // Check if it's a video or button widget in text widget data
-        if (widget is TextWidget) {
-          final textWidget = widget as TextWidget;
-          if (textWidget.data['isVideo'] == true) {
-            return _buildVideoWidget(textWidget);
-          } else if (textWidget.data['action'] != null) {
-            return _buildButtonWidget(textWidget);
-          }
-        }
         return Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -112,29 +109,19 @@ class WidgetRenderer extends StatelessWidget {
     );
   }
 
-  Widget _buildButtonWidget(TextWidget buttonWidget) {
-    String displayText = '버튼';
-    try {
-      displayText = buttonWidget.text.getText('ko');
-    } catch (e) {
-      if (buttonWidget.data['text'] is Map) {
-        displayText = buttonWidget.data['text']['ko'] ?? '버튼';
-      }
-    }
+  Widget _buildButtonWidget(ButtonWidget buttonWidget) {
+    String displayText = buttonWidget.text.getText('ko');
 
     Color backgroundColor = Colors.blue;
     Color textColor = Colors.white;
 
     try {
-      if (buttonWidget.data['backgroundColor'] != null) {
-        final bgColor = buttonWidget.data['backgroundColor'];
-        if (bgColor is String && bgColor.startsWith('#')) {
-          backgroundColor =
-              Color(int.parse('FF${bgColor.substring(1)}', radix: 16));
-        }
+      if (buttonWidget.backgroundColor.isNotEmpty) {
+        backgroundColor = Color(int.parse(
+            'FF${buttonWidget.backgroundColor.substring(1)}',
+            radix: 16));
       }
-
-      if (buttonWidget.color.startsWith('#')) {
+      if (buttonWidget.color.isNotEmpty) {
         textColor =
             Color(int.parse('FF${buttonWidget.color.substring(1)}', radix: 16));
       }
@@ -142,31 +129,47 @@ class WidgetRenderer extends StatelessWidget {
       // Use defaults
     }
 
-    return ElevatedButton(
-      onPressed: () {
-        // Handle button action
-        final action = buttonWidget.data['action'];
-        final target = buttonWidget.data['actionTarget'];
-        print('Button pressed: $action, target: $target');
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor,
-        foregroundColor: textColor,
-        padding: EdgeInsets.all(buttonWidget.data['padding']?.toDouble() ?? 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-              buttonWidget.data['borderRadius']?.toDouble() ?? 8),
+    if (isEditMode) {
+      // In edit mode, render as a container to prevent touch events
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey.shade300),
         ),
-      ),
-      child: Text(
-        displayText,
-        style: TextStyle(fontSize: buttonWidget.fontSize),
-      ),
-    );
+        child: Text(
+          displayText,
+          style: TextStyle(
+            color: textColor,
+            fontWeight: FontWeight.w500,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
+    } else {
+      // In view mode, render as actual button
+      return ElevatedButton(
+        onPressed: () {
+          // Handle button action
+          debugPrint(
+              'Button pressed: ${buttonWidget.action}, target: ${buttonWidget.actionTarget}');
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          foregroundColor: textColor,
+          padding: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: Text(displayText),
+      );
+    }
   }
 
-  Widget _buildVideoWidget(TextWidget videoWidget) {
-    final videoUrl = videoWidget.data['videoUrl']?.toString() ?? '';
+  Widget _buildVideoWidget(VideoWidget videoWidget) {
+    final videoUrl = videoWidget.videoUrl;
 
     return Container(
       width: 300,
@@ -213,12 +216,13 @@ class WidgetRenderer extends StatelessWidget {
       eventDate = DateTime.now().add(const Duration(days: 30));
     }
 
-    final today = DateTime.now();
-    final daysRemaining = eventDate.difference(today).inDays;
+    // Calculate days remaining (for future use)
+    // final today = DateTime.now();
+    // final daysRemaining = eventDate.difference(today).inDays;
 
     // Get title from data
     String title = ddayWidget.data['title'] ?? 'D-Day';
-    String format = ddayWidget.format ?? 'D-{days}';
+    String format = ddayWidget.format;
 
     return LiveDDayWidget(
       eventDate: eventDate,

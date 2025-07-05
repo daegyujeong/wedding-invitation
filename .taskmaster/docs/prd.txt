@@ -1,0 +1,172 @@
+<context>
+# Overview
+A beautiful, customizable wedding invitation mobile application built with Flutter that allows couples to create, share, and manage their wedding invitations digitally. The app provides an elegant alternative to traditional paper invitations while offering interactive features like RSVP management, photo galleries, location sharing, and guest messaging.
+
+The application solves the problem of expensive, environmentally unfriendly paper invitations while providing a more engaging and interactive experience for wedding guests. It's designed for tech-savvy couples who want to share their special day in a modern, accessible way.
+
+# Core Features
+## Digital Invitation Display
+- Beautiful, customizable wedding invitation templates
+- Support for multiple design themes and color schemes
+- Integration of couple's photos and wedding details
+- Responsive design that works across different screen sizes
+
+## Photo Gallery
+- Curated wedding photo collection (engagement, pre-wedding, etc.)
+- High-quality image display with zoom and navigation
+- Easy photo management and organization
+- Support for multiple gallery sections
+
+## Location & Map Integration
+- Interactive map showing wedding venue location
+- Detailed venue information and directions
+- Transportation options and parking details
+- Integration with navigation apps
+
+## Guest Messaging System
+- Congratulatory messages from guests
+- Message moderation and display
+- Real-time message updates
+- Personalized message responses
+
+## Share Functionality
+- Easy invitation sharing via social media, messaging apps
+- QR code generation for quick access
+- Deep linking support for seamless user experience
+
+## Multi-language Support
+- Korean and English language support
+- Localized content and date formatting
+- Cultural customization options
+
+# User Experience
+## User Personas
+- **Primary Users**: Engaged couples planning their wedding (ages 25-35)
+- **Secondary Users**: Wedding guests receiving and interacting with the invitation
+
+## Key User Flows
+1. **Couple Setup Flow**: Configure wedding details, upload photos, customize design
+2. **Guest Experience Flow**: Receive invitation, view details, leave messages, navigate to venue
+3. **Editor Flow**: Customize invitation layout, content, and design elements
+
+## UI/UX Considerations
+- Elegant, romantic design aesthetic
+- Intuitive navigation suitable for all age groups
+- Smooth animations and transitions
+- Accessibility features for inclusive design
+</context>
+
+<PRD>
+# Technical Architecture
+## System Components
+- **Flutter Frontend**: Cross-platform mobile application (iOS/Android)
+- **Asset Management**: Local image and resource handling
+- **State Management**: Provider/Riverpod for app state management
+- **Routing**: Go Router for navigation management
+- **Data Layer**: Repository pattern for data access
+- **Services Layer**: Map services, widget templates, message handling
+
+## Data Models
+- **Invitation Model**: Wedding details, couple information, event data
+- **Message Model**: Guest messages with metadata
+- **Venue Model**: Location data, directions, contact information
+- **Gallery Model**: Photo organization and metadata
+- **Navigation Model**: App routing and screen management
+- **Custom Widget Model**: Dynamic UI component definitions
+
+## APIs and Integrations
+- **Map Services**: Google Maps/Apple Maps integration
+- **Share APIs**: Native sharing functionality
+- **Storage**: Local SQLite/Hive for offline data
+- **Image Processing**: Flutter image optimization
+- **Internationalization**: Flutter l10n support
+
+## Infrastructure Requirements
+- **Mobile Platforms**: iOS 12+ and Android API 21+
+- **Storage**: Local device storage for offline functionality
+- **Network**: HTTP client for potential API integrations
+- **Permissions**: Location, camera, storage access
+
+# Development Roadmap
+## Phase 1: Core MVP
+- Basic invitation display with static content
+- Essential navigation between screens
+- Basic photo gallery functionality
+- Location screen with map integration
+- Message viewing capability
+
+## Phase 2: Content Management
+- Dynamic invitation editor
+- Photo upload and management
+- Custom widget creation and editing
+- Message input and moderation
+- Share functionality implementation
+
+## Phase 3: Advanced Features
+- Template system with multiple designs
+- Advanced customization options
+- Enhanced messaging system
+- Multi-language support completion
+- Performance optimization
+
+## Phase 4: Polish and Enhancement
+- Advanced animations and transitions
+- Accessibility improvements
+- Error handling and edge cases
+- Testing and quality assurance
+- App store preparation
+
+# Logical Dependency Chain
+## Foundation Layer (Build First)
+1. **Core Models and Data Structure**: Establish all data models and repository patterns
+2. **Basic UI Framework**: Home screen, navigation system, core widgets
+3. **Asset Management**: Image loading, local storage setup
+
+## Feature Layer (Progressive Build)
+4. **Invitation Display**: Static invitation viewing functionality
+5. **Gallery System**: Photo display and navigation
+6. **Location Integration**: Map services and venue information
+7. **Message System**: Guest messaging functionality
+
+## Customization Layer (Build Upon Foundation)
+8. **Editor System**: Dynamic content editing capabilities
+9. **Template System**: Multiple design options and themes
+10. **Widget System**: Custom draggable and editable components
+
+## Enhancement Layer (Final Polish)
+11. **Share Integration**: Social media and messaging app integration
+12. **Advanced Features**: Multi-language, accessibility, performance
+13. **Testing and Optimization**: Quality assurance and bug fixes
+
+# Risks and Mitigations
+## Technical Challenges
+- **Map Integration Complexity**: Use established Flutter map packages
+- **Cross-platform Consistency**: Extensive testing on both iOS and Android
+- **Performance with Large Images**: Implement image optimization and caching
+- **State Management Complexity**: Use proven patterns like Provider/Riverpod
+
+## MVP Scope Management
+- **Feature Creep**: Focus on core invitation display and sharing first
+- **Over-engineering**: Start with simple implementations, iterate based on feedback
+- **Timeline Pressure**: Prioritize must-have features over nice-to-have
+
+## Resource Constraints
+- **Development Time**: Break features into small, manageable tasks
+- **Testing Coverage**: Implement automated testing from the beginning
+- **Maintenance**: Document code and establish clear architecture patterns
+
+# Appendix
+## Technical Specifications
+- **Flutter Version**: Latest stable (3.x)
+- **Minimum SDK**: iOS 12.0, Android API 21
+- **State Management**: Provider or Riverpod
+- **Database**: SQLite with sqflite or Hive
+- **Maps**: google_maps_flutter or similar
+- **Internationalization**: flutter_localizations
+
+## Research Findings
+- Wedding apps typically focus on simplicity and elegance
+- Guests prefer easy-to-navigate interfaces
+- Offline functionality is crucial for venues with poor connectivity
+- Share functionality is the most used feature after viewing invitation
+</PRD> 

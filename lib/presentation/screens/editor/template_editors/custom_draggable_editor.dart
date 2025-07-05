@@ -7,6 +7,7 @@ import '../../../../data/models/page_model.dart';
 import '../../../viewmodels/editor_viewmodel.dart';
 import '../../../widgets/editor/draggable_widget.dart';
 import '../../../widgets/editor/enhanced_size_editor.dart';
+import '../../../widgets/editor/common_editor_fields.dart';
 import '../widget_selector_screen.dart';
 
 class CustomDraggableEditor extends StatefulWidget {
@@ -76,68 +77,81 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
     });
   }
 
-  void _updateWidgetPosition(String id, Offset position) {
-    final index = _widgets.indexWhere((widget) => widget.id == id);
-    if (index != -1) {
-      final widget = _widgets[index];
-      final updatedData = Map<String, dynamic>.from(widget.data);
-      updatedData['position'] = {
-        'dx': position.dx,
-        'dy': position.dy,
-      };
+  // Currently unused - position updates are handled automatically by DraggableWidget
+  // void _updateWidgetPosition(String id, Offset position) {
+  //   final index = _widgets.indexWhere((widget) => widget.id == id);
+  //   if (index != -1) {
+  //     final widget = _widgets[index];
+  //     final updatedData = Map<String, dynamic>.from(widget.data);
+  //     updatedData['position'] = {
+  //       'dx': position.dx,
+  //       'dy': position.dy,
+  //     };
 
-      // Create updated widget
-      EditorWidget updatedWidget;
-      switch (widget.type) {
-        case WidgetType.Text:
-          updatedWidget = TextWidget(
-            id: widget.id,
-            data: updatedData,
-          );
-          break;
-        case WidgetType.DDay:
-          updatedWidget = DDayWidget(
-            id: widget.id,
-            data: updatedData,
-          );
-          break;
-        case WidgetType.Map:
-          updatedWidget = MapWidget(
-            id: widget.id,
-            data: updatedData,
-          );
-          break;
-        case WidgetType.Image:
-          updatedWidget = ImageWidget(
-            id: widget.id,
-            data: updatedData,
-          );
-          break;
-        case WidgetType.Gallery:
-          updatedWidget = GalleryWidget(
-            id: widget.id,
-            data: updatedData,
-          );
-          break;
-        case WidgetType.Schedule:
-          updatedWidget = ScheduleWidget(
-            id: widget.id,
-            data: updatedData,
-          );
-          break;
-        case WidgetType.CountdownTimer:
-          updatedWidget = CountdownWidget(
-            id: widget.id,
-            data: updatedData,
-          );
-          break;
-      }
+  //     // Create updated widget
+  //     EditorWidget updatedWidget;
+  //     switch (widget.type) {
+  //       case WidgetType.Text:
+  //         updatedWidget = TextWidget(
+  //           id: widget.id,
+  //           data: updatedData,
+  //         );
+  //         break;
+  //       case WidgetType.DDay:
+  //         updatedWidget = DDayWidget(
+  //           id: widget.id,
+  //           data: updatedData,
+  //         );
+  //         break;
+  //       case WidgetType.Map:
+  //         updatedWidget = MapWidget(
+  //           id: widget.id,
+  //           data: updatedData,
+  //         );
+  //         break;
+  //       case WidgetType.Image:
+  //         updatedWidget = ImageWidget(
+  //           id: widget.id,
+  //           data: updatedData,
+  //         );
+  //         break;
+  //       case WidgetType.Gallery:
+  //         updatedWidget = GalleryWidget(
+  //           id: widget.id,
+  //           data: updatedData,
+  //         );
+  //         break;
+  //       case WidgetType.Schedule:
+  //         updatedWidget = ScheduleWidget(
+  //           id: widget.id,
+  //           data: updatedData,
+  //         );
+  //         break;
+  //       case WidgetType.CountdownTimer:
+  //         updatedWidget = CountdownWidget(
+  //           id: widget.id,
+  //           data: updatedData,
+  //         );
+  //         break;
+  //       case WidgetType.Video:
+  //         updatedWidget = VideoWidget(
+  //           id: widget.id,
+  //           data: updatedData,
+  //         );
+  //         break;
+  //       case WidgetType.Button:
+  //         updatedWidget = ButtonWidget(
+  //           id: widget.id,
+  //           data: updatedData,
+  //         );
+  //         break;
+  //     }
 
-      setState(() {
-        _widgets[index] = updatedWidget;
-      });
-    }
-  }
+  //     setState(() {
+  //       _widgets[index] = updatedWidget;
+  //     });
+  //   }
+  // }
 
   void _editWidget(String id) {
     final index = _widgets.indexWhere((widget) => widget.id == id);
@@ -168,6 +182,12 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
       case WidgetType.CountdownTimer:
         _showCountdownEditDialog(widget as CountdownWidget, index);
         break;
+      case WidgetType.Video:
+        _showVideoEditDialog(widget as VideoWidget, index);
+        break;
+      case WidgetType.Button:
+        _showButtonEditDialog(widget as ButtonWidget, index);
+        break;
     }
   }
 
@@ -191,85 +211,42 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextField(
-                    controller: textController,
-                    decoration: const InputDecoration(labelText: '텍스트'),
+                  CommonEditorFields.buildResponsiveTextField(
+                    labelText: '텍스트',
+                    initialValue: textController.text,
+                    onChanged: (value) {
+                      textController.text = value;
+                    },
+                    maxLines: 3,
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      const Text('글자 크기:'),
-                      Expanded(
-                        child: Slider(
-                          value: fontSize,
-                          min: 8,
-                          max: 40,
-                          divisions: 32,
-                          label: fontSize.round().toString(),
-                          onChanged: (value) {
-                            setDialogState(() {
-                              fontSize = value;
-                            });
-                          },
-                        ),
-                      ),
-                      Text('${fontSize.round()}'),
-                    ],
+                  CommonEditorFields.buildSliderField(
+                    label: '글자 크기',
+                    value: fontSize,
+                    min: 8,
+                    max: 40,
+                    divisions: 32,
+                    onChanged: (value) {
+                      setDialogState(() {
+                        fontSize = value;
+                      });
+                    },
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      const Text('색상:'),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: const Text('색상 선택'),
-                                content: SingleChildScrollView(
-                                  child: ColorPicker(
-                                    pickerColor: textColor,
-                                    onColorChanged: (color) {
-                                      setDialogState(() {
-                                        textColor = color;
-                                      });
-                                    },
-                                    pickerAreaHeightPercent: 0.8,
-                                  ),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text('선택'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: textColor,
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                      ),
-                    ],
+                  CommonEditorFields.buildColorPickerField(
+                    label: '텍스트 색상',
+                    color: textColor,
+                    context: context,
+                    onChanged: (color) {
+                      setDialogState(() {
+                        textColor = color;
+                      });
+                    },
                   ),
                   const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
+                  CommonEditorFields.buildDropdownField<String>(
+                    label: '글꼴',
                     value: fontFamily,
-                    decoration: const InputDecoration(
-                      labelText: '글꼴',
-                      border: OutlineInputBorder(),
-                    ),
                     items: const [
                       DropdownMenuItem(
                         value: 'Roboto',
@@ -824,6 +801,115 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
     );
   }
 
+  void _showVideoEditDialog(VideoWidget widget, int index) {
+    final videoUrlController = TextEditingController(text: widget.videoUrl);
+    bool autoPlay = widget.autoPlay;
+    bool showControls = widget.showControls;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('비디오 편집'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: videoUrlController,
+                  decoration: const InputDecoration(labelText: '비디오 URL'),
+                ),
+                SwitchListTile(
+                  title: const Text('자동 재생'),
+                  value: autoPlay,
+                  onChanged: (value) => setDialogState(() => autoPlay = value),
+                ),
+                SwitchListTile(
+                  title: const Text('컨트롤 표시'),
+                  value: showControls,
+                  onChanged: (value) =>
+                      setDialogState(() => showControls = value),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('취소'),
+              ),
+              TextButton(
+                onPressed: () {
+                  final updatedData = Map<String, dynamic>.from(widget.data);
+                  updatedData['videoUrl'] = videoUrlController.text;
+                  updatedData['autoPlay'] = autoPlay;
+                  updatedData['showControls'] = showControls;
+
+                  setState(() {
+                    _widgets[index] =
+                        VideoWidget(id: widget.id, data: updatedData);
+                  });
+                  Navigator.pop(context);
+                },
+                child: const Text('저장'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  void _showButtonEditDialog(ButtonWidget widget, int index) {
+    final textController =
+        TextEditingController(text: widget.text.getText('ko'));
+    final actionController = TextEditingController(text: widget.actionTarget);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('버튼 편집'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: textController,
+                decoration: const InputDecoration(labelText: '버튼 텍스트'),
+              ),
+              TextField(
+                controller: actionController,
+                decoration: const InputDecoration(labelText: '링크 URL'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: () {
+                final updatedData = Map<String, dynamic>.from(widget.data);
+                updatedData['text'] = {
+                  'translations': {'ko': textController.text},
+                  'default_language': 'ko',
+                };
+                updatedData['actionTarget'] = actionController.text;
+
+                setState(() {
+                  _widgets[index] =
+                      ButtonWidget(id: widget.id, data: updatedData);
+                });
+                Navigator.pop(context);
+              },
+              child: const Text('저장'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showCountdownEditDialog(CountdownWidget widget, int index) {
     DateTime targetDate = widget.targetDate;
     String format = widget.format;
@@ -1014,8 +1100,14 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
               return DraggableWidget(
                 key: ValueKey(widget.id),
                 editorWidget: widget,
-                onPositionChanged: (offset) {
-                  _updateWidgetPosition(widget.id, offset);
+                onWidgetChanged: (updatedWidget) {
+                  final index =
+                      _widgets.indexWhere((w) => w.id == updatedWidget.id);
+                  if (index != -1) {
+                    setState(() {
+                      _widgets[index] = updatedWidget;
+                    });
+                  }
                 },
                 onEdit: () {
                   _editWidget(widget.id);

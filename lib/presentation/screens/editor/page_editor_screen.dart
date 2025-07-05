@@ -49,7 +49,8 @@ class PageEditorScreen extends StatelessWidget {
                   Expanded(
                     child: Text(
                       '모든 페이지는 사용자 정의 페이지입니다. 위젯을 추가하여 원하는 레이아웃을 만들어보세요.',
-                      style: TextStyle(color: Colors.blue.shade700, fontSize: 12),
+                      style:
+                          TextStyle(color: Colors.blue.shade700, fontSize: 12),
                     ),
                   ),
                 ],
@@ -67,7 +68,8 @@ class PageEditorScreen extends StatelessWidget {
                         viewModel.reorderPages(oldIndex, newIndex);
                       },
                       children: pages
-                          .map((page) => _buildPageItem(context, viewModel, page))
+                          .map((page) =>
+                              _buildPageItem(context, viewModel, page))
                           .toList(),
                     ),
             ),
@@ -159,7 +161,8 @@ class PageEditorScreen extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.delete_outline),
               tooltip: '삭제',
-              onPressed: () => _showDeleteConfirmation(context, viewModel, page),
+              onPressed: () =>
+                  _showDeleteConfirmation(context, viewModel, page),
             ),
             // Drag handle
             const Icon(Icons.drag_handle, color: Colors.grey),
@@ -209,7 +212,8 @@ class PageEditorScreen extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.lightbulb_outline, color: Colors.amber.shade700),
+                      Icon(Icons.lightbulb_outline,
+                          color: Colors.amber.shade700),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -234,11 +238,12 @@ class PageEditorScreen extends StatelessWidget {
             FilledButton(
               onPressed: () {
                 if (formKey.currentState!.validate()) {
-                  viewModel.addPage(titleController.text.trim(), 'custom');
+                  viewModel.addPage(titleController.text.trim());
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('페이지 "${titleController.text.trim()}"가 생성되었습니다.'),
+                      content: Text(
+                          '페이지 "${titleController.text.trim()}"가 생성되었습니다.'),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -252,7 +257,8 @@ class PageEditorScreen extends StatelessWidget {
     );
   }
 
-  void _duplicatePage(BuildContext context, EditorViewModel viewModel, dynamic page) {
+  void _duplicatePage(
+      BuildContext context, EditorViewModel viewModel, dynamic page) {
     viewModel.duplicatePage(page.id);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

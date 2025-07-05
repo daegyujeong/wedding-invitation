@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../viewmodels/editor_viewmodel.dart';
-import '../../../data/services/widget_template_service.dart';
 import '../../../data/models/editor_widget_model.dart';
 import 'package:uuid/uuid.dart';
 
@@ -21,8 +20,40 @@ class WidgetSelectorScreen extends StatefulWidget {
 class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  final categories = WidgetTemplateService.getWidgetCategories();
   final _uuid = const Uuid();
+
+  // Define widget categories directly
+  final categories = [
+    {
+      'name': '텍스트',
+      'widgets': [
+        {'type': 'text', 'name': '텍스트', 'icon': Icons.text_fields},
+      ],
+    },
+    {
+      'name': '미디어',
+      'widgets': [
+        {'type': 'image', 'name': '이미지', 'icon': Icons.image},
+        {'type': 'video', 'name': '비디오', 'icon': Icons.video_library},
+        {'type': 'gallery', 'name': '갤러리', 'icon': Icons.photo_library},
+      ],
+    },
+    {
+      'name': '인터랙션',
+      'widgets': [
+        {'type': 'button', 'name': '버튼', 'icon': Icons.smart_button},
+        {'type': 'map', 'name': '지도', 'icon': Icons.map},
+      ],
+    },
+    {
+      'name': '시간',
+      'widgets': [
+        {'type': 'dday', 'name': 'D-Day', 'icon': Icons.event},
+        {'type': 'countdown', 'name': '카운트다운', 'icon': Icons.timer},
+        {'type': 'schedule', 'name': '일정', 'icon': Icons.schedule},
+      ],
+    },
+  ];
 
   @override
   void initState() {
@@ -53,8 +84,8 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
               text: '템플릿',
             ),
             ...categories.map((category) => Tab(
-                  icon: Icon(_getCategoryIcon(category['name'])),
-                  text: category['name'],
+                  icon: Icon(_getCategoryIcon(category['name'] as String)),
+                  text: category['name'] as String,
                 )),
           ],
         ),
@@ -63,8 +94,9 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
         controller: _tabController,
         children: [
           _buildTemplateTab(),
-          ...categories.map((category) =>
-              _buildWidgetCategoryTab(category['name'], category['widgets'])),
+          ...categories.map((category) => _buildWidgetCategoryTab(
+              category['name'] as String,
+              category['widgets'] as List<Map<String, dynamic>>)),
         ],
       ),
     );
@@ -228,7 +260,7 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                _getWidgetIcon(widgetInfo['icon']),
+                widgetInfo['icon'] as IconData,
                 size: 28,
                 color: Colors.blue.shade600,
               ),
@@ -343,18 +375,25 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
         title: '템플릿 추가',
         content: '선택한 템플릿의 모든 위젯이 페이지에 추가됩니다. 계속하시겠습니까?',
         onConfirm: () {
-          final widgets = WidgetTemplateService.getTemplate(templateType);
-          for (final widgetModel in widgets) {
-            widget.viewModel.addWidget(widget.pageId, widgetModel);
+          // Create template widgets based on type
+          EditorWidget primaryWidget;
+
+          switch (templateType) {
+            case 'gallery':
+              primaryWidget = _createWidget('gallery');
+              break;
+            default:
+              primaryWidget = _createWidget('text');
           }
-          Navigator.pop(context);
+
+          Navigator.pop(context, primaryWidget);
           _showSuccessSnackBar('템플릿이 추가되었습니다.');
         },
       );
     }
   }
 
-  void _addWidget(String widgetType) {
+  EditorWidget _createWidget(String widgetType) {
     // Create EditorWidget based on widget type
     EditorWidget editorWidget;
 
@@ -398,8 +437,7 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
         break;
 
       case 'button':
-        // Create a button widget using TextWidget with button styling
-        editorWidget = TextWidget(
+        editorWidget = ButtonWidget(
           id: 'button_${_uuid.v4()}',
           data: {
             'text': {
@@ -513,22 +551,13 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
         break;
 
       case 'video':
-        // Create a placeholder for video widget
-        editorWidget = TextWidget(
+        editorWidget = VideoWidget(
           id: 'video_${_uuid.v4()}',
           data: {
-            'text': {
-              'translations': {'ko': '비디오 플레이어\n(URL을 설정해주세요)'},
-              'default_language': 'ko',
-            },
-            'fontFamily': 'Roboto',
-            'fontSize': 16.0,
-            'color': '#666666',
-            'backgroundColor': '#F0F0F0',
-            'borderRadius': 8.0,
-            'padding': 20.0,
             'videoUrl': '',
-            'isVideo': true,
+            'autoPlay': false,
+            'showControls': true,
+            'aspectRatio': 16 / 9,
             'position': {
               'dx': 100.0,
               'dy': 100.0,
@@ -574,7 +603,12 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
         );
     }
 
-    // Pass the widget back through Navigator result
+    return editorWidget;
+  }
+
+  void _addWidget(String widgetType) {
+    // Create widget and return it
+    final editorWidget = _createWidget(widgetType);
     Navigator.pop(context, editorWidget);
     _showSuccessSnackBar('위젯이 추가되었습니다.');
   }

@@ -52,6 +52,7 @@ dependencies:
   file_picker: ^5.3.0  # 파일 선택
   cached_network_image: ^3.2.3  # 이미지 캐싱
   flutter_colorpicker: ^1.0.3  # 색상 선택기
+  video_player: ^2.8.1  # 비디오 재생
   
   # 유틸리티
   uuid: ^3.0.7  # 고유 ID 생성

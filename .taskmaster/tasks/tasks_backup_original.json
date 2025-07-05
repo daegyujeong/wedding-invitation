@@ -1,0 +1,241 @@
+{
+    "tags": {
+        "master": {
+            "metadata": {
+                "created": "2025-01-18T14:00:00.000Z",
+                "description": "Main development track for wedding invitation app",
+                "updated": "2025-01-18T14:00:00.000Z"
+            },
+            "tasks": [
+                {
+                    "id": "1",
+                    "title": "Enhance Invitation Display Screen",
+                    "description": "Improve the invitation view screen with better UI components, animations, and dynamic content loading",
+                    "status": "pending",
+                    "priority": "high",
+                    "category": "UI/UX",
+                    "details": "The invitation_view_screen.dart needs enhancement to provide a more engaging user experience. This includes adding smooth animations, better typography, and dynamic content loading capabilities.",
+                    "testStrategy": "Create unit tests for invitation display logic and widget tests for UI components",
+                    "acceptanceCriteria": [
+                        "Invitation displays with smooth animations",
+                        "Content loads dynamically from data models",
+                        "Typography and spacing follow design system",
+                        "Responsive design works on different screen sizes"
+                    ],
+                    "created": "2025-01-18T14:00:00.000Z",
+                    "updated": "2025-01-18T14:00:00.000Z"
+                },
+                {
+                    "id": "2",
+                    "title": "Implement Photo Gallery Navigation",
+                    "description": "Add smooth navigation and zoom functionality to the photo gallery",
+                    "status": "pending",
+                    "priority": "high",
+                    "category": "Features",
+                    "details": "The gallery_screen.dart and photo_viewer.dart need enhanced navigation between photos with smooth transitions and pinch-to-zoom functionality.",
+                    "testStrategy": "Integration tests for photo navigation and gesture handling",
+                    "acceptanceCriteria": [
+                        "Smooth swipe navigation between photos",
+                        "Pinch-to-zoom functionality works properly",
+                        "Gallery loads photos efficiently",
+                        "Back navigation works correctly"
+                    ],
+                    "created": "2025-01-18T14:00:00.000Z",
+                    "updated": "2025-01-18T14:00:00.000Z"
+                },
+                {
+                    "id": "3",
+                    "title": "Optimize Map Integration",
+                    "description": "Improve map widget performance and add venue details",
+                    "status": "pending",
+                    "priority": "medium",
+                    "category": "Integration",
+                    "details": "The map_widget.dart needs performance optimization and better integration with venue information. Add custom markers and detailed venue information display.",
+                    "testStrategy": "Test map loading performance and venue information display",
+                    "acceptanceCriteria": [
+                        "Map loads quickly with custom markers",
+                        "Venue information displays correctly",
+                        "Navigation integration works",
+                        "Map performance is optimized"
+                    ],
+                    "created": "2025-01-18T14:00:00.000Z",
+                    "updated": "2025-01-18T14:00:00.000Z"
+                },
+                {
+                    "id": "4",
+                    "title": "Complete Message System Implementation",
+                    "description": "Finish the guest messaging system with real-time updates",
+                    "status": "pending",
+                    "priority": "high",
+                    "category": "Features",
+                    "details": "The messages_screen.dart and related components need completion. Implement message submission, display, and real-time updates functionality.",
+                    "testStrategy": "Test message creation, display, and real-time synchronization",
+                    "acceptanceCriteria": [
+                        "Guests can submit congratulatory messages",
+                        "Messages display in real-time",
+                        "Message moderation works correctly",
+                        "UI handles different message lengths"
+                    ],
+                    "created": "2025-01-18T14:00:00.000Z",
+                    "updated": "2025-01-18T14:00:00.000Z"
+                },
+                {
+                    "id": "5",
+                    "title": "Implement Share Functionality",
+                    "description": "Add comprehensive sharing options for the wedding invitation",
+                    "status": "pending",
+                    "priority": "medium",
+                    "category": "Features",
+                    "details": "The share_screen.dart needs implementation of various sharing methods including social media, messaging apps, and QR code generation.",
+                    "testStrategy": "Test sharing functionality across different platforms and apps",
+                    "acceptanceCriteria": [
+                        "Share via social media platforms works",
+                        "Messaging app integration functions properly",
+                        "QR code generation and scanning works",
+                        "Deep linking is properly implemented"
+                    ],
+                    "created": "2025-01-18T14:00:00.000Z",
+                    "updated": "2025-01-18T14:00:00.000Z"
+                },
+                {
+                    "id": "6",
+                    "title": "Enhance Editor System",
+                    "description": "Improve the drag-and-drop editor for custom invitation creation",
+                    "status": "pending",
+                    "priority": "medium",
+                    "category": "Editor",
+                    "details": "The editor screens and widget system need enhancement for better user experience. Improve drag-and-drop functionality and widget customization options.",
+                    "testStrategy": "Test editor functionality with various widget combinations",
+                    "acceptanceCriteria": [
+                        "Drag-and-drop works smoothly",
+                        "Widget customization options are intuitive",
+                        "Editor saves changes properly",
+                        "Preview functionality works correctly"
+                    ],
+                    "created": "2025-01-18T14:00:00.000Z",
+                    "updated": "2025-01-18T14:00:00.000Z"
+                },
+                {
+                    "id": "7",
+                    "title": "Complete Internationalization",
+                    "description": "Finish Korean and English language support implementation",
+                    "status": "pending",
+                    "priority": "low",
+                    "category": "Localization",
+                    "details": "Complete the l10n implementation with proper Korean and English translations for all UI elements and date formatting.",
+                    "testStrategy": "Test language switching and cultural formatting",
+                    "acceptanceCriteria": [
+                        "All UI text has proper translations",
+                        "Date formatting follows cultural conventions",
+                        "Language switching works seamlessly",
+                        "Text layout handles different languages properly"
+                    ],
+                    "created": "2025-01-18T14:00:00.000Z",
+                    "updated": "2025-01-18T14:00:00.000Z"
+                },
+                {
+                    "id": "8",
+                    "title": "Fix Home ViewModel Issues",
+                    "description": "Resolve the uncommitted changes in home_viewmodel.dart",
+                    "status": "done",
+                    "priority": "high",
+                    "category": "Bug Fix",
+                    "details": "✅ COMPLETED: Updated wedding date to September 12, 2025 at 7:00 PM and committed changes. Home viewmodel is now clean and functional.",
+                    "testStrategy": "Review changes and test home screen functionality",
+                    "acceptanceCriteria": [
+                        "✅ Review uncommitted changes",
+                        "✅ Test home screen functionality",
+                        "✅ Commit or revert changes appropriately",
+                        "✅ Ensure no breaking changes"
+                    ],
+                    "created": "2025-01-18T14:00:00.000Z",
+                    "updated": "2025-01-18T14:30:00.000Z",
+                    "completed": "2025-01-18T14:30:00.000Z"
+                },
+                {
+                    "id": "9",
+                    "title": "Fix Widget Rendering Bugs",
+                    "description": "Resolve critical bugs in the custom widget system, particularly draggable widgets and editor dialogs",
+                    "status": "pending",
+                    "priority": "high",
+                    "category": "Bug Fix",
+                    "details": "Multiple widget rendering issues identified in the editor system. Focus on draggable_widget.dart, widget_editor_dialog.dart, and custom_widget_factory.dart. Common issues include positioning, state management, and visual glitches during drag operations.",
+                    "testStrategy": "Create comprehensive widget tests and test drag-and-drop functionality across different screen sizes",
+                    "acceptanceCriteria": [
+                        "Draggable widgets position correctly",
+                        "Widget editor dialogs display properly",
+                        "No visual glitches during drag operations",
+                        "Widget state persists correctly",
+                        "Factory creates widgets without errors"
+                    ],
+                    "created": "2025-01-18T14:30:00.000Z",
+                    "updated": "2025-01-18T14:30:00.000Z"
+                },
+                {
+                    "id": "10",
+                    "title": "Add New Custom Widgets",
+                    "description": "Develop additional custom widgets for enhanced invitation customization",
+                    "status": "pending",
+                    "priority": "medium",
+                    "category": "Features",
+                    "details": "Expand the widget library with new components: Timeline widget for event schedule, RSVP form widget, Image carousel widget, Contact info widget, and Social media links widget. Each should integrate with the existing drag-and-drop editor system.",
+                    "testStrategy": "Test new widgets in isolation and within the editor environment",
+                    "acceptanceCriteria": [
+                        "Timeline widget displays event schedule",
+                        "RSVP form widget handles user input",
+                        "Image carousel widget supports multiple photos",
+                        "Contact info widget formats details properly",
+                        "Social media widget links work correctly",
+                        "All widgets integrate with editor system"
+                    ],
+                    "created": "2025-01-18T14:30:00.000Z",
+                    "updated": "2025-01-18T14:30:00.000Z"
+                },
+                {
+                    "id": "11",
+                    "title": "Improve Widget Editor UX",
+                    "description": "Enhance the user experience of the widget editing system with better controls and visual feedback",
+                    "status": "pending",
+                    "priority": "medium",
+                    "category": "UI/UX",
+                    "details": "The widget editor needs UX improvements: better visual feedback during drag operations, improved resize handles, clearer selection indicators, and more intuitive property editing panels. Focus on enhanced_size_editor.dart and related components.",
+                    "testStrategy": "Usability testing with different user interactions and edge cases",
+                    "acceptanceCriteria": [
+                        "Visual feedback is clear during drag operations",
+                        "Resize handles are easy to use",
+                        "Selection indicators are prominent",
+                        "Property editing is intuitive",
+                        "Undo/redo functionality works properly"
+                    ],
+                    "created": "2025-01-18T14:30:00.000Z",
+                    "updated": "2025-01-18T14:30:00.000Z"
+                },
+                {
+                    "id": "12",
+                    "title": "Optimize Widget Performance",
+                    "description": "Improve performance of the widget system, especially with multiple widgets and complex layouts",
+                    "status": "pending",
+                    "priority": "medium",
+                    "category": "Performance",
+                    "details": "Widget system performance degrades with complex layouts. Optimize widget_renderer.dart, implement efficient state management, add widget recycling for lists, and optimize re-rendering logic. Focus on memory usage and smooth animations.",
+                    "testStrategy": "Performance testing with complex widget compositions and memory profiling",
+                    "acceptanceCriteria": [
+                        "Smooth performance with 20+ widgets",
+                        "Memory usage remains stable",
+                        "Animations run at 60fps",
+                        "Widget recycling works efficiently",
+                        "No memory leaks in widget creation/destruction"
+                    ],
+                    "created": "2025-01-18T14:30:00.000Z",
+                    "updated": "2025-01-18T14:30:00.000Z"
+                }
+            ]
+        }
+    },
+    "activeTag": "master",
+    "metadata": {
+        "created": "2025-01-18T14:00:00.000Z",
+        "updated": "2025-01-18T14:00:00.000Z",
+        "version": "1.0.0"
+    }
+}

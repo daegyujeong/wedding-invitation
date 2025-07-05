@@ -3,6 +3,8 @@ import 'package:wedding_invitation/data/models/invitation_model.dart';
 enum WidgetType {
   Text,
   Image,
+  Video,
+  Button,
   Map,
   CountdownTimer,
   DDay,
@@ -34,6 +36,10 @@ abstract class EditorWidget {
         return TextWidget.fromJson(json);
       case WidgetType.Image:
         return ImageWidget.fromJson(json);
+      case WidgetType.Video:
+        return VideoWidget.fromJson(json);
+      case WidgetType.Button:
+        return ButtonWidget.fromJson(json);
       case WidgetType.Map:
         return MapWidget.fromJson(json);
       case WidgetType.CountdownTimer:
@@ -90,6 +96,31 @@ abstract class EditorWidget {
             'imageUrl': 'assets/images/placeholder.png',
             'width': 200.0,
             'height': 200.0,
+          },
+        );
+      case WidgetType.Video:
+        return VideoWidget(
+          id: id,
+          data: {
+            'videoUrl': '',
+            'autoPlay': false,
+            'showControls': true,
+            'aspectRatio': 16 / 9,
+          },
+        );
+      case WidgetType.Button:
+        return ButtonWidget(
+          id: id,
+          data: {
+            'text': {'ko': '버튼', 'en': 'Button'},
+            'fontFamily': 'Roboto',
+            'fontSize': 16.0,
+            'color': '#FFFFFF',
+            'backgroundColor': '#4285F4',
+            'borderRadius': 8.0,
+            'padding': 16.0,
+            'action': 'url',
+            'actionTarget': 'https://example.com',
           },
         );
       case WidgetType.Gallery:
@@ -358,6 +389,81 @@ class ScheduleWidget extends EditorWidget {
 
   factory ScheduleWidget.fromJson(Map<String, dynamic> json) {
     return ScheduleWidget(
+      id: json['id'],
+      data: Map<String, dynamic>.from(json['data'] ?? {}),
+    );
+  }
+}
+
+class VideoWidget extends EditorWidget {
+  VideoWidget({
+    required super.id,
+    required super.data,
+  }) : super(type: WidgetType.Video);
+
+  String get videoUrl => data['videoUrl']?.toString() ?? '';
+  bool get autoPlay => data['autoPlay'] as bool? ?? false;
+  bool get showControls => data['showControls'] as bool? ?? true;
+  double get aspectRatio => (data['aspectRatio'] as num?)?.toDouble() ?? 16 / 9;
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type.toString().split('.').last,
+      'data': data,
+    };
+  }
+
+  factory VideoWidget.fromJson(Map<String, dynamic> json) {
+    return VideoWidget(
+      id: json['id'],
+      data: Map<String, dynamic>.from(json['data'] ?? {}),
+    );
+  }
+}
+
+class ButtonWidget extends EditorWidget {
+  ButtonWidget({
+    required super.id,
+    required super.data,
+  }) : super(type: WidgetType.Button);
+
+  MultiLanguageText get text {
+    try {
+      return MultiLanguageText.fromJson(data['text']);
+    } catch (e) {
+      return MultiLanguageText(
+        translations: {
+          'ko': data['text']?.toString() ?? '버튼',
+          'en': data['text']?.toString() ?? 'Button',
+        },
+        defaultLanguage: 'ko',
+      );
+    }
+  }
+
+  String get fontFamily => data['fontFamily']?.toString() ?? 'Roboto';
+  double get fontSize => (data['fontSize'] as num?)?.toDouble() ?? 16.0;
+  String get color => data['color']?.toString() ?? '#FFFFFF';
+  String get backgroundColor =>
+      data['backgroundColor']?.toString() ?? '#4285F4';
+  double get borderRadius => (data['borderRadius'] as num?)?.toDouble() ?? 8.0;
+  double get padding => (data['padding'] as num?)?.toDouble() ?? 16.0;
+  String get action => data['action']?.toString() ?? 'url';
+  String get actionTarget => data['actionTarget']?.toString() ?? '';
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type.toString().split('.').last,
+      'data': data,
+    };
+  }
+
+  factory ButtonWidget.fromJson(Map<String, dynamic> json) {
+    return ButtonWidget(
       id: json['id'],
       data: Map<String, dynamic>.from(json['data'] ?? {}),
     );

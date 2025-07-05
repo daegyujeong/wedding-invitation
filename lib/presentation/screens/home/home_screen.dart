@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../viewmodels/editor_viewmodel.dart';
+import '../../../data/models/editor_widget_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -74,14 +75,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
             // Look for greeting text widget in the main page
             if (mainPage.widgets.isNotEmpty) {
-              final greetingWidgets = mainPage.widgets.where((widget) =>
-                  widget.type.index == 0 && // WidgetType.text has index 0
-                  widget.properties.containsKey('text'));
+              final greetingWidgets = mainPage.widgets
+                  .where((widget) => widget.type == WidgetType.Text);
 
               if (greetingWidgets.isNotEmpty) {
                 final greetingWidget = greetingWidgets.first;
-                if (greetingWidget.properties.containsKey('text')) {
-                  greetingText = greetingWidget.properties['text'];
+                if (greetingWidget is TextWidget) {
+                  greetingText = greetingWidget.text.getText('ko');
                 }
               }
             }

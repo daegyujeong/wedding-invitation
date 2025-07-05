@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'google_map_widget.dart';
 import 'naver_map_widget.dart';
 import 'kakao_map_widget.dart';
+import 'map_navigation_helper.dart';
 
 enum MapProvider {
   google,
@@ -9,7 +10,7 @@ enum MapProvider {
   kakao,
 }
 
-class MultiMapWidget extends StatelessWidget {
+class MultiMapWidget extends StatefulWidget {
   final double latitude;
   final double longitude;
   final String venue;
@@ -34,12 +35,25 @@ class MultiMapWidget extends StatelessWidget {
   });
 
   @override
+  State<MultiMapWidget> createState() => _MultiMapWidgetState();
+}
+
+class _MultiMapWidgetState extends State<MultiMapWidget> {
+  late MapProvider _currentProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentProvider = widget.provider;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        if (isEditMode) _buildMapProviderSelector(context),
+        if (widget.isEditMode) _buildMapProviderSelector(context),
         Container(
-          height: height,
+          height: widget.height,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: Colors.grey.shade300),
@@ -49,7 +63,7 @@ class MultiMapWidget extends StatelessWidget {
             child: _buildMap(),
           ),
         ),
-        if (showDirections) _buildNavigationButtons(context),
+        if (widget.showDirections) _buildNavigationButtons(context),
       ],
     );
   }
@@ -91,9 +105,14 @@ class MultiMapWidget extends StatelessWidget {
     String label,
     Color color,
   ) {
-    final isSelected = provider == mapProvider;
+    final isSelected = _currentProvider == mapProvider;
     return InkWell(
-      onTap: onMapTap,
+      onTap: () {
+        setState(() {
+          _currentProvider = mapProvider;
+        });
+        widget.onMapTap?.call();
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
@@ -117,27 +136,27 @@ class MultiMapWidget extends StatelessWidget {
   }
 
   Widget _buildMap() {
-    switch (provider) {
+    switch (_currentProvider) {
       case MapProvider.google:
         return GoogleMapWidget(
-          latitude: latitude,
-          longitude: longitude,
-          venue: venue,
-          showControls: showControls,
+          latitude: widget.latitude,
+          longitude: widget.longitude,
+          venue: widget.venue,
+          showControls: widget.showControls,
         );
       case MapProvider.naver:
         return NaverMapWidget(
-          latitude: latitude,
-          longitude: longitude,
-          venue: venue,
-          showControls: showControls,
+          latitude: widget.latitude,
+          longitude: widget.longitude,
+          venue: widget.venue,
+          showControls: widget.showControls,
         );
       case MapProvider.kakao:
         return KakaoMapWidget(
-          latitude: latitude,
-          longitude: longitude,
-          venue: venue,
-          showControls: showControls,
+          latitude: widget.latitude,
+          longitude: widget.longitude,
+          venue: widget.venue,
+          showControls: widget.showControls,
         );
     }
   }
@@ -153,21 +172,33 @@ class MultiMapWidget extends StatelessWidget {
             'Kakao Map',
             Icons.map,
             Colors.yellow.shade700,
-            () => _openKakaoMap(),
+            () => MapNavigationHelper.openKakaoMap(
+              latitude: widget.latitude,
+              longitude: widget.longitude,
+              venue: widget.venue,
+            ),
           ),
           _buildNavButton(
             context,
             'Naver Map',
             Icons.map,
             Colors.green,
-            () => _openNaverMap(),
+            () => MapNavigationHelper.openNaverMap(
+              latitude: widget.latitude,
+              longitude: widget.longitude,
+              venue: widget.venue,
+            ),
           ),
           _buildNavButton(
             context,
             'Google Maps',
             Icons.map,
             Colors.blue,
-            () => _openGoogleMaps(),
+            () => MapNavigationHelper.openGoogleMaps(
+              latitude: widget.latitude,
+              longitude: widget.longitude,
+              venue: widget.venue,
+            ),
           ),
         ],
       ),
@@ -206,20 +237,5 @@ class MultiMapWidget extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  void _openKakaoMap() {
-    // Implement Kakao Map navigation
-    debugPrint('Opening Kakao Map: $latitude, $longitude');
-  }
-
-  void _openNaverMap() {
-    // Implement Naver Map navigation
-    debugPrint('Opening Naver Map: $latitude, $longitude');
-  }
-
-  void _openGoogleMaps() {
-    // Implement Google Maps navigation
-    debugPrint('Opening Google Maps: $latitude, $longitude');
   }
 }

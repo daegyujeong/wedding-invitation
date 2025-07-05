@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kakaomap_webview/kakaomap_webview.dart';
+import '../../../../core/config/environment.dart';
 
 class KakaoMapWidget extends StatefulWidget {
   final double latitude;
@@ -26,7 +27,7 @@ class _KakaoMapWidgetState extends State<KakaoMapWidget> {
   
   @override
   Widget build(BuildContext context) {
-    const String kakaoMapKey = 'YOUR_KAKAO_MAP_KEY'; // Replace with actual key
+    final String kakaoMapKey = Environment.kakaoMapsJsKey;
     
     return Stack(
       children: [

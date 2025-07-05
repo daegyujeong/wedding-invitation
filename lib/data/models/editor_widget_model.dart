@@ -138,6 +138,12 @@ abstract class EditorWidget {
             'venueId': 'main_venue',
             'mapType': 'standard',
             'showDirections': true,
+            'latitude': 37.5665,  // Default: Seoul City Hall
+            'longitude': 126.9780,
+            'venue': '결혼식장',
+            'mapProvider': 'google',  // 'google', 'naver', 'kakao'
+            'showControls': true,
+            'height': 300.0,
           },
         );
       case WidgetType.Schedule:
@@ -245,6 +251,22 @@ class MapWidget extends EditorWidget {
   String get venueId => data['venueId']?.toString() ?? 'main_venue';
   String get mapType => data['mapType']?.toString() ?? 'standard';
   bool get showDirections => data['showDirections'] == true;
+  double get latitude => (data['latitude'] as num?)?.toDouble() ?? 37.5665;
+  double get longitude => (data['longitude'] as num?)?.toDouble() ?? 126.9780;
+  String get venue => data['venue']?.toString() ?? '결혼식장';
+  String get mapProvider => data['mapProvider']?.toString() ?? 'google';
+  bool get showControls => data['showControls'] ?? true;
+  double get height => (data['height'] as num?)?.toDouble() ?? 300.0;
+
+  void setMapProvider(String provider) {
+    data['mapProvider'] = provider;
+  }
+
+  void setLocation(double lat, double lng, String venueName) {
+    data['latitude'] = lat;
+    data['longitude'] = lng;
+    data['venue'] = venueName;
+  }
 
   @override
   Map<String, dynamic> toJson() {

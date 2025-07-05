@@ -154,6 +154,7 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
           longitude: widget.longitude,
           venue: widget.venue,
           showControls: widget.showControls,
+          height: widget.height,
         );
       case MapProvider.naver:
         return NaverMapWidget(
@@ -161,6 +162,7 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
           longitude: widget.longitude,
           venue: widget.venue,
           showControls: widget.showControls,
+          height: widget.height,
         );
       case MapProvider.kakao:
         return KakaoMapWidget(
@@ -168,6 +170,7 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
           longitude: widget.longitude,
           venue: widget.venue,
           showControls: widget.showControls,
+          height: widget.height,
         );
     }
   }

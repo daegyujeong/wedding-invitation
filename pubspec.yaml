@@ -66,6 +66,13 @@ dependencies:
   vm_service: ^14.2.1
   latlong2: ^0.8.1 # 위도/경도 처리
   flutter_map: ^4.0.0 # 지도 표시 - Compatible with Dart 3.4.1
+  
+  # Map packages
+  google_maps_flutter: ^2.6.1  # Google Maps
+  flutter_naver_map: ^1.2.3  # Naver Maps
+  kakaomap_webview: ^0.6.2  # Kakao Maps (WebView based)
+  webview_flutter: ^4.4.2  # For Kakao Maps
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

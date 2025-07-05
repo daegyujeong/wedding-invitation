@@ -23,12 +23,12 @@ class KakaoMapWidget extends StatefulWidget {
 }
 
 class _KakaoMapWidgetState extends State<KakaoMapWidget> {
-  late KakaoMapController _controller;
-  
+  // Remove controller variable since it's handled by the package
+
   @override
   Widget build(BuildContext context) {
-    final String kakaoMapKey = Environment.kakaoMapsJsKey;
-    
+    const String kakaoMapKey = Environment.kakaoMapsJsKey;
+
     return Stack(
       children: [
         KakaoMapView(
@@ -38,11 +38,6 @@ class _KakaoMapWidgetState extends State<KakaoMapWidget> {
           lat: widget.latitude,
           lng: widget.longitude,
           zoomLevel: widget.zoom.toInt(),
-          mapController: (controller) {
-            _controller = controller;
-            // Add marker after map is loaded
-            _addMarker();
-          },
           showZoomControl: widget.showControls,
           showMapTypeControl: false,
           draggableMarker: false,
@@ -120,28 +115,6 @@ class _KakaoMapWidgetState extends State<KakaoMapWidget> {
         ),
       ],
     );
-  }
-
-  void _addMarker() {
-    // Add custom marker with venue information
-    const String markerScript = '''
-      var markerPosition = new kakao.maps.LatLng(\${widget.latitude}, \${widget.longitude});
-      var marker = new kakao.maps.Marker({
-        position: markerPosition
-      });
-      marker.setMap(map);
-      
-      var iwContent = '<div style="padding:5px;">\${widget.venue}</div>';
-      var infowindow = new kakao.maps.InfoWindow({
-        content : iwContent
-      });
-      
-      kakao.maps.event.addListener(marker, 'click', function() {
-        infowindow.open(map, marker);
-      });
-    ''';
-    
-    _controller.addJavaScript(markerScript);
   }
 
   @override

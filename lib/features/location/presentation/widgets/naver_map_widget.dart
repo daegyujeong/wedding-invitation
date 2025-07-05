@@ -72,7 +72,7 @@ class _NaverMapWidgetState extends State<NaverMapWidget> {
             zoomGesturesEnable: widget.showControls,
             stopGesturesEnable: !widget.showControls,
           ),
-          onMapCreated: (controller) {
+          onMapReady: (controller) {
             _controller = controller;
             _controller.addOverlay(_venueMarker);
           },

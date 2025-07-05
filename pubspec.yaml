@@ -71,7 +71,7 @@ dependencies:
   google_maps_flutter: ^2.6.1  # Google Maps
   flutter_naver_map: ^1.2.3  # Naver Maps
   kakaomap_webview: ^0.6.2  # Kakao Maps (WebView based)
-  webview_flutter: ^4.4.2  # For Kakao Maps
+  webview_flutter: ^3.0.4  # For Kakao Maps
   
 dev_dependencies:
   flutter_test:

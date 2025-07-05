@@ -248,25 +248,41 @@ class WidgetRenderer extends StatelessWidget {
         provider = MapProvider.google;
     }
 
-    // CRITICAL FIX: Always wrap map widgets in SizedBox with finite dimensions
-    // This prevents the "BoxConstraints forces an infinite width" error
-    return SizedBox(
-      width: double.infinity, // Take full width of parent
-      height: mapWidget.height, // Use specified height from widget
-      child: MultiMapWidget(
-        latitude: mapWidget.latitude,
-        longitude: mapWidget.longitude,
-        venue: mapWidget.venue,
-        provider: provider,
-        showControls: !isEditMode && mapWidget.showControls,
-        showDirections: !isEditMode && mapWidget.showDirections,
-        height: mapWidget.height,
-        isEditMode: isEditMode,
-        onMapTap: isEditMode ? () {
-          // In edit mode, you might want to open a dialog to select map provider
-          debugPrint('Map provider selection in edit mode');
-        } : null,
-      ),
+    // ROBUST FIX: Use LayoutBuilder to handle both constrained and unconstrained scenarios
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate appropriate width based on constraints
+        double mapWidth;
+        if (constraints.maxWidth.isFinite) {
+          // If parent provides finite width, use it
+          mapWidth = constraints.maxWidth;
+        } else {
+          // If parent provides unconstrained width, use screen width or fallback
+          mapWidth = MediaQuery.of(context).size.width * 0.9; // 90% of screen width
+        }
+
+        // Ensure minimum width for usability
+        mapWidth = mapWidth.clamp(250.0, double.infinity);
+
+        return Container(
+          width: mapWidth,
+          height: mapWidget.height,
+          child: MultiMapWidget(
+            latitude: mapWidget.latitude,
+            longitude: mapWidget.longitude,
+            venue: mapWidget.venue,
+            provider: provider,
+            showControls: !isEditMode && mapWidget.showControls,
+            showDirections: !isEditMode && mapWidget.showDirections,
+            height: mapWidget.height,
+            isEditMode: isEditMode,
+            onMapTap: isEditMode ? () {
+              // In edit mode, you might want to open a dialog to select map provider
+              debugPrint('Map provider selection in edit mode');
+            } : null,
+          ),
+        );
+      },
     );
   }
 

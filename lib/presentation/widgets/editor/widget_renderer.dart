@@ -248,19 +248,25 @@ class WidgetRenderer extends StatelessWidget {
         provider = MapProvider.google;
     }
 
-    return MultiMapWidget(
-      latitude: mapWidget.latitude,
-      longitude: mapWidget.longitude,
-      venue: mapWidget.venue,
-      provider: provider,
-      showControls: !isEditMode && mapWidget.showControls,
-      showDirections: !isEditMode && mapWidget.showDirections,
-      height: mapWidget.height,
-      isEditMode: isEditMode,
-      onMapTap: isEditMode ? () {
-        // In edit mode, you might want to open a dialog to select map provider
-        debugPrint('Map provider selection in edit mode');
-      } : null,
+    // CRITICAL FIX: Always wrap map widgets in SizedBox with finite dimensions
+    // This prevents the "BoxConstraints forces an infinite width" error
+    return SizedBox(
+      width: double.infinity, // Take full width of parent
+      height: mapWidget.height, // Use specified height from widget
+      child: MultiMapWidget(
+        latitude: mapWidget.latitude,
+        longitude: mapWidget.longitude,
+        venue: mapWidget.venue,
+        provider: provider,
+        showControls: !isEditMode && mapWidget.showControls,
+        showDirections: !isEditMode && mapWidget.showDirections,
+        height: mapWidget.height,
+        isEditMode: isEditMode,
+        onMapTap: isEditMode ? () {
+          // In edit mode, you might want to open a dialog to select map provider
+          debugPrint('Map provider selection in edit mode');
+        } : null,
+      ),
     );
   }
 

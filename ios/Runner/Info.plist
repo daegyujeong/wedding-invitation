@@ -50,5 +50,8 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<!-- Google Maps API Key for iOS -->
+	<key>GoogleMapsAPIKey</key>
+	<string>AIzaSyDYtu2Bu-VPXsA3z5sWaENXOqa-B-m8vxM</string>
 </dict>
 </plist>

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'google_map_widget.dart';
+import 'google_map_widget_wrapper.dart';
 import 'naver_map_widget.dart';
 import 'kakao_map_widget.dart';
 import 'map_navigation_helper.dart';
+import 'location_search_widget.dart';
+import '../../../../data/services/location_search_service.dart';
+import '../../../../data/repositories/saved_locations_repository.dart';
+import '../../../../data/models/venue_model.dart';
 
 enum MapProvider {
   google,
@@ -20,6 +24,9 @@ class MultiMapWidget extends StatefulWidget {
   final double height;
   final VoidCallback? onMapTap;
   final bool isEditMode;
+  final bool showSearch;
+  final Function(LocationSearchResult)? onLocationSelected;
+  final Function(VenueModel)? onLocationSaved;
 
   const MultiMapWidget({
     super.key,
@@ -32,6 +39,9 @@ class MultiMapWidget extends StatefulWidget {
     this.height = 300,
     this.onMapTap,
     this.isEditMode = false,
+    this.showSearch = false,
+    this.onLocationSelected,
+    this.onLocationSaved,
   });
 
   @override
@@ -40,11 +50,19 @@ class MultiMapWidget extends StatefulWidget {
 
 class _MultiMapWidgetState extends State<MultiMapWidget> {
   late MapProvider _currentProvider;
+  final SavedLocationsRepository _savedLocationsRepository = SavedLocationsRepository();
+  double _currentLatitude = 0.0;
+  double _currentLongitude = 0.0;
+  String _currentVenueName = '';
+  bool _isMapLocked = true; // Start with map locked in edit mode
 
   @override
   void initState() {
     super.initState();
     _currentProvider = widget.provider;
+    _currentLatitude = widget.latitude;
+    _currentLongitude = widget.longitude;
+    _currentVenueName = widget.venue;
   }
 
   @override
@@ -59,6 +77,11 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
         // Calculate available height for map after accounting for other elements
         double availableMapHeight = widget.height;
         
+        // Account for search section height if showing search
+        if (widget.showSearch) {
+          availableMapHeight -= 120; // Search section estimated height
+        }
+        
         // Account for selector height if in edit mode
         if (widget.isEditMode) {
           availableMapHeight -= 48; // Selector height + margin
@@ -69,27 +92,41 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
           availableMapHeight -= 80; // Navigation buttons height + margin
         }
         
+        // Account for save button height if showing search
+        if (widget.showSearch) {
+          availableMapHeight -= 64; // Save button height + padding
+        }
+        
         // Ensure minimum map height
-        availableMapHeight = availableMapHeight.clamp(150.0, widget.height);
+        availableMapHeight = availableMapHeight.clamp(100.0, widget.height);
             
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.isEditMode) _buildMapProviderSelector(context),
-            Container(
-              width: mapWidth,
-              height: availableMapHeight, // Use calculated height instead of widget.height
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300),
+        return SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.showSearch) _buildSearchSection(),
+              if (widget.isEditMode) _buildMapProviderSelector(context),
+              Stack(
+                children: [
+                  Container(
+                    width: mapWidth,
+                    height: availableMapHeight, // Use calculated height instead of widget.height
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: _buildMap(availableMapHeight),
+                    ),
+                  ),
+                  if (widget.isEditMode) _buildMapLockButton(),
+                ],
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: _buildMap(availableMapHeight),
-              ),
-            ),
-            if (widget.showDirections) _buildNavigationButtons(context),
-          ],
+              if (widget.showDirections) _buildNavigationButtons(context),
+              if (widget.showSearch) _buildSaveButton(),
+            ],
+          ),
         );
       },
     );
@@ -163,30 +200,152 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
     );
   }
 
+  Widget _buildSearchSection() {
+    return LocationSearchWidget(
+      provider: _currentProvider,
+      onLocationSelected: _handleLocationSelected,
+    );
+  }
+
+  Widget _buildSaveButton() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      child: ElevatedButton.icon(
+        onPressed: _saveCurrentLocation,
+        icon: const Icon(Icons.bookmark_add),
+        label: const Text('현재 위치 저장'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).primaryColor,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleLocationSelected(LocationSearchResult result) {
+    setState(() {
+      _currentLatitude = result.latitude;
+      _currentLongitude = result.longitude;
+      _currentVenueName = result.name;
+    });
+    
+    widget.onLocationSelected?.call(result);
+  }
+
+  Future<void> _saveCurrentLocation() async {
+    final venue = VenueModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: _currentVenueName,
+      address: _currentVenueName,
+      latitude: _currentLatitude,
+      longitude: _currentLongitude,
+      country: 'Korea', // Default, should be configurable
+      eventType: 'Wedding', // Default, should be configurable  
+      eventDate: DateTime.now(),
+      mapLinks: {},
+    );
+
+    final success = await _savedLocationsRepository.saveLocation(venue);
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success ? '위치가 저장되었습니다.' : '이미 저장된 위치입니다.'),
+          backgroundColor: success ? Colors.green : Colors.orange,
+        ),
+      );
+    }
+
+    if (success) {
+      widget.onLocationSaved?.call(venue);
+    }
+  }
+
+  Widget _buildMapLockButton() {
+    return Positioned(
+      top: 8,
+      left: 8,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(6),
+            onTap: () {
+              setState(() {
+                _isMapLocked = !_isMapLocked;
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _isMapLocked ? Icons.lock : Icons.lock_open,
+                    size: 16,
+                    color: _isMapLocked ? Colors.orange : Colors.green,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _isMapLocked ? '잠금' : '해제',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: _isMapLocked ? Colors.orange : Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildMap(double mapHeight) {
+    // Determine if map controls should be enabled
+    final bool enableControls = widget.isEditMode ? !_isMapLocked : widget.showControls;
+    
     switch (_currentProvider) {
       case MapProvider.google:
-        return GoogleMapWidget(
-          latitude: widget.latitude,
-          longitude: widget.longitude,
-          venue: widget.venue,
-          showControls: widget.showControls,
+        return GoogleMapWidgetWrapper(
+          latitude: _currentLatitude,
+          longitude: _currentLongitude,
+          venue: _currentVenueName,
+          showControls: enableControls,
           height: mapHeight, // Pass calculated height
         );
       case MapProvider.naver:
         return NaverMapWidget(
-          latitude: widget.latitude,
-          longitude: widget.longitude,
-          venue: widget.venue,
-          showControls: widget.showControls,
+          latitude: _currentLatitude,
+          longitude: _currentLongitude,
+          venue: _currentVenueName,
+          showControls: enableControls,
           height: mapHeight, // Pass calculated height
         );
       case MapProvider.kakao:
         return KakaoMapWidget(
-          latitude: widget.latitude,
-          longitude: widget.longitude,
-          venue: widget.venue,
-          showControls: widget.showControls,
+          latitude: _currentLatitude,
+          longitude: _currentLongitude,
+          venue: _currentVenueName,
+          showControls: enableControls,
           height: mapHeight, // Pass calculated height
         );
     }

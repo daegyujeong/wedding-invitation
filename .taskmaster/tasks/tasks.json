@@ -56,16 +56,80 @@
       {
         "id": 5,
         "title": "Develop Location and Maps Integration",
-        "description": "Create an interactive map screen with venue information and navigation capabilities",
-        "details": "Implement the location screen with map integration featuring:\n1. Interactive map widget showing wedding venue(s)\n2. Custom markers for wedding locations\n3. Integration with navigation apps (Google Maps, Apple Maps)\n4. Transportation information display\n\nUse google_maps_flutter or mapbox_gl packages for map integration. Implement the VenueModel to store and display location details.\n\nExample implementation:\n```dart\nclass LocationScreen extends StatefulWidget {\n  @override\n  _LocationScreenState createState() => _LocationScreenState();\n}\n\nclass _LocationScreenState extends State<LocationScreen> {\n  late GoogleMapController _mapController;\n  final Set<Marker> _markers = {};\n  final VenueModel venue; // Inject from repository\n  \n  @override\n  void initState() {\n    super.initState();\n    _markers.add(\n      Marker(\n        markerId: MarkerId('wedding_venue'),\n        position: LatLng(venue.latitude, venue.longitude),\n        infoWindow: InfoWindow(title: venue.name, snippet: venue.address),\n      ),\n    );\n  }\n  \n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      body: Column(\n        children: [\n          Expanded(\n            child: GoogleMap(\n              initialCameraPosition: CameraPosition(\n                target: LatLng(venue.latitude, venue.longitude),\n                zoom: 14.0,\n              ),\n              markers: _markers,\n              onMapCreated: (controller) => _mapController = controller,\n            ),\n          ),\n          VenueInfoCard(\n            venue: venue,\n            onGetDirections: _launchDirections,\n          ),\n        ],\n      ),\n    );\n  }\n  \n  void _launchDirections() {\n    // Launch external navigation app with venue coordinates\n  }\n}\n```\n\nImplement methods to open external navigation apps with the venue coordinates.",
-        "testStrategy": "Test map initialization and marker placement. Verify venue information displays correctly. Test integration with navigation apps. Mock location services for testing. Verify the map responds correctly to user interactions. Test fallback behavior when map services are unavailable.",
-        "priority": "medium",
+        "description": "Create an interactive map screen with venue information, navigation capabilities, and location search functionality",
+        "status": "pending",
         "dependencies": [
           1,
           2
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "medium",
+        "details": "Implement the location screen with map integration featuring:\n1. Interactive map widget showing wedding venue(s)\n2. Custom markers for wedding locations\n3. Integration with navigation apps (Google Maps, Apple Maps)\n4. Transportation information display\n5. Location search functionality with Google Places API\n6. Ability to select and save venue locations\n\nUse google_maps_flutter or mapbox_gl packages for map integration. Implement the VenueModel to store and display location details.\n\nExample implementation:\n```dart\nclass LocationScreen extends StatefulWidget {\n  @override\n  _LocationScreenState createState() => _LocationScreenState();\n}\n\nclass _LocationScreenState extends State<LocationScreen> {\n  late GoogleMapController _mapController;\n  final Set<Marker> _markers = {};\n  final VenueModel venue; // Inject from repository\n  final TextEditingController _searchController = TextEditingController();\n  List<PlacePrediction> _searchResults = [];\n  \n  @override\n  void initState() {\n    super.initState();\n    _updateMarker(LatLng(venue.latitude, venue.longitude), venue.name, venue.address);\n  }\n  \n  void _updateMarker(LatLng position, String title, String snippet) {\n    setState(() {\n      _markers.clear();\n      _markers.add(\n        Marker(\n          markerId: MarkerId('wedding_venue'),\n          position: position,\n          infoWindow: InfoWindow(title: title, snippet: snippet),\n        ),\n      );\n    });\n  }\n  \n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      body: Column(\n        children: [\n          // Search bar\n          Padding(\n            padding: const EdgeInsets.all(8.0),\n            child: TextField(\n              controller: _searchController,\n              decoration: InputDecoration(\n                hintText: 'Search for a location',\n                prefixIcon: Icon(Icons.search),\n                border: OutlineInputBorder(),\n              ),\n              onChanged: _onSearchChanged,\n            ),\n          ),\n          // Search results\n          if (_searchResults.isNotEmpty)\n            Container(\n              height: 200,\n              child: ListView.builder(\n                itemCount: _searchResults.length,\n                itemBuilder: (context, index) {\n                  return ListTile(\n                    title: Text(_searchResults[index].description),\n                    onTap: () => _selectSearchResult(_searchResults[index]),\n                  );\n                },\n              ),\n            ),\n          Expanded(\n            child: GoogleMap(\n              initialCameraPosition: CameraPosition(\n                target: LatLng(venue.latitude, venue.longitude),\n                zoom: 14.0,\n              ),\n              markers: _markers,\n              onMapCreated: (controller) => _mapController = controller,\n            ),\n          ),\n          VenueInfoCard(\n            venue: venue,\n            onGetDirections: _launchDirections,\n            onSaveLocation: _saveSelectedLocation,\n          ),\n        ],\n      ),\n    );\n  }\n  \n  void _onSearchChanged(String query) async {\n    if (query.length > 2) {\n      // Call Google Places API for autocomplete suggestions\n      final predictions = await PlacesService.getPlacePredictions(query);\n      setState(() {\n        _searchResults = predictions;\n      });\n    } else {\n      setState(() {\n        _searchResults = [];\n      });\n    }\n  }\n  \n  void _selectSearchResult(PlacePrediction prediction) async {\n    // Get place details from prediction\n    final placeDetails = await PlacesService.getPlaceDetails(prediction.placeId);\n    \n    // Update map and marker\n    final newPosition = LatLng(placeDetails.latitude, placeDetails.longitude);\n    _mapController.animateCamera(CameraUpdate.newLatLng(newPosition));\n    _updateMarker(newPosition, placeDetails.name, placeDetails.address);\n    \n    // Update venue model with new location\n    setState(() {\n      venue.latitude = placeDetails.latitude;\n      venue.longitude = placeDetails.longitude;\n      venue.address = placeDetails.address;\n      _searchResults = [];\n      _searchController.clear();\n    });\n  }\n  \n  void _saveSelectedLocation() {\n    // Save the current venue location to the repository\n    VenueRepository.saveVenue(venue);\n    ScaffoldMessenger.of(context).showSnackBar(\n      SnackBar(content: Text('Location saved successfully')),\n    );\n  }\n  \n  void _launchDirections() {\n    // Launch external navigation app with venue coordinates\n    final url = 'https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}';\n    launchUrl(Uri.parse(url));\n  }\n}\n```\n\nImplement the PlacesService class to handle Google Places API integration:\n```dart\nclass PlacesService {\n  static final String _apiKey = 'YOUR_GOOGLE_PLACES_API_KEY';\n  \n  static Future<List<PlacePrediction>> getPlacePredictions(String input) async {\n    // Call Google Places Autocomplete API\n    // Return list of place predictions\n  }\n  \n  static Future<PlaceDetails> getPlaceDetails(String placeId) async {\n    // Call Google Places Details API\n    // Return place details including coordinates and address\n  }\n}\n\nclass PlacePrediction {\n  final String placeId;\n  final String description;\n  \n  PlacePrediction({required this.placeId, required this.description});\n}\n\nclass PlaceDetails {\n  final double latitude;\n  final double longitude;\n  final String name;\n  final String address;\n  \n  PlaceDetails({\n    required this.latitude,\n    required this.longitude,\n    required this.name,\n    required this.address,\n  });\n}\n```",
+        "testStrategy": "Test map initialization and marker placement. Verify venue information displays correctly. Test integration with navigation apps. Mock location services for testing. Verify the map responds correctly to user interactions. Test fallback behavior when map services are unavailable.\n\nAdditional tests for search functionality:\n1. Test search input and API integration with mocked responses\n2. Verify search results display correctly\n3. Test selection of search results and map updates\n4. Verify location details are updated when a new location is selected\n5. Test saving functionality for selected locations\n6. Verify error handling for API failures\n7. Test UI responsiveness during search operations",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement basic map integration",
+            "description": "Set up the map widget with initial venue location and marker",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Create VenueModel and repository",
+            "description": "Implement data model and repository for venue location information",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Implement navigation app integration",
+            "description": "Add functionality to open external navigation apps with venue coordinates",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implement location search functionality",
+            "description": "Add search bar and integrate with Google Places API for location search",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Create PlacesService for API integration",
+            "description": "Implement service class to handle Google Places API calls for autocomplete and place details",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Implement location selection and saving",
+            "description": "Add functionality to select locations from search results and save them as venue locations",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Update UI for location details display",
+            "description": "Enhance VenueInfoCard to display detailed location information and add save button",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          }
+        ]
       },
       {
         "id": 6,
@@ -240,9 +304,7 @@
       {
         "id": 13,
         "title": "Enhance Widget Editor with Advanced Features",
-        "description": "Implement advanced features for the widget editor system including animation controls, state persistence, undo/redo functionality, widget grouping, responsive design previews, and performance optimization.",
-        "details": "Enhance the existing widget editor system with the following advanced features:\n\n1. **Widget Animation Controls**:\n   - Implement a comprehensive animation system supporting fade, slide, and bounce effects\n   - Create an AnimationController class to manage animation states and transitions\n   - Add UI controls for configuring animation duration, easing curves, and triggers\n   - Support for animation preview in the editor\n   \n   ```dart\n   class WidgetAnimationController {\n     final AnimationType type; // fade, slide, bounce\n     final Duration duration;\n     final Curve curve;\n     final AnimationTrigger trigger; // on load, on scroll, on tap\n     \n     Animation<double> buildAnimation(AnimationController controller) {\n       // Implementation based on animation type\n     }\n   }\n   ```\n\n2. **Widget State Persistence and Auto-save**:\n   - Implement a state management system to track widget changes\n   - Create an auto-save mechanism that persists editor state at configurable intervals\n   - Add a StateHistoryManager to track widget state changes\n   - Implement serialization/deserialization of complex widget states\n   \n   ```dart\n   class EditorStateManager {\n     Timer? _autoSaveTimer;\n     final Duration autoSaveInterval;\n     \n     Future<void> saveCurrentState() async {\n       // Serialize and save current editor state\n     }\n     \n     void startAutoSave() {\n       _autoSaveTimer = Timer.periodic(autoSaveInterval, (_) => saveCurrentState());\n     }\n   }\n   ```\n\n3. **Undo/Redo Functionality**:\n   - Implement a command pattern for tracking editor actions\n   - Create an ActionHistory class to manage the undo/redo stack\n   - Add UI controls for undo/redo operations\n   - Support for complex operations that affect multiple widgets\n   \n   ```dart\n   abstract class EditorCommand {\n     void execute();\n     void undo();\n   }\n   \n   class ActionHistory {\n     final List<EditorCommand> _undoStack = [];\n     final List<EditorCommand> _redoStack = [];\n     \n     void executeCommand(EditorCommand command) {\n       command.execute();\n       _undoStack.add(command);\n       _redoStack.clear();\n     }\n     \n     void undo() {\n       if (_undoStack.isNotEmpty) {\n         final command = _undoStack.removeLast();\n         command.undo();\n         _redoStack.add(command);\n       }\n     }\n     \n     void redo() {\n       if (_redoStack.isNotEmpty) {\n         final command = _redoStack.removeLast();\n         command.execute();\n         _undoStack.add(command);\n       }\n     }\n   }\n   ```\n\n4. **Widget Grouping and Layering Controls**:\n   - Implement a hierarchical widget structure to support grouping\n   - Add z-index management for controlling widget layering\n   - Create UI controls for grouping/ungrouping widgets\n   - Support operations that affect entire groups (move, resize, style)\n   \n   ```dart\n   class WidgetGroup extends CustomWidgetModel {\n     final List<CustomWidgetModel> children;\n     \n     void addWidget(CustomWidgetModel widget) {\n       children.add(widget);\n     }\n     \n     void removeWidget(String widgetId) {\n       children.removeWhere((w) => w.id == widgetId);\n     }\n     \n     @override\n     Widget build(BuildContext context) {\n       return Stack(\n         children: children.map((w) => w.build(context)).toList(),\n       );\n     }\n   }\n   ```\n\n5. **Responsive Design Preview Modes**:\n   - Implement preview modes for different device sizes (phone, tablet, desktop)\n   - Add responsive layout guidelines and grid systems\n   - Create a DevicePreviewController to manage different preview states\n   - Support for testing responsive behavior directly in the editor\n   \n   ```dart\n   class ResponsivePreviewController {\n     final List<DevicePreset> availableDevices;\n     DevicePreset currentDevice;\n     \n     Widget wrapWithDeviceFrame(Widget editorContent) {\n       return DeviceFrame(\n         device: currentDevice,\n         isFrameVisible: true,\n         child: editorContent,\n       );\n     }\n   }\n   ```\n\n6. **Performance Optimization**:\n   - Implement widget virtualization for handling large numbers of widgets\n   - Add lazy loading for complex widget properties\n   - Optimize rendering pipeline for smooth real-time editing\n   - Implement debouncing for frequent operations like resizing and dragging\n   \n   ```dart\n   class OptimizedEditorCanvas extends StatefulWidget {\n     @override\n     State<OptimizedEditorCanvas> createState() => _OptimizedEditorCanvasState();\n   }\n   \n   class _OptimizedEditorCanvasState extends State<OptimizedEditorCanvas> {\n     // Implement virtualization for visible widgets only\n     List<CustomWidgetModel> getVisibleWidgets(List<CustomWidgetModel> allWidgets) {\n       // Return only widgets currently in viewport\n     }\n     \n     // Debounce frequent operations\n     final _resizeDebouncer = Debouncer(milliseconds: 50);\n     void handleResize(String widgetId, Size newSize) {\n       _resizeDebouncer.run(() {\n         // Apply resize operation\n       });\n     }\n   }\n   ```\n\nIntegrate these features with the existing widget editor system, ensuring backward compatibility with previously created widgets. Update the UI to include new controls while maintaining a clean, intuitive interface.",
-        "testStrategy": "Implement a comprehensive testing strategy to verify all new advanced features:\n\n1. **Animation Controls Testing**:\n   - Create unit tests for each animation type (fade, slide, bounce) to verify correct behavior\n   - Test animation parameter changes (duration, curve, trigger) affect output correctly\n   - Implement widget tests to verify animation UI controls work as expected\n   - Create visual regression tests to compare animation results with expected outcomes\n   - Test animation preview functionality in the editor\n\n2. **State Persistence and Auto-save Testing**:\n   - Test auto-save functionality triggers at the correct intervals\n   - Verify state serialization/deserialization preserves all widget properties\n   - Implement stress tests with large numbers of widgets to ensure state persistence performance\n   - Test recovery from unexpected app termination using persisted state\n   - Verify state loading correctly restores all widget properties and relationships\n\n3. **Undo/Redo Functionality Testing**:\n   - Create unit tests for the command pattern implementation\n   - Test complex operations involving multiple widgets can be properly undone/redone\n   - Verify undo/redo stack limits and behavior at boundaries\n   - Implement integration tests for common editing scenarios with multiple undo/redo operations\n   - Test keyboard shortcuts and UI controls for undo/redo functionality\n\n4. **Widget Grouping and Layering Testing**:\n   - Test group creation, modification, and deletion operations\n   - Verify operations on groups correctly affect all child widgets\n   - Test z-index management for proper widget layering\n   - Implement tests for nested groups and complex hierarchies\n   - Verify selection behavior with grouped widgets works correctly\n\n5. **Responsive Design Preview Testing**:\n   - Test preview mode switching between different device sizes\n   - Verify responsive layout guidelines appear correctly in each mode\n   - Implement tests for widget behavior in different screen sizes\n   - Test device frame rendering and scaling\n   - Verify that editing while in preview mode works correctly\n\n6. **Performance Testing**:\n   - Implement benchmark tests to measure rendering performance with varying widget counts\n   - Test editor responsiveness during complex operations\n   - Verify memory usage remains stable during extended editing sessions\n   - Create automated performance regression tests\n   - Test virtualization by verifying only visible widgets are rendered\n\n7. **Integration Testing**:\n   - Create end-to-end tests combining multiple advanced features\n   - Test realistic user workflows involving all new functionality\n   - Verify compatibility with existing widgets and editor features\n   - Implement cross-platform testing to ensure consistent behavior\n   - Test edge cases where multiple features interact (e.g., undoing group operations with animations)",
+        "description": "Implement advanced features for the widget editor system including animation controls, state persistence, undo/redo functionality, widget grouping, responsive design previews, performance optimization, and enhanced widget configuration screens.",
         "status": "pending",
         "dependencies": [
           9,
@@ -250,7 +312,100 @@
           12
         ],
         "priority": "medium",
-        "subtasks": []
+        "details": "Enhance the existing widget editor system with the following advanced features:\n\n1. **Widget Animation Controls**:\n   - Implement a comprehensive animation system supporting fade, slide, and bounce effects\n   - Create an AnimationController class to manage animation states and transitions\n   - Add UI controls for configuring animation duration, easing curves, and triggers\n   - Support for animation preview in the editor\n   \n   ```dart\n   class WidgetAnimationController {\n     final AnimationType type; // fade, slide, bounce\n     final Duration duration;\n     final Curve curve;\n     final AnimationTrigger trigger; // on load, on scroll, on tap\n     \n     Animation<double> buildAnimation(AnimationController controller) {\n       // Implementation based on animation type\n     }\n   }\n   ```\n\n2. **Widget State Persistence and Auto-save**:\n   - Implement a state management system to track widget changes\n   - Create an auto-save mechanism that persists editor state at configurable intervals\n   - Add a StateHistoryManager to track widget state changes\n   - Implement serialization/deserialization of complex widget states\n   \n   ```dart\n   class EditorStateManager {\n     Timer? _autoSaveTimer;\n     final Duration autoSaveInterval;\n     \n     Future<void> saveCurrentState() async {\n       // Serialize and save current editor state\n     }\n     \n     void startAutoSave() {\n       _autoSaveTimer = Timer.periodic(autoSaveInterval, (_) => saveCurrentState());\n     }\n   }\n   ```\n\n3. **Undo/Redo Functionality**:\n   - Implement a command pattern for tracking editor actions\n   - Create an ActionHistory class to manage the undo/redo stack\n   - Add UI controls for undo/redo operations\n   - Support for complex operations that affect multiple widgets\n   \n   ```dart\n   abstract class EditorCommand {\n     void execute();\n     void undo();\n   }\n   \n   class ActionHistory {\n     final List<EditorCommand> _undoStack = [];\n     final List<EditorCommand> _redoStack = [];\n     \n     void executeCommand(EditorCommand command) {\n       command.execute();\n       _undoStack.add(command);\n       _redoStack.clear();\n     }\n     \n     void undo() {\n       if (_undoStack.isNotEmpty) {\n         final command = _undoStack.removeLast();\n         command.undo();\n         _redoStack.add(command);\n       }\n     }\n     \n     void redo() {\n       if (_redoStack.isNotEmpty) {\n         final command = _redoStack.removeLast();\n         command.execute();\n         _undoStack.add(command);\n       }\n     }\n   }\n   ```\n\n4. **Widget Grouping and Layering Controls**:\n   - Implement a hierarchical widget structure to support grouping\n   - Add z-index management for controlling widget layering\n   - Create UI controls for grouping/ungrouping widgets\n   - Support operations that affect entire groups (move, resize, style)\n   \n   ```dart\n   class WidgetGroup extends CustomWidgetModel {\n     final List<CustomWidgetModel> children;\n     \n     void addWidget(CustomWidgetModel widget) {\n       children.add(widget);\n     }\n     \n     void removeWidget(String widgetId) {\n       children.removeWhere((w) => w.id == widgetId);\n     }\n     \n     @override\n     Widget build(BuildContext context) {\n       return Stack(\n         children: children.map((w) => w.build(context)).toList(),\n       );\n     }\n   }\n   ```\n\n5. **Responsive Design Preview Modes**:\n   - Implement preview modes for different device sizes (phone, tablet, desktop)\n   - Add responsive layout guidelines and grid systems\n   - Create a DevicePreviewController to manage different preview states\n   - Support for testing responsive behavior directly in the editor\n   \n   ```dart\n   class ResponsivePreviewController {\n     final List<DevicePreset> availableDevices;\n     DevicePreset currentDevice;\n     \n     Widget wrapWithDeviceFrame(Widget editorContent) {\n       return DeviceFrame(\n         device: currentDevice,\n         isFrameVisible: true,\n         child: editorContent,\n       );\n     }\n   }\n   ```\n\n6. **Performance Optimization**:\n   - Implement widget virtualization for handling large numbers of widgets\n   - Add lazy loading for complex widget properties\n   - Optimize rendering pipeline for smooth real-time editing\n   - Implement debouncing for frequent operations like resizing and dragging\n   \n   ```dart\n   class OptimizedEditorCanvas extends StatefulWidget {\n     @override\n     State<OptimizedEditorCanvas> createState() => _OptimizedEditorCanvasState();\n   }\n   \n   class _OptimizedEditorCanvasState extends State<OptimizedEditorCanvas> {\n     // Implement virtualization for visible widgets only\n     List<CustomWidgetModel> getVisibleWidgets(List<CustomWidgetModel> allWidgets) {\n       // Return only widgets currently in viewport\n     }\n     \n     // Debounce frequent operations\n     final _resizeDebouncer = Debouncer(milliseconds: 50);\n     void handleResize(String widgetId, Size newSize) {\n       _resizeDebouncer.run(() {\n         // Apply resize operation\n       });\n     }\n   }\n   ```\n\n7. **Enhanced Widget Configuration Screens**:\n   - Redesign the widget property editing interface with intuitive form controls\n   - Implement categorized property sections for better organization:\n     - Layout (position, size, alignment, margins, padding)\n     - Style (colors, borders, shadows, opacity)\n     - Content (text, images, icons)\n     - Actions (events, navigation, interactions)\n   - Create visual property editors for better UX:\n     - Color pickers with opacity controls and saved palettes\n     - Font selectors with typography previews\n     - Visual spacing controls with drag handles\n     - Image cropping and adjustment tools\n   - Implement live preview of changes as properties are modified\n   - Add property validation with helpful error messages\n   - Create preset templates for common configurations\n   - Design collapsible sections for advanced options\n   - Ensure mobile-responsive configuration panels\n   \n   ```dart\n   class WidgetConfigPanel extends StatefulWidget {\n     final CustomWidgetModel widget;\n     final Function(CustomWidgetModel) onUpdate;\n     \n     @override\n     State<WidgetConfigPanel> createState() => _WidgetConfigPanelState();\n   }\n   \n   class _WidgetConfigPanelState extends State<WidgetConfigPanel> with SingleTickerProviderStateMixin {\n     late TabController _tabController;\n     \n     @override\n     void initState() {\n       super.initState();\n       _tabController = TabController(length: 4, vsync: this);\n     }\n     \n     @override\n     Widget build(BuildContext context) {\n       return Column(\n         children: [\n           TabBar(\n             controller: _tabController,\n             tabs: [\n               Tab(text: 'Layout', icon: Icon(Icons.grid_view)),\n               Tab(text: 'Style', icon: Icon(Icons.palette)),\n               Tab(text: 'Content', icon: Icon(Icons.text_fields)),\n               Tab(text: 'Actions', icon: Icon(Icons.touch_app)),\n             ],\n           ),\n           Expanded(\n             child: TabBarView(\n               controller: _tabController,\n               children: [\n                 LayoutPropertiesPanel(widget: widget.widget, onUpdate: widget.onUpdate),\n                 StylePropertiesPanel(widget: widget.widget, onUpdate: widget.onUpdate),\n                 ContentPropertiesPanel(widget: widget.widget, onUpdate: widget.onUpdate),\n                 ActionPropertiesPanel(widget: widget.widget, onUpdate: widget.onUpdate),\n               ],\n             ),\n           ),\n           LivePreviewPanel(widget: widget.widget),\n         ],\n       );\n     }\n   }\n   ```\n\nIntegrate these features with the existing widget editor system, ensuring backward compatibility with previously created widgets. Update the UI to include new controls while maintaining a clean, intuitive interface.",
+        "testStrategy": "Implement a comprehensive testing strategy to verify all new advanced features:\n\n1. **Animation Controls Testing**:\n   - Create unit tests for each animation type (fade, slide, bounce) to verify correct behavior\n   - Test animation parameter changes (duration, curve, trigger) affect output correctly\n   - Implement widget tests to verify animation UI controls work as expected\n   - Create visual regression tests to compare animation results with expected outcomes\n   - Test animation preview functionality in the editor\n\n2. **State Persistence and Auto-save Testing**:\n   - Test auto-save functionality triggers at the correct intervals\n   - Verify state serialization/deserialization preserves all widget properties\n   - Implement stress tests with large numbers of widgets to ensure state persistence performance\n   - Test recovery from unexpected app termination using persisted state\n   - Verify state loading correctly restores all widget properties and relationships\n\n3. **Undo/Redo Functionality Testing**:\n   - Create unit tests for the command pattern implementation\n   - Test complex operations involving multiple widgets can be properly undone/redone\n   - Verify undo/redo stack limits and behavior at boundaries\n   - Implement integration tests for common editing scenarios with multiple undo/redo operations\n   - Test keyboard shortcuts and UI controls for undo/redo functionality\n\n4. **Widget Grouping and Layering Testing**:\n   - Test group creation, modification, and deletion operations\n   - Verify operations on groups correctly affect all child widgets\n   - Test z-index management for proper widget layering\n   - Implement tests for nested groups and complex hierarchies\n   - Verify selection behavior with grouped widgets works correctly\n\n5. **Responsive Design Preview Testing**:\n   - Test preview mode switching between different device sizes\n   - Verify responsive layout guidelines appear correctly in each mode\n   - Implement tests for widget behavior in different screen sizes\n   - Test device frame rendering and scaling\n   - Verify that editing while in preview mode works correctly\n\n6. **Performance Testing**:\n   - Implement benchmark tests to measure rendering performance with varying widget counts\n   - Test editor responsiveness during complex operations\n   - Verify memory usage remains stable during extended editing sessions\n   - Create automated performance regression tests\n   - Test virtualization by verifying only visible widgets are rendered\n\n7. **Widget Configuration UI Testing**:\n   - Test all form controls in the configuration panels for proper functionality\n   - Verify property categorization is intuitive and comprehensive\n   - Test visual property editors (color pickers, font selectors, spacing controls)\n   - Verify live preview updates correctly as properties are modified\n   - Test property validation provides appropriate error messages\n   - Verify preset templates apply correct configurations\n   - Test collapsible sections for advanced options work properly\n   - Verify configuration panels are responsive on different screen sizes\n   - Conduct usability testing with designers to validate the UI/UX improvements\n   - Test keyboard shortcuts and accessibility features in the configuration UI\n\n8. **Integration Testing**:\n   - Create end-to-end tests combining multiple advanced features\n   - Test realistic user workflows involving all new functionality\n   - Verify compatibility with existing widgets and editor features\n   - Implement cross-platform testing to ensure consistent behavior\n   - Test edge cases where multiple features interact (e.g., undoing group operations with animations)",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design Enhanced Widget Configuration UI",
+            "description": "Create wireframes and mockups for the improved widget configuration screens with categorized property sections, visual editors, and responsive design.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement Categorized Property Sections",
+            "description": "Develop the tabbed interface for organizing widget properties into Layout, Style, Content, and Actions categories.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create Visual Property Editors",
+            "description": "Implement specialized visual editors including color pickers, font selectors, spacing controls, and image adjustment tools.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Develop Live Preview Functionality",
+            "description": "Create a live preview panel that updates in real-time as widget properties are modified in the configuration screen.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Implement Property Validation",
+            "description": "Add validation logic for widget properties with helpful error messages and visual indicators for invalid inputs.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Create Configuration Presets System",
+            "description": "Develop a system for creating, saving, and applying preset templates for common widget configurations.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Build Collapsible Advanced Options",
+            "description": "Implement collapsible sections for advanced configuration options to maintain a clean interface while providing access to power features.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 8,
+            "title": "Ensure Mobile Responsiveness",
+            "description": "Optimize the configuration panels for mobile devices with appropriate layouts and touch-friendly controls.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 9,
+            "title": "Integrate Configuration UI with Animation Controls",
+            "description": "Connect the new configuration UI with the animation system to provide intuitive controls for configuring widget animations.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 10,
+            "title": "Update Test Suite for Configuration UI",
+            "description": "Develop comprehensive tests for the new configuration UI components and their integration with existing editor features.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          }
+        ]
       },
       {
         "id": 14,
@@ -357,11 +512,108 @@
             "testStrategy": ""
           }
         ]
+      },
+      {
+        "id": 15,
+        "title": "Develop Multi-Provider Map Widgets with Location Search and Save",
+        "description": "Create three map widgets (Google, Kakao, Naver) with unified and individual app modes, supporting location search and the ability to save locations.",
+        "details": "Implement three distinct map widgets for Google Maps, Kakao Maps, and Naver Maps, each supporting location search and location saving. Architect the solution to allow both a combined app (where users can switch between providers) and standalone apps for each provider. For each map provider, integrate their respective Flutter SDKs or web views as appropriate. Implement a unified interface for location search, utilizing each provider's geocoding API (e.g., Google Maps Geocoding, Kakao Local API, Naver Map Geocoding). Design a location search bar that queries the selected provider and displays results as selectable markers. Add functionality to save selected locations to the app's data store (using VenueModel from the core data models). Ensure saved locations can be retrieved and displayed on the map. Consider user permissions for location access and error handling for API failures. Provide clear UI cues for provider switching and saved location management. Follow best practices for state management and modular widget design.",
+        "testStrategy": "1. Verify each map widget initializes and displays the correct provider's map. 2. Test location search for each provider, ensuring accurate geocoding and marker placement. 3. Save multiple locations and confirm they persist and display correctly on all map widgets. 4. Switch between providers in the combined app and ensure state consistency. 5. Test standalone map apps for each provider for full functionality. 6. Simulate API failures and verify graceful error handling. 7. Test on multiple devices and screen sizes. 8. Write unit and widget tests for search, save, and provider switching logic.",
+        "status": "done",
+        "dependencies": [
+          1,
+          5
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Integrate Map Provider SDKs",
+            "description": "Integrate the Flutter SDKs or web views for Google Maps, Kakao Maps, and Naver Maps into the project, ensuring each can be displayed as a widget.",
+            "dependencies": [],
+            "details": "Set up the necessary dependencies and permissions for each map provider. Ensure that each map widget can be rendered independently within the app.",
+            "status": "done",
+            "testStrategy": "Verify that each map provider widget loads correctly and displays a basic map view in both standalone and unified modes."
+          },
+          {
+            "id": 2,
+            "title": "Implement Unified and Individual App Modes",
+            "description": "Architect the solution to support both a combined app (with provider switching) and standalone apps for each map provider.",
+            "dependencies": [
+              1
+            ],
+            "details": "Design the app structure to allow users to switch between map providers in a unified interface, as well as run each provider as a separate app. Provide clear UI cues for switching and mode selection.",
+            "status": "done",
+            "testStrategy": "Test switching between providers in the unified app and launching each provider in standalone mode, ensuring correct map rendering and UI feedback."
+          },
+          {
+            "id": 3,
+            "title": "Develop Unified Location Search Interface",
+            "description": "Create a location search bar that queries the selected provider's geocoding API and displays results as selectable markers on the map.",
+            "dependencies": [
+              2
+            ],
+            "details": "Integrate Google Maps Geocoding, Kakao Local API, and Naver Map Geocoding for location search. Ensure the search bar dynamically uses the active provider's API and displays results appropriately.",
+            "status": "done",
+            "testStrategy": "Perform searches with each provider, verify that results are accurate, markers appear on the map, and selecting a result updates the map view."
+          },
+          {
+            "id": 4,
+            "title": "Implement Location Save and Retrieval Functionality",
+            "description": "Enable users to save selected locations to the app's data store using VenueModel, and retrieve/display saved locations on the map.",
+            "dependencies": [
+              3
+            ],
+            "details": "Connect the location selection to the data model, allowing users to save locations. Implement retrieval and display of saved locations as markers, with management options.",
+            "status": "done",
+            "testStrategy": "Save multiple locations with each provider, verify persistence, and ensure saved locations are correctly displayed and managed on the map."
+          },
+          {
+            "id": 5,
+            "title": "Handle Permissions, Error States, and State Management",
+            "description": "Implement user permission handling for location access, robust error handling for API failures, and best practices for state management and modular widget design.",
+            "dependencies": [
+              4
+            ],
+            "details": "Ensure the app requests and manages location permissions appropriately. Handle errors from map and geocoding APIs gracefully. Use state management patterns (e.g., Provider, Bloc) to maintain modularity and reliability.",
+            "status": "done",
+            "testStrategy": "Test permission flows, simulate API errors, and review state transitions for correctness and user experience."
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "title": "Research and Implement Alternative Marker Solution for Google Maps on Flutter Web",
+        "description": "Investigate and implement a reliable alternative to native Google Maps markers for the Flutter web platform to resolve the LegacyJavaScriptObject error and ensure proper venue location display.",
+        "details": "This task involves researching and implementing a solution for the Google Maps marker issue on Flutter web platform. The current implementation using native Marker objects is causing LegacyJavaScriptObject errors.\n\n1. **Investigation Phase**:\n   - Document the exact error conditions and when they occur\n   - Research known issues with Google Maps Flutter plugin on web platform\n   - Explore the following alternative approaches:\n     - Custom overlay widgets using Stack and Positioned widgets\n     - HTML markers using HtmlElementView\n     - Custom marker implementation using OverlayEntry\n     - Alternative mapping libraries (MapBox, OpenStreetMap, etc.)\n\n2. **Solution Design**:\n   - Create a platform-specific implementation that uses different marker approaches for web vs mobile\n   - Design a common interface that works across platforms\n   - Ensure the solution supports:\n     - Custom marker icons/widgets\n     - Marker tap events\n     - Info windows or popups\n     - Proper positioning\n\n3. **Implementation**:\n   - Create a MarkerService class that handles platform differences:\n   ```dart\n   class MarkerService {\n     Widget buildMarker(BuildContext context, LatLng position, {\n       Widget? icon,\n       VoidCallback? onTap,\n       String? title,\n     }) {\n       if (kIsWeb) {\n         // Web-specific implementation\n         return CustomWebMarker(\n           position: position,\n           icon: icon,\n           onTap: onTap,\n           title: title,\n         );\n       } else {\n         // Mobile implementation using native markers\n         return NativeMarker(\n           position: position,\n           icon: icon,\n           onTap: onTap,\n           title: title,\n         );\n       }\n     }\n   }\n   ```\n\n4. **Web-specific Implementation Options**:\n   - **Custom Overlay Approach**:\n   ```dart\n   class CustomWebMarker extends StatelessWidget {\n     final LatLng position;\n     final Widget? icon;\n     final VoidCallback? onTap;\n     final String? title;\n     \n     @override\n     Widget build(BuildContext context) {\n       return Positioned(\n         left: calculatePixelX(position),\n         top: calculatePixelY(position),\n         child: GestureDetector(\n           onTap: onTap,\n           child: icon ?? Icon(Icons.location_on, color: Colors.red),\n         ),\n       );\n     }\n   }\n   ```\n   \n   - **HTML Marker Approach**:\n   ```dart\n   // Using HtmlElementView to create DOM elements for markers\n   ui.platformViewRegistry.registerViewFactory(\n     'web-marker-$markerId',\n     (int viewId) {\n       final marker = html.DivElement()\n         ..id = 'marker-$markerId'\n         ..style.position = 'absolute'\n         ..style.cursor = 'pointer';\n       // Add marker content and styling\n       return marker;\n     },\n   );\n   ```\n\n5. **Integration with Venue Display**:\n   - Update the venue display screen to use the new marker solution\n   - Ensure proper positioning of venue markers on the map\n   - Add venue details in marker popups/info windows\n   - Test across different browsers and devices\n\n6. **Performance Considerations**:\n   - Implement marker clustering for multiple locations if needed\n   - Optimize marker rendering for better performance\n   - Consider lazy loading of marker assets",
+        "testStrategy": "1. **Unit Testing**:\n   - Create unit tests for the MarkerService class\n   - Test platform detection logic to ensure correct implementation is used\n   - Mock Google Maps controller to verify marker positioning calculations\n\n2. **Widget Testing**:\n   - Create widget tests for custom marker components\n   - Test marker tap events and info window display\n   - Verify marker positioning and appearance\n\n3. **Integration Testing**:\n   - Test the complete map view with markers on both web and mobile platforms\n   - Verify markers appear at the correct locations\n   - Test interaction with markers (tapping, info windows)\n\n4. **Cross-browser Testing**:\n   - Test the solution on multiple browsers (Chrome, Firefox, Safari, Edge)\n   - Verify consistent behavior across different browser versions\n   - Test on different screen sizes and resolutions\n\n5. **Performance Testing**:\n   - Measure and compare rendering performance with different marker implementations\n   - Test with multiple markers to ensure scalability\n   - Monitor memory usage during extended map interaction\n\n6. **Error Handling Testing**:\n   - Verify graceful degradation if marker assets fail to load\n   - Test behavior when map initialization is delayed\n   - Ensure error messages are user-friendly\n\n7. **Manual Testing Checklist**:\n   - Verify marker appearance matches design specifications\n   - Confirm marker positioning is accurate for venue locations\n   - Test marker interactions on touch devices\n   - Verify info windows display correct venue information",
+        "status": "pending",
+        "dependencies": [
+          1,
+          2,
+          3
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 17,
+        "title": "Complete Individual Map Widgets Implementation and API Key Integration",
+        "description": "Finalize the implementation of individual map widgets by configuring API key management for Naver and Kakao Maps, thoroughly testing all map widget types, ensuring robust error handling, and verifying backward compatibility with the multi-map widget.",
+        "details": "1. Implement a secure and modular API key configuration system for Naver Maps and Kakao Maps, allowing keys to be injected at runtime or via environment variables. Use placeholder values and clear error messaging when keys are missing, and document the process for updating keys once provided by the user. Follow best practices for API key management, including restricting keys by platform and API usage where possible[2].\n2. Test all individual map widget types (Google, Naver, Kakao) for correct initialization, map display, and interaction. Ensure the widget selector UI lists all map options and allows seamless switching between providers.\n3. Implement and test editing functionality for each map widget type within the editor system, verifying that changes persist and render correctly.\n4. Ensure backward compatibility with the existing multi-map widget by running regression tests and confirming that legacy data and configurations continue to work as expected.\n5. Add robust error handling for cases where API keys are missing or invalid, displaying user-friendly error messages and preventing crashes. Simulate error scenarios using network request mocking libraries to verify graceful degradation and error reporting[1].\n6. Update documentation to reflect new configuration and usage patterns for all map widgets.",
+        "testStrategy": "- Use integration and widget tests to verify that each map widget (Google, Naver, Kakao) initializes, displays, and interacts correctly with valid and missing API keys.\n- Mock API responses and simulate error conditions (e.g., missing/invalid keys, network failures) to ensure error handling logic works as intended[1].\n- Test the widget selector UI to confirm all map options are visible and selectable.\n- Edit each map widget type in the editor and verify changes persist and render correctly.\n- Run regression tests to ensure backward compatibility with the multi-map widget and legacy data.\n- Review logs and UI for appropriate error messages and absence of crashes during initialization failures.",
+        "status": "pending",
+        "dependencies": [
+          15,
+          11
+        ],
+        "priority": "medium",
+        "subtasks": []
       }
     ],
     "metadata": {
       "created": "2025-07-01T13:41:34.057Z",
-      "updated": "2025-07-03T14:51:20.194Z",
+      "updated": "2025-07-08T18:16:10.067Z",
       "description": "Tasks for master context"
     }
   }

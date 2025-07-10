@@ -24,17 +24,40 @@ class VenueModel {
 
   // Supabase와의 직렬화/역직렬화 메서드
   factory VenueModel.fromJson(Map<String, dynamic> json) {
-    return VenueModel(
-      id: json['id'],
-      name: json['name'],
-      address: json['address'],
-      latitude: json['latitude'],
-      longitude: json['longitude'],
-      country: json['country'],
-      eventType: json['event_type'],
-      eventDate: DateTime.parse(json['event_date']),
-      mapLinks: Map<String, String>.from(json['map_links']),
-    );
+    try {
+      // Safely parse numeric values
+      final lat = json['latitude'];
+      final lng = json['longitude'];
+      
+      return VenueModel(
+        id: json['id']?.toString() ?? '',
+        name: json['name']?.toString() ?? '',
+        address: json['address']?.toString() ?? '',
+        latitude: lat is num ? lat.toDouble() : double.tryParse(lat.toString()) ?? 0.0,
+        longitude: lng is num ? lng.toDouble() : double.tryParse(lng.toString()) ?? 0.0,
+        country: json['country']?.toString() ?? '',
+        eventType: json['event_type']?.toString() ?? '',
+        eventDate: json['event_date'] != null 
+            ? DateTime.tryParse(json['event_date'].toString()) ?? DateTime.now()
+            : DateTime.now(),
+        mapLinks: json['map_links'] != null && json['map_links'] is Map
+            ? Map<String, String>.from(json['map_links'])
+            : <String, String>{},
+      );
+    } catch (e) {
+      // Return a default venue if parsing completely fails
+      return VenueModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: 'Invalid Venue Data',
+        address: 'Unknown',
+        latitude: 0.0,
+        longitude: 0.0,
+        country: 'Unknown',
+        eventType: 'Unknown',
+        eventDate: DateTime.now(),
+        mapLinks: <String, String>{},
+      );
+    }
   }
 
   Map<String, dynamic> toJson() {

@@ -167,7 +167,11 @@ class _DraggableWidgetState extends State<DraggableWidget>
               ),
               child: Stack(
                 children: [
-                  WidgetRenderer(widget: widget.editorWidget, isEditMode: true),
+                  WidgetRenderer(
+                    widget: widget.editorWidget,
+                    isEditMode: true,
+                    onWidgetUpdated: widget.onWidgetChanged,
+                  ),
                   if (_controller.isSelected && !_controller.isDragging)
                     _buildControlOverlay(),
                 ],

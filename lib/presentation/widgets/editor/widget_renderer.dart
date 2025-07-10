@@ -6,15 +6,20 @@ import '../../../data/models/editor_widget_model.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import '../../../features/location/presentation/widgets/multi_map_widget.dart';
 import '../../../features/location/presentation/widgets/multi_map_widget.dart' show MapProvider;
+import '../../../features/location/presentation/widgets/google_map_widget_wrapper.dart';
+import '../../../features/location/presentation/widgets/naver_map_widget.dart' as naver_map;
+import '../../../features/location/presentation/widgets/kakao_map_widget.dart' as kakao_map;
 
 class WidgetRenderer extends StatelessWidget {
   final EditorWidget widget;
   final bool isEditMode;
+  final Function(EditorWidget)? onWidgetUpdated;
 
   const WidgetRenderer({
     super.key,
     required this.widget,
     this.isEditMode = true, // Default to edit mode for the editor
+    this.onWidgetUpdated,
   });
 
   @override
@@ -26,6 +31,12 @@ class WidgetRenderer extends StatelessWidget {
         return _buildDDayWidget(widget as DDayWidget);
       case WidgetType.Map:
         return _buildMapWidget(widget as MapWidget);
+      case WidgetType.GoogleMap:
+        return _buildGoogleMapWidget(widget as GoogleMapWidget);
+      case WidgetType.NaverMap:
+        return _buildNaverMapWidget(widget as NaverMapWidget);
+      case WidgetType.KakaoMap:
+        return _buildKakaoMapWidget(widget as KakaoMapWidget);
       case WidgetType.Image:
         return _buildImageWidget(widget as ImageWidget);
       case WidgetType.Gallery:
@@ -276,10 +287,107 @@ class WidgetRenderer extends StatelessWidget {
             showDirections: !isEditMode && mapWidget.showDirections,
             height: mapWidget.height,
             isEditMode: isEditMode,
+            showSearch: isEditMode, // Enable search in edit mode
+            onLocationSelected: isEditMode ? (result) {
+              // Update the widget's location when a new location is selected
+              if (onWidgetUpdated != null) {
+                final updatedData = Map<String, dynamic>.from(mapWidget.data);
+                updatedData['latitude'] = result.latitude;
+                updatedData['longitude'] = result.longitude;
+                updatedData['venue'] = result.name;
+                
+                final updatedWidget = MapWidget(
+                  id: mapWidget.id,
+                  data: updatedData,
+                );
+                
+                onWidgetUpdated!(updatedWidget);
+                debugPrint('Location updated: ${result.name} (${result.latitude}, ${result.longitude})');
+              }
+            } : null,
             onMapTap: isEditMode ? () {
               // In edit mode, you might want to open a dialog to select map provider
               debugPrint('Map provider selection in edit mode');
             } : null,
+          ),
+        );
+      },
+    );
+  }
+
+  // Individual map widget builders
+  Widget _buildGoogleMapWidget(GoogleMapWidget googleMapWidget) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double mapWidth;
+        if (constraints.maxWidth.isFinite) {
+          mapWidth = constraints.maxWidth;
+        } else {
+          mapWidth = MediaQuery.of(context).size.width * 0.9;
+        }
+        mapWidth = mapWidth.clamp(250.0, double.infinity);
+
+        return Container(
+          width: mapWidth,
+          height: googleMapWidget.height,
+          child: GoogleMapWidgetWrapper(
+            latitude: googleMapWidget.latitude,
+            longitude: googleMapWidget.longitude,
+            venue: googleMapWidget.venue,
+            showControls: !isEditMode && googleMapWidget.showControls,
+            height: googleMapWidget.height,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildNaverMapWidget(NaverMapWidget naverMapWidget) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double mapWidth;
+        if (constraints.maxWidth.isFinite) {
+          mapWidth = constraints.maxWidth;
+        } else {
+          mapWidth = MediaQuery.of(context).size.width * 0.9;
+        }
+        mapWidth = mapWidth.clamp(250.0, double.infinity);
+
+        return Container(
+          width: mapWidth,
+          height: naverMapWidget.height,
+          child: naver_map.NaverMapWidget(
+            latitude: naverMapWidget.latitude,
+            longitude: naverMapWidget.longitude,
+            venue: naverMapWidget.venue,
+            showControls: !isEditMode && naverMapWidget.showControls,
+            height: naverMapWidget.height,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildKakaoMapWidget(KakaoMapWidget kakaoMapWidget) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double mapWidth;
+        if (constraints.maxWidth.isFinite) {
+          mapWidth = constraints.maxWidth;
+        } else {
+          mapWidth = MediaQuery.of(context).size.width * 0.9;
+        }
+        mapWidth = mapWidth.clamp(250.0, double.infinity);
+
+        return Container(
+          width: mapWidth,
+          height: kakaoMapWidget.height,
+          child: kakao_map.KakaoMapWidget(
+            latitude: kakaoMapWidget.latitude,
+            longitude: kakaoMapWidget.longitude,
+            venue: kakaoMapWidget.venue,
+            showControls: !isEditMode && kakaoMapWidget.showControls,
+            height: kakaoMapWidget.height,
           ),
         );
       },

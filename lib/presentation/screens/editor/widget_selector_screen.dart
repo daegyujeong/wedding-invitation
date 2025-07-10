@@ -42,7 +42,15 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
       'name': '인터랙션',
       'widgets': [
         {'type': 'button', 'name': '버튼', 'icon': Icons.smart_button},
-        {'type': 'map', 'name': '지도', 'icon': Icons.map},
+      ],
+    },
+    {
+      'name': '지도',
+      'widgets': [
+        {'type': 'map', 'name': '멀티 지도', 'icon': Icons.map, 'description': '구글/네이버/카카오 탭'},
+        {'type': 'google_map', 'name': '구글 지도', 'icon': Icons.map, 'description': '구글 지도만'},
+        {'type': 'naver_map', 'name': '네이버 지도', 'icon': Icons.map, 'description': '네이버 지도만'},
+        {'type': 'kakao_map', 'name': '카카오 지도', 'icon': Icons.map, 'description': '카카오 지도만'},
       ],
     },
     {
@@ -304,11 +312,16 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
       case '이미지':
         return Icons.image;
       case '인터랙티브':
+      case '인터랙션':
         return Icons.touch_app;
       case '장식':
         return Icons.palette;
       case '미디어':
         return Icons.perm_media;
+      case '지도':
+        return Icons.map;
+      case '시간':
+        return Icons.schedule;
       case '기본':
         return Icons.widgets;
       case '정보':
@@ -499,13 +512,71 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
           id: 'map_${_uuid.v4()}',
           data: {
             'venueId': 'main_venue',
-            'mapType': 'openstreetmap',
+            'mapProvider': 'google',
             'showDirections': true,
+            'showControls': true,
             'latitude':
                 37.5642, // The Plaza Hotel Seoul (popular wedding venue)
             'longitude': 126.9758,
             'venue': '그랜드 호텔',
-            'title': '그랜드 호텔',
+            'height': 300.0,
+            'position': {
+              'dx': 50.0,
+              'dy': 200.0,
+            },
+          },
+        );
+        break;
+
+      case 'google_map':
+        editorWidget = GoogleMapWidget(
+          id: 'google_map_${_uuid.v4()}',
+          data: {
+            'venueId': 'main_venue',
+            'showDirections': true,
+            'showControls': true,
+            'latitude': 37.5642,
+            'longitude': 126.9758,
+            'venue': '그랜드 호텔',
+            'height': 300.0,
+            'position': {
+              'dx': 50.0,
+              'dy': 200.0,
+            },
+          },
+        );
+        break;
+
+      case 'naver_map':
+        editorWidget = NaverMapWidget(
+          id: 'naver_map_${_uuid.v4()}',
+          data: {
+            'venueId': 'main_venue',
+            'showDirections': true,
+            'showControls': true,
+            'latitude': 37.5642,
+            'longitude': 126.9758,
+            'venue': '그랜드 호텔',
+            'height': 300.0,
+            'position': {
+              'dx': 50.0,
+              'dy': 200.0,
+            },
+          },
+        );
+        break;
+
+      case 'kakao_map':
+        editorWidget = KakaoMapWidget(
+          id: 'kakao_map_${_uuid.v4()}',
+          data: {
+            'venueId': 'main_venue',
+            'showDirections': true,
+            'showControls': true,
+            'latitude': 37.5642,
+            'longitude': 126.9758,
+            'venue': '그랜드 호텔',
+            'height': 300.0,
             'position': {
               'dx': 50.0,
               'dy': 200.0,

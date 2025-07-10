@@ -61,6 +61,7 @@ dependencies:
   logger: ^1.4.0  # 로깅
   equatable: ^2.0.5  # 객체 비교
   dio: ^5.3.0  # HTTP 클라이언트
+  http: ^0.13.6  # HTTP requests for location search
   get_it: ^7.6.0  # 서비스 로케이터
   injectable: ^2.1.2  # 의존성 주입
   vm_service: ^14.2.1
@@ -68,7 +69,7 @@ dependencies:
   flutter_map: ^4.0.0 # 지도 표시 - Compatible with Dart 3.4.1
   
   # Map packages
-  google_maps_flutter: ^2.6.1  # Google Maps
+  google_maps_flutter: ^2.10.1  # Google Maps - Compatible with current Flutter SDK
   flutter_naver_map: ^1.2.3  # Naver Maps
   kakaomap_webview: ^0.6.2  # Kakao Maps (WebView based)
   webview_flutter: ^3.0.4  # For Kakao Maps

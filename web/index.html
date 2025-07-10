@@ -35,6 +35,12 @@
   <!-- Google Maps JavaScript API -->
   <!-- Replace YOUR_ACTUAL_API_KEY with your real Google Maps API key -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDYtu2Bu-VPXsA3z5sWaENXOqa-B-m8vxM&libraries=geometry"></script>
+  
+  <!-- Suppress Google Maps deprecation warnings -->
+  <script src="suppress_maps_warning.js"></script>
+  
+  <!-- Fix for Google Maps empty style JSON parsing error -->
+  <script src="google_maps_style_fix.js"></script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

@@ -7,7 +7,6 @@ import '../../../../data/models/page_model.dart';
 import '../../../viewmodels/editor_viewmodel.dart';
 import '../../../widgets/editor/draggable_widget.dart';
 import '../../../widgets/editor/enhanced_size_editor.dart';
-import '../../../widgets/editor/common_editor_fields.dart';
 import '../widget_selector_screen.dart';
 
 class CustomDraggableEditor extends StatefulWidget {
@@ -170,6 +169,15 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
       case WidgetType.Map:
         _showMapEditDialog(widget as MapWidget, index);
         break;
+      case WidgetType.GoogleMap:
+        _showGoogleMapEditDialog(widget as GoogleMapWidget, index);
+        break;
+      case WidgetType.NaverMap:
+        _showNaverMapEditDialog(widget as NaverMapWidget, index);
+        break;
+      case WidgetType.KakaoMap:
+        _showKakaoMapEditDialog(widget as KakaoMapWidget, index);
+        break;
       case WidgetType.Image:
         _showImageEditDialog(widget as ImageWidget, index);
         break;
@@ -200,76 +208,435 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
     String fontFamily = widget.fontFamily;
     Color textColor =
         Color(int.parse('FF${widget.color.substring(1)}', radix: 16));
+    Color? backgroundColor;
+    String textAlign = widget.data['textAlign'] ?? 'left';
+    FontWeight fontWeight = FontWeight.values[widget.data['fontWeight'] ?? 3];
+    double letterSpacing = widget.data['letterSpacing']?.toDouble() ?? 0.0;
+    double lineHeight = widget.data['lineHeight']?.toDouble() ?? 1.5;
+    
+    if (widget.data['backgroundColor'] != null) {
+      try {
+        backgroundColor = Color(int.parse('FF${widget.data['backgroundColor'].substring(1)}', radix: 16));
+      } catch (e) {
+        backgroundColor = null;
+      }
+    }
 
     showDialog(
       context: context,
       builder: (context) {
         return StatefulBuilder(builder: (context, setDialogState) {
           return AlertDialog(
-            title: const Text('텍스트 편집'),
+            title: Row(
+              children: [
+                Icon(Icons.text_fields, color: Theme.of(context).primaryColor),
+                const SizedBox(width: 8),
+                const Text('텍스트 편집'),
+              ],
+            ),
             content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CommonEditorFields.buildResponsiveTextField(
-                    labelText: '텍스트',
-                    initialValue: textController.text,
-                    onChanged: (value) {
-                      textController.text = value;
-                    },
-                    maxLines: 3,
-                  ),
-                  const SizedBox(height: 16),
-                  CommonEditorFields.buildSliderField(
-                    label: '글자 크기',
-                    value: fontSize,
-                    min: 8,
-                    max: 40,
-                    divisions: 32,
-                    onChanged: (value) {
-                      setDialogState(() {
-                        fontSize = value;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  CommonEditorFields.buildColorPickerField(
-                    label: '텍스트 색상',
-                    color: textColor,
-                    context: context,
-                    onChanged: (color) {
-                      setDialogState(() {
-                        textColor = color;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  CommonEditorFields.buildDropdownField<String>(
-                    label: '글꼴',
-                    value: fontFamily,
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Roboto',
-                        child: Text('Roboto'),
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Content Section
+                    Card(
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.edit, 
+                                  color: Theme.of(context).primaryColor,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  '내용',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: textController,
+                              maxLines: 3,
+                              decoration: InputDecoration(
+                                labelText: '텍스트',
+                                hintText: '텍스트를 입력하세요',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                filled: true,
+                                fillColor: Colors.grey.shade50,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      DropdownMenuItem(
-                        value: 'NotoSansKR',
-                        child: Text('Noto Sans KR'),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Typography Section
+                    Card(
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.format_size, 
+                                  color: Theme.of(context).primaryColor,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  '서체 설정',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            DropdownButtonFormField<String>(
+                              value: fontFamily,
+                              decoration: InputDecoration(
+                                labelText: '글꼴',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                filled: true,
+                                fillColor: Colors.grey.shade50,
+                              ),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'Roboto',
+                                  child: Text('Roboto'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'NotoSansKR',
+                                  child: Text('Noto Sans KR'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'NanumGothic',
+                                  child: Text('나눔고딕'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'NanumMyeongjo',
+                                  child: Text('나눔명조'),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setDialogState(() {
+                                    fontFamily = value;
+                                  });
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('글자 크기'),
+                                    Text(
+                                      '${fontSize.toInt()}px',
+                                      style: TextStyle(
+                                        color: Theme.of(context).primaryColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Slider(
+                                  value: fontSize,
+                                  min: 8,
+                                  max: 72,
+                                  divisions: 64,
+                                  onChanged: (value) {
+                                    setDialogState(() {
+                                      fontSize = value;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            SegmentedButton<FontWeight>(
+                              segments: const [
+                                ButtonSegment(
+                                  value: FontWeight.w300,
+                                  label: Text('가늘게'),
+                                ),
+                                ButtonSegment(
+                                  value: FontWeight.normal,
+                                  label: Text('보통'),
+                                ),
+                                ButtonSegment(
+                                  value: FontWeight.bold,
+                                  label: Text('굵게'),
+                                ),
+                              ],
+                              selected: {fontWeight},
+                              onSelectionChanged: (Set<FontWeight> newSelection) {
+                                setDialogState(() {
+                                  fontWeight = newSelection.first;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                      DropdownMenuItem(
-                        value: 'NanumGothic',
-                        child: Text('Nanum Gothic'),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Style Section
+                    Card(
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.palette, 
+                                  color: Theme.of(context).primaryColor,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  '스타일',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('텍스트 색상'),
+                                      const SizedBox(height: 8),
+                                      InkWell(
+                                        onTap: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: const Text('색상 선택'),
+                                                content: SingleChildScrollView(
+                                                  child: ColorPicker(
+                                                    pickerColor: textColor,
+                                                    onColorChanged: (color) {
+                                                      setDialogState(() {
+                                                        textColor = color;
+                                                      });
+                                                    },
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    child: const Text('확인'),
+                                                    onPressed: () {
+                                                      Navigator.of(context).pop();
+                                                    },
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        },
+                                        child: Container(
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                            color: textColor,
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(color: Colors.grey.shade300),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('배경 색상'),
+                                      const SizedBox(height: 8),
+                                      InkWell(
+                                        onTap: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: const Text('배경 색상 선택'),
+                                                content: SingleChildScrollView(
+                                                  child: ColorPicker(
+                                                    pickerColor: backgroundColor ?? Colors.transparent,
+                                                    onColorChanged: (color) {
+                                                      setDialogState(() {
+                                                        backgroundColor = color;
+                                                      });
+                                                    },
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    child: const Text('투명'),
+                                                    onPressed: () {
+                                                      setDialogState(() {
+                                                        backgroundColor = null;
+                                                      });
+                                                      Navigator.of(context).pop();
+                                                    },
+                                                  ),
+                                                  TextButton(
+                                                    child: const Text('확인'),
+                                                    onPressed: () {
+                                                      Navigator.of(context).pop();
+                                                    },
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        },
+                                        child: Container(
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                            color: backgroundColor ?? Colors.transparent,
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(color: Colors.grey.shade300),
+                                          ),
+                                          child: backgroundColor == null
+                                              ? const Center(
+                                                  child: Text(
+                                                    '투명',
+                                                    style: TextStyle(
+                                                      color: Colors.grey,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                )
+                                              : null,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            const Text('정렬'),
+                            const SizedBox(height: 8),
+                            SegmentedButton<String>(
+                              segments: const [
+                                ButtonSegment(
+                                  value: 'left',
+                                  icon: Icon(Icons.format_align_left),
+                                  label: Text('왼쪽'),
+                                ),
+                                ButtonSegment(
+                                  value: 'center',
+                                  icon: Icon(Icons.format_align_center),
+                                  label: Text('가운데'),
+                                ),
+                                ButtonSegment(
+                                  value: 'right',
+                                  icon: Icon(Icons.format_align_right),
+                                  label: Text('오른쪽'),
+                                ),
+                              ],
+                              selected: {textAlign},
+                              onSelectionChanged: (Set<String> newSelection) {
+                                setDialogState(() {
+                                  textAlign = newSelection.first;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        setDialogState(() {
-                          fontFamily = value;
-                        });
-                      }
-                    },
-                  ),
-                ],
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Live Preview
+                    Card(
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.preview, 
+                                  color: Theme.of(context).primaryColor,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  '미리보기',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: backgroundColor ?? Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: Text(
+                                textController.text.isEmpty ? '텍스트를 입력하세요' : textController.text,
+                                style: TextStyle(
+                                  fontSize: fontSize,
+                                  fontFamily: fontFamily,
+                                  color: textColor,
+                                  fontWeight: fontWeight,
+                                  letterSpacing: letterSpacing,
+                                  height: lineHeight,
+                                ),
+                                textAlign: TextAlign.values.firstWhere(
+                                  (align) => align.name == textAlign,
+                                  orElse: () => TextAlign.left,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             actions: [
@@ -279,7 +646,7 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
                 },
                 child: const Text('취소'),
               ),
-              TextButton(
+              ElevatedButton(
                 onPressed: () {
                   // Update the widget
                   final updatedData = Map<String, dynamic>.from(widget.data);
@@ -291,6 +658,13 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
                   updatedData['fontFamily'] = fontFamily;
                   updatedData['color'] =
                       '#${textColor.value.toRadixString(16).substring(2)}';
+                  updatedData['backgroundColor'] = backgroundColor != null
+                      ? '#${backgroundColor!.value.toRadixString(16).substring(2)}'
+                      : null;
+                  updatedData['textAlign'] = textAlign;
+                  updatedData['fontWeight'] = fontWeight.index;
+                  updatedData['letterSpacing'] = letterSpacing;
+                  updatedData['lineHeight'] = lineHeight;
 
                   setState(() {
                     _widgets[index] = TextWidget(
@@ -301,6 +675,9 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
 
                   Navigator.pop(context);
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                ),
                 child: const Text('저장'),
               ),
             ],
@@ -410,52 +787,420 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
     // Implementation for map widget editing
     String venueId = widget.venueId;
     bool showDirections = widget.showDirections;
+    bool showControls = widget.showControls;
+    double height = widget.height;
+    String mapProvider = widget.mapProvider;
+    double latitude = widget.latitude;
+    double longitude = widget.longitude;
+    String venue = widget.venue;
 
     showDialog(
       context: context,
       builder: (context) {
         return StatefulBuilder(builder: (context, setDialogState) {
           return AlertDialog(
-            title: const Text('지도 설정'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            title: Row(
               children: [
-                DropdownButtonFormField<String>(
-                  value: venueId.isEmpty ? 'main_venue' : venueId,
-                  decoration: const InputDecoration(
-                    labelText: '장소',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'main_venue',
-                      child: Text('메인 결혼식장'),
+                Icon(Icons.map, color: Theme.of(context).primaryColor),
+                const SizedBox(width: 8),
+                const Text('지도 설정'),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Location Information Section
+                    Card(
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.location_on, 
+                                  color: Theme.of(context).primaryColor,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  '위치 정보',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: TextEditingController(text: venue),
+                              decoration: InputDecoration(
+                                labelText: '장소명',
+                                prefixIcon: const Icon(Icons.business),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                filled: true,
+                                fillColor: Colors.grey.shade50,
+                              ),
+                              onChanged: (value) {
+                                venue = value;
+                              },
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: TextEditingController(
+                                      text: latitude.toString(),
+                                    ),
+                                    decoration: InputDecoration(
+                                      labelText: '위도',
+                                      prefixIcon: const Icon(Icons.explore),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.grey.shade50,
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      latitude = double.tryParse(value) ?? latitude;
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: TextField(
+                                    controller: TextEditingController(
+                                      text: longitude.toString(),
+                                    ),
+                                    decoration: InputDecoration(
+                                      labelText: '경도',
+                                      prefixIcon: const Icon(Icons.explore),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.grey.shade50,
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      longitude = double.tryParse(value) ?? longitude;
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.blue.shade200),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.info_outline, 
+                                    color: Colors.blue.shade700,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      '지도에서 직접 위치를 검색하고 선택할 수 있습니다.',
+                                      style: TextStyle(
+                                        color: Colors.blue.shade700,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    DropdownMenuItem(
-                      value: 'after_party',
-                      child: Text('2차 장소'),
+                    const SizedBox(height: 16),
+                    
+                    // Map Provider Section
+                    Card(
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.layers, 
+                                  color: Theme.of(context).primaryColor,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  '지도 제공자',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            SegmentedButton<String>(
+                              segments: const [
+                                ButtonSegment(
+                                  value: 'google',
+                                  label: Text('Google'),
+                                  icon: Icon(Icons.g_mobiledata),
+                                ),
+                                ButtonSegment(
+                                  value: 'naver',
+                                  label: Text('Naver'),
+                                  icon: Icon(Icons.map),
+                                ),
+                                ButtonSegment(
+                                  value: 'kakao',
+                                  label: Text('Kakao'),
+                                  icon: Icon(Icons.map),
+                                ),
+                              ],
+                              selected: {mapProvider},
+                              onSelectionChanged: (Set<String> newSelection) {
+                                setDialogState(() {
+                                  mapProvider = newSelection.first;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Display Options Section
+                    Card(
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.settings, 
+                                  color: Theme.of(context).primaryColor,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  '표시 옵션',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            SwitchListTile(
+                              title: const Text('길 찾기 버튼'),
+                              subtitle: const Text('외부 지도 앱으로 연결되는 버튼을 표시합니다'),
+                              value: showDirections,
+                              onChanged: (value) {
+                                setDialogState(() {
+                                  showDirections = value;
+                                });
+                              },
+                              secondary: const Icon(Icons.directions),
+                            ),
+                            SwitchListTile(
+                              title: const Text('지도 컨트롤'),
+                              subtitle: const Text('확대/축소 등의 컨트롤을 표시합니다'),
+                              value: showControls,
+                              onChanged: (value) {
+                                setDialogState(() {
+                                  showControls = value;
+                                });
+                              },
+                              secondary: const Icon(Icons.control_camera),
+                            ),
+                            const SizedBox(height: 16),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      '지도 높이',
+                                      style: TextStyle(fontWeight: FontWeight.w500),
+                                    ),
+                                    Text(
+                                      '${height.toInt()}px',
+                                      style: TextStyle(
+                                        color: Theme.of(context).primaryColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                SliderTheme(
+                                  data: SliderThemeData(
+                                    activeTrackColor: Theme.of(context).primaryColor,
+                                    thumbColor: Theme.of(context).primaryColor,
+                                    overlayColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                                  ),
+                                  child: Slider(
+                                    value: height,
+                                    min: 200,
+                                    max: 600,
+                                    divisions: 40,
+                                    onChanged: (value) {
+                                      setDialogState(() {
+                                        height = value;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
-                  onChanged: (value) {
-                    if (value != null) {
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('취소'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  // Update the widget
+                  final updatedData = Map<String, dynamic>.from(widget.data);
+                  updatedData['venueId'] = venueId;
+                  updatedData['showDirections'] = showDirections;
+                  updatedData['showControls'] = showControls;
+                  updatedData['height'] = height;
+                  updatedData['mapProvider'] = mapProvider;
+                  updatedData['latitude'] = latitude;
+                  updatedData['longitude'] = longitude;
+                  updatedData['venue'] = venue;
+
+                  setState(() {
+                    _widgets[index] = MapWidget(
+                      id: widget.id,
+                      data: updatedData,
+                    );
+                  });
+
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                ),
+                child: const Text('저장'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  void _showGoogleMapEditDialog(GoogleMapWidget widget, int index) {
+    // Implementation for Google Maps widget editing
+    String venueId = widget.venueId;
+    bool showDirections = widget.showDirections;
+    bool showControls = widget.showControls;
+    double height = widget.height;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('Google 지도 설정'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: venueId.isEmpty ? 'main_venue' : venueId,
+                    decoration: const InputDecoration(
+                      labelText: '장소',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'main_venue',
+                        child: Text('메인 결혼식장'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'after_party',
+                        child: Text('2차 장소'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setDialogState(() {
+                          venueId = value;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  SwitchListTile(
+                    title: const Text('길 찾기 표시'),
+                    value: showDirections,
+                    onChanged: (value) {
                       setDialogState(() {
-                        venueId = value;
+                        showDirections = value;
                       });
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-                SwitchListTile(
-                  title: const Text('길 찾기 표시'),
-                  value: showDirections,
-                  onChanged: (value) {
-                    setDialogState(() {
-                      showDirections = value;
-                    });
-                  },
-                ),
-              ],
+                    },
+                  ),
+                  SwitchListTile(
+                    title: const Text('지도 컨트롤 표시'),
+                    value: showControls,
+                    onChanged: (value) {
+                      setDialogState(() {
+                        showControls = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Text('지도 높이: ${height.toInt()}px'),
+                  Slider(
+                    value: height,
+                    min: 200,
+                    max: 600,
+                    divisions: 40,
+                    onChanged: (value) {
+                      setDialogState(() {
+                        height = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
             actions: [
               TextButton(
@@ -470,9 +1215,233 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
                   final updatedData = Map<String, dynamic>.from(widget.data);
                   updatedData['venueId'] = venueId;
                   updatedData['showDirections'] = showDirections;
+                  updatedData['showControls'] = showControls;
+                  updatedData['height'] = height;
 
                   setState(() {
-                    _widgets[index] = MapWidget(
+                    _widgets[index] = GoogleMapWidget(
+                      id: widget.id,
+                      data: updatedData,
+                    );
+                  });
+
+                  Navigator.pop(context);
+                },
+                child: const Text('저장'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  void _showNaverMapEditDialog(NaverMapWidget widget, int index) {
+    // Implementation for Naver Maps widget editing
+    String venueId = widget.venueId;
+    bool showDirections = widget.showDirections;
+    bool showControls = widget.showControls;
+    double height = widget.height;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('네이버 지도 설정'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: venueId.isEmpty ? 'main_venue' : venueId,
+                    decoration: const InputDecoration(
+                      labelText: '장소',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'main_venue',
+                        child: Text('메인 결혼식장'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'after_party',
+                        child: Text('2차 장소'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setDialogState(() {
+                          venueId = value;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  SwitchListTile(
+                    title: const Text('길 찾기 표시'),
+                    value: showDirections,
+                    onChanged: (value) {
+                      setDialogState(() {
+                        showDirections = value;
+                      });
+                    },
+                  ),
+                  SwitchListTile(
+                    title: const Text('지도 컨트롤 표시'),
+                    value: showControls,
+                    onChanged: (value) {
+                      setDialogState(() {
+                        showControls = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Text('지도 높이: ${height.toInt()}px'),
+                  Slider(
+                    value: height,
+                    min: 200,
+                    max: 600,
+                    divisions: 40,
+                    onChanged: (value) {
+                      setDialogState(() {
+                        height = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('취소'),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Update the widget
+                  final updatedData = Map<String, dynamic>.from(widget.data);
+                  updatedData['venueId'] = venueId;
+                  updatedData['showDirections'] = showDirections;
+                  updatedData['showControls'] = showControls;
+                  updatedData['height'] = height;
+
+                  setState(() {
+                    _widgets[index] = NaverMapWidget(
+                      id: widget.id,
+                      data: updatedData,
+                    );
+                  });
+
+                  Navigator.pop(context);
+                },
+                child: const Text('저장'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  void _showKakaoMapEditDialog(KakaoMapWidget widget, int index) {
+    // Implementation for Kakao Maps widget editing
+    String venueId = widget.venueId;
+    bool showDirections = widget.showDirections;
+    bool showControls = widget.showControls;
+    double height = widget.height;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('카카오 지도 설정'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: venueId.isEmpty ? 'main_venue' : venueId,
+                    decoration: const InputDecoration(
+                      labelText: '장소',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'main_venue',
+                        child: Text('메인 결혼식장'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'after_party',
+                        child: Text('2차 장소'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setDialogState(() {
+                          venueId = value;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  SwitchListTile(
+                    title: const Text('길 찾기 표시'),
+                    value: showDirections,
+                    onChanged: (value) {
+                      setDialogState(() {
+                        showDirections = value;
+                      });
+                    },
+                  ),
+                  SwitchListTile(
+                    title: const Text('지도 컨트롤 표시'),
+                    value: showControls,
+                    onChanged: (value) {
+                      setDialogState(() {
+                        showControls = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Text('지도 높이: ${height.toInt()}px'),
+                  Slider(
+                    value: height,
+                    min: 200,
+                    max: 600,
+                    divisions: 40,
+                    onChanged: (value) {
+                      setDialogState(() {
+                        height = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('취소'),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Update the widget
+                  final updatedData = Map<String, dynamic>.from(widget.data);
+                  updatedData['venueId'] = venueId;
+                  updatedData['showDirections'] = showDirections;
+                  updatedData['showControls'] = showControls;
+                  updatedData['height'] = height;
+
+                  setState(() {
+                    _widgets[index] = KakaoMapWidget(
                       id: widget.id,
                       data: updatedData,
                     );
@@ -1059,12 +2028,73 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
       id: _uuid.v4(),
       data: {
         'venueId': 'main_venue',
-        'mapType': 'openstreetmap',
+        'mapProvider': 'google',  // Changed from mapType: 'openstreetmap'
         'showDirections': true,
+        'showControls': true,
         'latitude': 37.5642, // The Plaza Hotel Seoul (popular wedding venue)
         'longitude': 126.9758,
         'venue': '그랜드 호텔',
-        'title': '그랜드 호텔',
+        'height': 300.0,
+        'position': {
+          'dx': 100.0,
+          'dy': 200.0,
+        },
+      },
+    );
+  }
+
+  // Create Google Maps widget with default properties
+  GoogleMapWidget _createDefaultGoogleMapWidget() {
+    return GoogleMapWidget(
+      id: _uuid.v4(),
+      data: {
+        'venueId': 'main_venue',
+        'showDirections': true,
+        'showControls': true,
+        'latitude': 37.5642, // The Plaza Hotel Seoul (popular wedding venue)
+        'longitude': 126.9758,
+        'venue': '그랜드 호텔',
+        'height': 300.0,
+        'position': {
+          'dx': 100.0,
+          'dy': 200.0,
+        },
+      },
+    );
+  }
+
+  // Create Naver Maps widget with default properties
+  NaverMapWidget _createDefaultNaverMapWidget() {
+    return NaverMapWidget(
+      id: _uuid.v4(),
+      data: {
+        'venueId': 'main_venue',
+        'showDirections': true,
+        'showControls': true,
+        'latitude': 37.5642, // The Plaza Hotel Seoul (popular wedding venue)
+        'longitude': 126.9758,
+        'venue': '그랜드 호텔',
+        'height': 300.0,
+        'position': {
+          'dx': 100.0,
+          'dy': 200.0,
+        },
+      },
+    );
+  }
+
+  // Create Kakao Maps widget with default properties
+  KakaoMapWidget _createDefaultKakaoMapWidget() {
+    return KakaoMapWidget(
+      id: _uuid.v4(),
+      data: {
+        'venueId': 'main_venue',
+        'showDirections': true,
+        'showControls': true,
+        'latitude': 37.5642, // The Plaza Hotel Seoul (popular wedding venue)
+        'longitude': 126.9758,
+        'venue': '그랜드 호텔',
+        'height': 300.0,
         'position': {
           'dx': 100.0,
           'dy': 200.0,

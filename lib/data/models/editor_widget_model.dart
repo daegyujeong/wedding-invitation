@@ -6,6 +6,9 @@ enum WidgetType {
   Video,
   Button,
   Map,
+  GoogleMap,
+  NaverMap,
+  KakaoMap,
   CountdownTimer,
   DDay,
   Gallery,
@@ -42,6 +45,12 @@ abstract class EditorWidget {
         return ButtonWidget.fromJson(json);
       case WidgetType.Map:
         return MapWidget.fromJson(json);
+      case WidgetType.GoogleMap:
+        return GoogleMapWidget.fromJson(json);
+      case WidgetType.NaverMap:
+        return NaverMapWidget.fromJson(json);
+      case WidgetType.KakaoMap:
+        return KakaoMapWidget.fromJson(json);
       case WidgetType.CountdownTimer:
         return CountdownWidget.fromJson(json);
       case WidgetType.DDay:
@@ -143,7 +152,46 @@ abstract class EditorWidget {
             'venue': '결혼식장',
             'mapProvider': 'google',  // 'google', 'naver', 'kakao'
             'showControls': true,
-            'height': 300.0,
+            'height': 400.0,
+          },
+        );
+      case WidgetType.GoogleMap:
+        return GoogleMapWidget(
+          id: id,
+          data: {
+            'venueId': 'main_venue',
+            'showDirections': true,
+            'latitude': 37.5665,
+            'longitude': 126.9780,
+            'venue': '결혼식장',
+            'showControls': true,
+            'height': 400.0,
+          },
+        );
+      case WidgetType.NaverMap:
+        return NaverMapWidget(
+          id: id,
+          data: {
+            'venueId': 'main_venue',
+            'showDirections': true,
+            'latitude': 37.5665,
+            'longitude': 126.9780,
+            'venue': '결혼식장',
+            'showControls': true,
+            'height': 400.0,
+          },
+        );
+      case WidgetType.KakaoMap:
+        return KakaoMapWidget(
+          id: id,
+          data: {
+            'venueId': 'main_venue',
+            'showDirections': true,
+            'latitude': 37.5665,
+            'longitude': 126.9780,
+            'venue': '결혼식장',
+            'showControls': true,
+            'height': 400.0,
           },
         );
       case WidgetType.Schedule:
@@ -256,7 +304,7 @@ class MapWidget extends EditorWidget {
   String get venue => data['venue']?.toString() ?? '결혼식장';
   String get mapProvider => data['mapProvider']?.toString() ?? 'google';
   bool get showControls => data['showControls'] ?? true;
-  double get height => (data['height'] as num?)?.toDouble() ?? 300.0;
+  double get height => (data['height'] as num?)?.toDouble() ?? 400.0;
 
   void setMapProvider(String provider) {
     data['mapProvider'] = provider;
@@ -278,8 +326,152 @@ class MapWidget extends EditorWidget {
   }
 
   factory MapWidget.fromJson(Map<String, dynamic> json) {
-    return MapWidget(
-      id: json['id'],
+    try {
+      final dynamic rawData = json['data'];
+      Map<String, dynamic> safeData = {};
+      
+      if (rawData != null) {
+        if (rawData is Map<String, dynamic>) {
+          safeData = Map<String, dynamic>.from(rawData);
+        } else if (rawData is Map) {
+          // Handle Map<dynamic, dynamic> case
+          safeData = Map<String, dynamic>.from(rawData.map(
+            (key, value) => MapEntry(key.toString(), value),
+          ));
+        } else {
+          print('MapWidget.fromJson: Unexpected data type: ${rawData.runtimeType}');
+          print('Raw data: $rawData');
+        }
+      }
+      
+      return MapWidget(
+        id: json['id']?.toString() ?? '',
+        data: safeData,
+      );
+    } catch (e) {
+      print('Error parsing MapWidget: $e');
+      print('JSON: $json');
+      // Return a default map widget
+      return MapWidget(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        data: {
+          'latitude': 37.5665,
+          'longitude': 126.9780,
+          'venue': 'Default Location',
+          'provider': 'google',
+        },
+      );
+    }
+  }
+}
+
+// Individual Map Widgets for specific providers
+class GoogleMapWidget extends EditorWidget {
+  GoogleMapWidget({
+    required super.id,
+    required super.data,
+  }) : super(type: WidgetType.GoogleMap);
+
+  String get venueId => data['venueId']?.toString() ?? 'main_venue';
+  bool get showDirections => data['showDirections'] == true;
+  double get latitude => (data['latitude'] as num?)?.toDouble() ?? 37.5665;
+  double get longitude => (data['longitude'] as num?)?.toDouble() ?? 126.9780;
+  String get venue => data['venue']?.toString() ?? '결혼식장';
+  bool get showControls => data['showControls'] ?? true;
+  double get height => (data['height'] as num?)?.toDouble() ?? 400.0;
+
+  void setLocation(double lat, double lng, String venueName) {
+    data['latitude'] = lat;
+    data['longitude'] = lng;
+    data['venue'] = venueName;
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type.toString().split('.').last,
+      'data': data,
+    };
+  }
+
+  factory GoogleMapWidget.fromJson(Map<String, dynamic> json) {
+    return GoogleMapWidget(
+      id: json['id']?.toString() ?? '',
+      data: Map<String, dynamic>.from(json['data'] ?? {}),
+    );
+  }
+}
+
+class NaverMapWidget extends EditorWidget {
+  NaverMapWidget({
+    required super.id,
+    required super.data,
+  }) : super(type: WidgetType.NaverMap);
+
+  String get venueId => data['venueId']?.toString() ?? 'main_venue';
+  bool get showDirections => data['showDirections'] == true;
+  double get latitude => (data['latitude'] as num?)?.toDouble() ?? 37.5665;
+  double get longitude => (data['longitude'] as num?)?.toDouble() ?? 126.9780;
+  String get venue => data['venue']?.toString() ?? '결혼식장';
+  bool get showControls => data['showControls'] ?? true;
+  double get height => (data['height'] as num?)?.toDouble() ?? 400.0;
+
+  void setLocation(double lat, double lng, String venueName) {
+    data['latitude'] = lat;
+    data['longitude'] = lng;
+    data['venue'] = venueName;
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type.toString().split('.').last,
+      'data': data,
+    };
+  }
+
+  factory NaverMapWidget.fromJson(Map<String, dynamic> json) {
+    return NaverMapWidget(
+      id: json['id']?.toString() ?? '',
+      data: Map<String, dynamic>.from(json['data'] ?? {}),
+    );
+  }
+}
+
+class KakaoMapWidget extends EditorWidget {
+  KakaoMapWidget({
+    required super.id,
+    required super.data,
+  }) : super(type: WidgetType.KakaoMap);
+
+  String get venueId => data['venueId']?.toString() ?? 'main_venue';
+  bool get showDirections => data['showDirections'] == true;
+  double get latitude => (data['latitude'] as num?)?.toDouble() ?? 37.5665;
+  double get longitude => (data['longitude'] as num?)?.toDouble() ?? 126.9780;
+  String get venue => data['venue']?.toString() ?? '결혼식장';
+  bool get showControls => data['showControls'] ?? true;
+  double get height => (data['height'] as num?)?.toDouble() ?? 400.0;
+
+  void setLocation(double lat, double lng, String venueName) {
+    data['latitude'] = lat;
+    data['longitude'] = lng;
+    data['venue'] = venueName;
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type.toString().split('.').last,
+      'data': data,
+    };
+  }
+
+  factory KakaoMapWidget.fromJson(Map<String, dynamic> json) {
+    return KakaoMapWidget(
+      id: json['id']?.toString() ?? '',
       data: Map<String, dynamic>.from(json['data'] ?? {}),
     );
   }

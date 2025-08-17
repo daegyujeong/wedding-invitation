@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../widgets/multi_map_widget.dart';
-import '../../../../data/services/location_search_service.dart';
 import '../../../../data/models/venue_model.dart';
 import '../../../../data/repositories/saved_locations_repository.dart';
 

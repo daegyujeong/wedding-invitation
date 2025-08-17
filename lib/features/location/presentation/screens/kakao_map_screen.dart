@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../widgets/multi_map_widget.dart';
-import '../../../../data/services/location_search_service.dart';
 import '../../../../data/models/venue_model.dart';
 import '../../../../data/repositories/saved_locations_repository.dart';
 
@@ -113,7 +112,9 @@ class _KakaoMapScreenState extends State<KakaoMapScreen> {
                 onPressed: () async {
                   await _savedLocationsRepository.clearSavedLocations();
                   await _loadSavedLocations();
-                  Navigator.pop(context);
+                  if (mounted) {
+                    Navigator.pop(context);
+                  }
                 },
                 child: const Text('모두 삭제'),
               ),

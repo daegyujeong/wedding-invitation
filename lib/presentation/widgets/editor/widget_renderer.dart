@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import '../../../data/models/editor_widget_model.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import '../../../features/location/presentation/widgets/multi_map_widget.dart';
-import '../../../features/location/presentation/widgets/multi_map_widget.dart' show MapProvider;
+import '../../../features/location/presentation/widgets/multi_map_widget.dart' show MapProvider, MultiMapWidget;
 import '../../../features/location/presentation/widgets/google_map_widget_wrapper.dart';
 import '../../../features/location/presentation/widgets/naver_map_widget.dart' as naver_map;
 import '../../../features/location/presentation/widgets/kakao_map_widget.dart' as kakao_map;
@@ -278,7 +275,7 @@ class WidgetRenderer extends StatelessWidget {
         // Ensure minimum width for usability
         mapWidth = mapWidth.clamp(250.0, double.infinity);
 
-        return Container(
+        return SizedBox(
           width: mapWidth,
           height: mapWidget.height,
           child: MultiMapWidget(
@@ -344,7 +341,7 @@ class WidgetRenderer extends StatelessWidget {
         }
         mapWidth = mapWidth.clamp(250.0, double.infinity);
 
-        return Container(
+        return SizedBox(
           width: mapWidth,
           height: googleMapWidget.height,
           child: GoogleMapWidgetWrapper(
@@ -370,7 +367,7 @@ class WidgetRenderer extends StatelessWidget {
         }
         mapWidth = mapWidth.clamp(250.0, double.infinity);
 
-        return Container(
+        return SizedBox(
           width: mapWidth,
           height: naverMapWidget.height,
           child: naver_map.NaverMapWidget(
@@ -396,7 +393,7 @@ class WidgetRenderer extends StatelessWidget {
         }
         mapWidth = mapWidth.clamp(250.0, double.infinity);
 
-        return Container(
+        return SizedBox(
           width: mapWidth,
           height: kakaoMapWidget.height,
           child: kakao_map.KakaoMapWidget(
@@ -788,9 +785,18 @@ class WidgetRenderer extends StatelessWidget {
   }
 
   Widget _buildGuestbookWidget(GuestbookWidget guestbookWidget) {
-    return GuestbookWidgetRenderer(
-      widget: guestbookWidget,
-      isEditMode: isEditMode,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        minHeight: 200,
+        maxHeight: 600,
+      ),
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: GuestbookWidgetRenderer(
+          widget: guestbookWidget,
+          isEditMode: isEditMode,
+        ),
+      ),
     );
   }
 }

@@ -48,7 +48,6 @@ class AppRouter {
       GoRoute(
         path: invitation,
         name: 'invitation',
-        builder: (context, state) => const InvitationScreen(),
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
           child: const InvitationScreen(),
@@ -61,7 +60,6 @@ class AppRouter {
       GoRoute(
         path: gallery,
         name: 'gallery',
-        builder: (context, state) => const GalleryScreen(),
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
           child: const GalleryScreen(),
@@ -80,7 +78,6 @@ class AppRouter {
       GoRoute(
         path: location,
         name: 'location',
-        builder: (context, state) => const LocationScreen(),
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
           child: const LocationScreen(),
@@ -99,7 +96,6 @@ class AppRouter {
       GoRoute(
         path: guestbook,
         name: 'guestbook',
-        builder: (context, state) => const GuestbookScreen(),
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
           child: const GuestbookScreen(),
@@ -118,7 +114,6 @@ class AppRouter {
       GoRoute(
         path: share,
         name: 'share',
-        builder: (context, state) => const ShareScreen(),
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
           child: const ShareScreen(),
@@ -140,7 +135,6 @@ class AppRouter {
       GoRoute(
         path: editor,
         name: 'editor',
-        builder: (context, state) => const EditorScreen(),
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
           child: const EditorScreen(),

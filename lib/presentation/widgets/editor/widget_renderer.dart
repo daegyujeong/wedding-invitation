@@ -9,6 +9,7 @@ import '../../../features/location/presentation/widgets/multi_map_widget.dart' s
 import '../../../features/location/presentation/widgets/google_map_widget_wrapper.dart';
 import '../../../features/location/presentation/widgets/naver_map_widget.dart' as naver_map;
 import '../../../features/location/presentation/widgets/kakao_map_widget.dart' as kakao_map;
+import '../guestbook/guestbook_widget.dart';
 
 class WidgetRenderer extends StatelessWidget {
   final EditorWidget widget;
@@ -49,6 +50,8 @@ class WidgetRenderer extends StatelessWidget {
         return _buildVideoWidget(widget as VideoWidget);
       case WidgetType.Button:
         return _buildButtonWidget(widget as ButtonWidget);
+      case WidgetType.Guestbook:
+        return _buildGuestbookWidget(widget as GuestbookWidget);
       default:
         return Container(
           padding: const EdgeInsets.all(8),
@@ -288,6 +291,20 @@ class WidgetRenderer extends StatelessWidget {
             height: mapWidget.height,
             isEditMode: isEditMode,
             showSearch: isEditMode, // Enable search in edit mode
+            initialLockState: mapWidget.data['isLocked'] as bool?,
+            onLockStateChanged: isEditMode ? (isLocked) {
+              // Update the widget's lock state
+              if (onWidgetUpdated != null) {
+                final updatedData = Map<String, dynamic>.from(mapWidget.data);
+                updatedData['isLocked'] = isLocked;
+                
+                final updatedWidget = MapWidget(
+                  id: mapWidget.id,
+                  data: updatedData,
+                );
+                onWidgetUpdated!(updatedWidget);
+              }
+            } : null,
             onLocationSelected: isEditMode ? (result) {
               // Update the widget's location when a new location is selected
               if (onWidgetUpdated != null) {
@@ -767,6 +784,13 @@ class WidgetRenderer extends StatelessWidget {
     return LiveCountdownWidget(
       targetDate: countdownWidget.targetDate,
       format: countdownWidget.format,
+    );
+  }
+
+  Widget _buildGuestbookWidget(GuestbookWidget guestbookWidget) {
+    return GuestbookWidgetRenderer(
+      widget: guestbookWidget,
+      isEditMode: isEditMode,
     );
   }
 }

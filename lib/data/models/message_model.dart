@@ -1,31 +1,72 @@
-class MessageModel {
+// lib/data/models/message_model.dart
+import 'package:equatable/equatable.dart';
+
+class MessageModel extends Equatable {
   final String id;
+  final String invitationId;
   final String name;
   final String message;
+  final int likes;
   final DateTime createdAt;
 
-  MessageModel({
+  const MessageModel({
     required this.id,
+    required this.invitationId,
     required this.name,
     required this.message,
+    required this.likes,
     required this.createdAt,
   });
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(
-      id: json['id'],
-      name: json['name'],
-      message: json['message'],
-      createdAt: DateTime.parse(json['created_at']),
+      id: json['id'] as String,
+      invitationId: json['invitation_id'] as String? ?? '',
+      name: json['name'] as String,
+      message: json['message'] as String,
+      likes: json['likes'] as int? ?? 0,
+      createdAt: json['created_at'] != null 
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'invitation_id': invitationId,
       'name': name,
       'message': message,
+      'likes': likes,
       'created_at': createdAt.toIso8601String(),
     };
   }
+
+  MessageModel copyWith({
+    String? id,
+    String? invitationId,
+    String? name,
+    String? message,
+    int? likes,
+    DateTime? createdAt,
+  }) {
+    return MessageModel(
+      id: id ?? this.id,
+      invitationId: invitationId ?? this.invitationId,
+      name: name ?? this.name,
+      message: message ?? this.message,
+      likes: likes ?? this.likes,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        invitationId,
+        name,
+        message,
+        likes,
+        createdAt,
+      ];
 }

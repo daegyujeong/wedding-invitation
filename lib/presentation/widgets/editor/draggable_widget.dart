@@ -11,6 +11,7 @@ class DraggableWidget extends StatefulWidget {
   final VoidCallback onDelete;
   final Size? canvasSize;
   final int zIndex;
+  final bool isDraggable;
 
   const DraggableWidget({
     super.key,
@@ -20,6 +21,7 @@ class DraggableWidget extends StatefulWidget {
     required this.onDelete,
     this.canvasSize,
     this.zIndex = 0,
+    this.isDraggable = true,
   });
 
   @override
@@ -103,6 +105,8 @@ class _DraggableWidgetState extends State<DraggableWidget>
   }
 
   void _onDragStarted() {
+    if (!widget.isDraggable) return;
+    
     _controller.setDragging(true);
     _dragStartPosition = _controller.position;
     _elevationController.forward();
@@ -110,6 +114,8 @@ class _DraggableWidgetState extends State<DraggableWidget>
   }
 
   void _onDragEnd(DraggableDetails details) {
+    if (!widget.isDraggable) return;
+    
     _controller.setDragging(false);
     _dragStartPosition = null;
     _elevationController.reverse();
@@ -117,6 +123,8 @@ class _DraggableWidgetState extends State<DraggableWidget>
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
+    if (!widget.isDraggable) return;
+    
     // Update position using delta from pan gesture
     final Offset currentPosition = _controller.position;
     final Offset newPosition = currentPosition + details.delta;

@@ -27,6 +27,8 @@ class MultiMapWidget extends StatefulWidget {
   final bool showSearch;
   final Function(LocationSearchResult)? onLocationSelected;
   final Function(VenueModel)? onLocationSaved;
+  final Function(bool)? onLockStateChanged;
+  final bool? initialLockState;
 
   const MultiMapWidget({
     super.key,
@@ -42,6 +44,8 @@ class MultiMapWidget extends StatefulWidget {
     this.showSearch = false,
     this.onLocationSelected,
     this.onLocationSaved,
+    this.onLockStateChanged,
+    this.initialLockState,
   });
 
   @override
@@ -63,6 +67,9 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
     _currentLatitude = widget.latitude;
     _currentLongitude = widget.longitude;
     _currentVenueName = widget.venue;
+    
+    // Initialize lock state from initialLockState parameter if available
+    _isMapLocked = widget.initialLockState ?? (widget.isEditMode ? true : false);
   }
 
   @override
@@ -290,6 +297,8 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
               setState(() {
                 _isMapLocked = !_isMapLocked;
               });
+              // Notify parent about lock state change
+              widget.onLockStateChanged?.call(_isMapLocked);
             },
             child: Padding(
               padding: const EdgeInsets.all(8),

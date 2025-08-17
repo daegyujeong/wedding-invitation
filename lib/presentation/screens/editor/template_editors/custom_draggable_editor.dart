@@ -196,6 +196,9 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
       case WidgetType.Button:
         _showButtonEditDialog(widget as ButtonWidget, index);
         break;
+      case WidgetType.Guestbook:
+        _showGuestbookEditDialog(widget as GuestbookWidget, index);
+        break;
     }
   }
 
@@ -1970,6 +1973,136 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
     );
   }
 
+  void _showGuestbookEditDialog(GuestbookWidget widget, int index) {
+    String title = widget.title.getText('ko');
+    String description = widget.description.getText('ko');
+    bool allowAnonymous = widget.allowAnonymous;
+    bool requireModeration = widget.requireModeration;
+    int maxMessageLength = widget.maxMessageLength;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('방명록 설정'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: TextEditingController(text: title),
+                  decoration: const InputDecoration(
+                    labelText: '제목',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (value) {
+                    title = value;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: TextEditingController(text: description),
+                  decoration: const InputDecoration(
+                    labelText: '설명',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (value) {
+                    description = value;
+                  },
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: allowAnonymous,
+                      onChanged: (value) {
+                        setDialogState(() {
+                          allowAnonymous = value ?? true;
+                        });
+                      },
+                    ),
+                    const Text('익명 작성 허용'),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: requireModeration,
+                      onChanged: (value) {
+                        setDialogState(() {
+                          requireModeration = value ?? false;
+                        });
+                      },
+                    ),
+                    const Text('메시지 승인 필요'),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: TextEditingController(text: maxMessageLength.toString()),
+                  decoration: const InputDecoration(
+                    labelText: '최대 글자 수',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    maxMessageLength = int.tryParse(value) ?? 500;
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('취소'),
+              ),
+              TextButton(
+                onPressed: () {
+                  final updatedData = Map<String, dynamic>.from(widget.data);
+                  updatedData['title'] = {
+                    'translations': {'ko': title, 'en': 'Guestbook'},
+                    'default_language': 'ko',
+                  };
+                  updatedData['description'] = {
+                    'translations': {'ko': description, 'en': 'Please leave your congratulations'},
+                    'default_language': 'ko',
+                  };
+                  updatedData['allowAnonymous'] = allowAnonymous;
+                  updatedData['requireModeration'] = requireModeration;
+                  updatedData['maxMessageLength'] = maxMessageLength;
+
+                  setState(() {
+                    _widgets[index] = GuestbookWidget(
+                      id: widget.id,
+                      data: updatedData,
+                    );
+                  });
+
+                  Navigator.pop(context);
+                },
+                child: const Text('저장'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  bool _isWidgetDraggable(EditorWidget widget) {
+    // For map widgets, check if they are locked
+    if (widget.type == WidgetType.Map ||
+        widget.type == WidgetType.GoogleMap ||
+        widget.type == WidgetType.NaverMap ||
+        widget.type == WidgetType.KakaoMap) {
+      // Check the widget data for lock state, default to locked (not draggable)
+      final isLocked = widget.data['isLocked'] as bool? ?? true;
+      return !isLocked;
+    }
+    // All other widgets are draggable
+    return true;
+  }
+
   // Create a text widget with default properties
   TextWidget _createDefaultTextWidget() {
     return TextWidget(
@@ -2035,6 +2168,7 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
         'longitude': 126.9758,
         'venue': '그랜드 호텔',
         'height': 300.0,
+        'isLocked': true, // Start with map locked
         'position': {
           'dx': 100.0,
           'dy': 200.0,
@@ -2130,6 +2264,7 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
               return DraggableWidget(
                 key: ValueKey(widget.id),
                 editorWidget: widget,
+                isDraggable: _isWidgetDraggable(widget),
                 onWidgetChanged: (updatedWidget) {
                   final index =
                       _widgets.indexWhere((w) => w.id == updatedWidget.id);

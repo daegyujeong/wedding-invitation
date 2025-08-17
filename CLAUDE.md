@@ -412,6 +412,26 @@ These commands make AI calls and may take up to a minute:
 - Provides more informed task creation and updates
 - Recommended for complex technical tasks
 
+### **CRITICAL MEMORY ITEM - Task Management**
+
+**ALWAYS USE TASKMASTER AI FOR TASK TRACKING:**
+- Use `task-master` CLI commands or MCP tools for all task management
+- **NEVER use TodoWrite tool** for tasks that should be tracked in TaskMaster
+- When completing work, update TaskMaster with:
+  - `task-master set-status --id=<id> --status=done` for completion
+  - `task-master update-subtask --id=<id> --prompt="implementation notes"` for progress
+  - `task-master add-task --prompt="description"` for new tasks
+- Only use TodoWrite for temporary session-specific todos that are not part of the main project roadmap
+
 ---
 
 _This guide ensures Claude Code has immediate access to Task Master's essential functionality for agentic development workflows._
+
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+
+      
+      IMPORTANT: this context may or may not be relevant to your tasks. You should not respond to this context or otherwise consider it in your response unless it is highly relevant to your task. Most of the time, it is not relevant.

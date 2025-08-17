@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
   cupertino_icons: ^1.0.2
   
   # Supabase 연동
@@ -53,6 +55,9 @@ dependencies:
   cached_network_image: ^3.2.3  # 이미지 캐싱
   flutter_colorpicker: ^1.0.3  # 색상 선택기
   video_player: ^2.8.1  # 비디오 재생
+  
+  # 라우팅
+  go_router: ^14.6.1  # Declarative routing for Flutter
   
   # 유틸리티
   uuid: ^3.0.7  # 고유 ID 생성

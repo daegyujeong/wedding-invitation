@@ -42,6 +42,7 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
       'name': '인터랙션',
       'widgets': [
         {'type': 'button', 'name': '버튼', 'icon': Icons.smart_button},
+        {'type': 'guestbook', 'name': '방명록', 'icon': Icons.book, 'description': '축하 메시지'},
       ],
     },
     {
@@ -646,6 +647,32 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
               {'time': '12:00', 'description': '결혼식'},
               {'time': '13:00', 'description': '식사'},
             ],
+            'position': {
+              'dx': 100.0,
+              'dy': 100.0,
+            },
+          },
+        );
+        break;
+
+      case 'guestbook':
+        editorWidget = GuestbookWidget(
+          id: 'guestbook_${_uuid.v4()}',
+          data: {
+            'title': {
+              'translations': {'ko': '방명록', 'en': 'Guestbook'},
+              'default_language': 'ko',
+            },
+            'description': {
+              'translations': {'ko': '소중한 축하 메시지를 남겨주세요', 'en': 'Please leave your congratulations'},
+              'default_language': 'ko',
+            },
+            'allowAnonymous': true,
+            'requireModeration': false,
+            'maxMessageLength': 500,
+            'backgroundColor': '#FFFFFF',
+            'textColor': '#333333',
+            'accentColor': '#4285F4',
             'position': {
               'dx': 100.0,
               'dy': 100.0,

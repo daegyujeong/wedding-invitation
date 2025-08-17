@@ -13,6 +13,7 @@ enum WidgetType {
   DDay,
   Gallery,
   Schedule,
+  Guestbook,
 }
 
 abstract class EditorWidget {
@@ -59,6 +60,8 @@ abstract class EditorWidget {
         return GalleryWidget.fromJson(json);
       case WidgetType.Schedule:
         return ScheduleWidget.fromJson(json);
+      case WidgetType.Guestbook:
+        return GuestbookWidget.fromJson(json);
     }
   }
 
@@ -202,6 +205,20 @@ abstract class EditorWidget {
               {'time': '14:00', 'description': '결혼식'},
               {'time': '15:30', 'description': '피로연'},
             ],
+          },
+        );
+      case WidgetType.Guestbook:
+        return GuestbookWidget(
+          id: id,
+          data: {
+            'title': {'ko': '방명록', 'en': 'Guestbook'},
+            'description': {'ko': '소중한 축하 메시지를 남겨주세요', 'en': 'Please leave your congratulations'},
+            'allowAnonymous': true,
+            'requireModeration': false,
+            'maxMessageLength': 500,
+            'backgroundColor': '#FFFFFF',
+            'textColor': '#333333',
+            'accentColor': '#4285F4',
           },
         );
     }
@@ -678,6 +695,64 @@ class ButtonWidget extends EditorWidget {
 
   factory ButtonWidget.fromJson(Map<String, dynamic> json) {
     return ButtonWidget(
+      id: json['id'],
+      data: Map<String, dynamic>.from(json['data'] ?? {}),
+    );
+  }
+}
+
+class GuestbookWidget extends EditorWidget {
+  GuestbookWidget({
+    required super.id,
+    required super.data,
+  }) : super(type: WidgetType.Guestbook);
+
+  MultiLanguageText get title {
+    try {
+      return MultiLanguageText.fromJson(data['title']);
+    } catch (e) {
+      return MultiLanguageText(
+        translations: {
+          'ko': data['title']?.toString() ?? '방명록',
+          'en': data['title']?.toString() ?? 'Guestbook',
+        },
+        defaultLanguage: 'ko',
+      );
+    }
+  }
+
+  MultiLanguageText get description {
+    try {
+      return MultiLanguageText.fromJson(data['description']);
+    } catch (e) {
+      return MultiLanguageText(
+        translations: {
+          'ko': data['description']?.toString() ?? '소중한 축하 메시지를 남겨주세요',
+          'en': data['description']?.toString() ?? 'Please leave your congratulations',
+        },
+        defaultLanguage: 'ko',
+      );
+    }
+  }
+
+  bool get allowAnonymous => data['allowAnonymous'] as bool? ?? true;
+  bool get requireModeration => data['requireModeration'] as bool? ?? false;
+  int get maxMessageLength => data['maxMessageLength'] as int? ?? 500;
+  String get backgroundColor => data['backgroundColor']?.toString() ?? '#FFFFFF';
+  String get textColor => data['textColor']?.toString() ?? '#333333';
+  String get accentColor => data['accentColor']?.toString() ?? '#4285F4';
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type.toString().split('.').last,
+      'data': data,
+    };
+  }
+
+  factory GuestbookWidget.fromJson(Map<String, dynamic> json) {
+    return GuestbookWidget(
       id: json['id'],
       data: Map<String, dynamic>.from(json['data'] ?? {}),
     );

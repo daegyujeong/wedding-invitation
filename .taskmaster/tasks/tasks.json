@@ -9,8 +9,62 @@
         "testStrategy": "Write unit tests for each model's serialization/deserialization. Create mock repositories for testing. Verify that repositories correctly handle data operations. Test edge cases like empty or malformed data. Use dependency injection to swap real repositories with test doubles during testing.",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define Core Data Models",
+            "description": "Create Dart classes for InvitationModel, MessageModel, VenueModel, CustomWidgetModel, and LanguageModel with all required fields and serialization/deserialization methods.",
+            "dependencies": [],
+            "details": "Each model should include fields as specified in the PRD and implement methods for JSON serialization and deserialization to support API communication.\n<info added on 2025-07-21T19:49:01.727Z>\nAnalysis of existing models has been completed. The following models are already well-implemented:\n\n- InvitationModel: Complete with multi-language support, venues, background images\n- VenueModel: Comprehensive location model with coordinates, event details, map links\n- MessageModel: Basic message model with id, name, message, createdAt\n- GuestbookMessage: Enhanced message model with approval, relationship, avatar\n- EditorWidgetModel: Extensive widget system with 17+ widget types (Text, Image, Video, Maps, etc.)\n- LanguageModel: Multi-language support with 5 languages (Korean, English, Chinese, Malay, Tamil)\n\nCurrent strengths in the models:\n- All models have proper JSON serialization/deserialization\n- MultiLanguageText support implemented\n- Complex widget system with inheritance\n- Error handling in model parsing\n\nAreas requiring enhancement:\n- Repository interfaces are missing (abstract classes)\n- Some models could use better error handling and validation\n- Dependency injection setup needed\n- Repository pattern not fully implemented (only concrete implementations exist)\n\nNext steps will focus on creating repository interfaces, organizing the data layer structure, and implementing the dependency injection pattern.\n</info added on 2025-07-21T19:49:01.727Z>",
+            "status": "done",
+            "testStrategy": "Write unit tests to verify model instantiation, field assignment, and correct JSON serialization/deserialization."
+          },
+          {
+            "id": 2,
+            "title": "Organize Models and Data Layer Structure",
+            "description": "Set up a dedicated models folder and organize the data layer according to clean architecture or feature-first principles.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create a models directory and ensure all model files are placed there. Prepare the data layer structure to facilitate maintainability and scalability, following best practices for folder organization.\n<info added on 2025-07-21T19:51:02.950Z>\nSuccessfully organized the data layer structure following clean architecture principles:\n\n✅ **Completed:**\n- Created centralized index.dart files for models, repositories, and services\n- Consolidated duplicate MessageModel (removed from core/models, enhanced in data/models) \n- Enhanced MessageModel with Equatable, invitationId, likes, and copyWith method\n- Added comprehensive data layer documentation in data/README.md\n- Cleaned up directory structure by removing empty core/models directory\n\n📂 **New Structure:**\n- Organized models directory with proper file organization\n- Implemented clean architecture separation between data and domain layers\n\n🏗️ **Architecture Benefits:**\n- Single source of truth for data models\n- Clear separation of concerns (models/repositories/services)\n- Centralized imports reduce coupling\n- Documentation provides clear structure guidelines\n- Follows clean architecture principles\n- Prepared for dependency injection pattern\n</info added on 2025-07-21T19:51:02.950Z>",
+            "status": "done",
+            "testStrategy": "Check project structure for correct placement of model files and adherence to organizational conventions."
+          },
+          {
+            "id": 3,
+            "title": "Define Repository Interfaces",
+            "description": "Create abstract repository interfaces for each data model, specifying required CRUD and query methods.",
+            "dependencies": [
+              2
+            ],
+            "details": "For each model, define an abstract repository interface (e.g., InvitationRepository) with methods for data access and manipulation as required by the app's features.\n<info added on 2025-07-21T19:53:25.517Z>\nSuccessfully created comprehensive repository interfaces following SOLID principles:\n\n✅ **Created Repository Interfaces:**\n- **InvitationRepository**: Complete invitation management (CRUD, venues, multilingual content)\n- **IMessageRepository**: Message operations (CRUD, search, likes, popularity) \n- **IGuestbookRepository**: Guestbook with moderation (approve/reject, relationships, search)\n- **ILocationRepository**: Location services (search, venues, coordinates, map links)\n- **IWidgetRepository**: Widget management (templates, presets, history, validation)\n- **ILanguageRepository**: Localization support (translations, preferences, import/export)\n\n🏗️ **Design Principles Applied:**\n- **Interface Segregation**: Each interface focused on single responsibility\n- **Dependency Inversion**: Abstract contracts independent of implementations\n- **Comprehensive Coverage**: All CRUD operations plus business logic methods\n- **Async Operations**: All methods return Futures for non-blocking operations\n- **Error Handling**: Boolean returns for success/failure operations\n- **Flexibility**: Support for filtering, searching, pagination, and customization\n\n📋 **Key Features Covered:**\n- Multi-language support with translation management\n- Location search with multiple providers (Google/Naver/Kakao)\n- Widget system with templates, presets, and history\n- Message moderation and approval workflows\n- Comprehensive venue management with map integration\n- Import/export capabilities for data portability\n\n**Interface Naming Convention**: Used 'I' prefix for interfaces to avoid naming conflicts\n**Ready for next step**: Implementing concrete repository classes\n</info added on 2025-07-21T19:53:25.517Z>",
+            "status": "done",
+            "testStrategy": "Write interface tests (using mock implementations) to ensure method signatures and expected behaviors are defined."
+          },
+          {
+            "id": 4,
+            "title": "Implement Concrete Repository Classes",
+            "description": "Develop concrete implementations of the repository interfaces for each model, handling data storage and retrieval logic.",
+            "dependencies": [
+              3
+            ],
+            "details": "Implement the repository classes to interact with the data source (e.g., local storage, API). Ensure each repository supports serialization and deserialization for API communication.\n<info added on 2025-07-21T19:58:24.515Z>\nSuccessfully implemented comprehensive concrete repository classes with full functionality:\n\n✅ **Completed Repository Implementations:**\n\n**1. InvitationRepositoryImpl**\n- Complete invitation management (CRUD operations)\n- Multi-language content updates \n- Venue management within invitations\n- Background image and template updates\n- SharedPreferences persistence\n\n**2. MessageRepositoryImpl** \n- Full message lifecycle management\n- Like/unlike functionality\n- Search and filtering capabilities\n- Author-based queries and popularity sorting\n- Cross-invitation message handling\n\n**3. GuestbookRepository (Enhanced)**\n- Added interface implementation\n- Message moderation (approve/reject)\n- Relationship-based filtering\n- Search functionality and pagination\n- Predefined relationship types\n\n**4. LocationRepositoryImpl**\n- Real-time location search integration\n- Venue management with coordinates\n- Distance-based queries using Haversine formula\n- Map link generation (Google/Naver/Kakao)\n- Default venue management\n\n**5. WidgetRepositoryImpl**\n- Complete widget lifecycle management\n- Template presets and history tracking\n- Widget duplication and reordering\n- Import/export functionality\n- Usage statistics and feature detection\n\n**6. LanguageRepositoryImpl**\n- Multi-language support system\n- Custom language addition\n- Translation management (import/export)\n- Language preferences and fallbacks\n- Localized text storage and retrieval\n\n🏗️ **Architecture Features:**\n- **Interface Compliance**: All repositories implement their respective interfaces\n- **Error Handling**: Comprehensive try-catch with graceful failure\n- **Data Persistence**: SharedPreferences for local storage\n- **Async Operations**: Non-blocking operations throughout\n- **Data Validation**: Input validation and null safety\n- **Extensibility**: Easy to extend with additional features\n\n📊 **Performance Optimizations:**\n- Efficient data serialization/deserialization\n- Memory-conscious data structures\n- Batch operations for multiple updates\n- History management with size limits\n- Lazy loading where appropriate\n\n**All repositories ready for dependency injection integration**\n</info added on 2025-07-21T19:58:24.515Z>",
+            "status": "done",
+            "testStrategy": "Write integration tests to verify repositories correctly store, retrieve, and serialize/deserialize data."
+          },
+          {
+            "id": 5,
+            "title": "Integrate Dependency Injection for Repositories",
+            "description": "Set up dependency injection to provide repository instances to ViewModels and other consumers.",
+            "dependencies": [
+              4
+            ],
+            "details": "Use a dependency injection framework (e.g., get_it, injectable) to register and inject repository implementations throughout the app.",
+            "status": "done",
+            "testStrategy": "Write tests to confirm repositories are correctly injected and accessible in ViewModels, and that singleton/scoped lifecycles behave as expected."
+          }
+        ]
       },
       {
         "id": 2,
@@ -22,8 +76,63 @@
         "dependencies": [
           1
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Select and Integrate Routing Library",
+            "description": "Choose between Flutter's Navigator 2.0 or GoRouter for declarative routing and integrate the selected package into the project.",
+            "dependencies": [],
+            "details": "Evaluate the requirements for navigation and deep linking, then add the chosen routing package (e.g., GoRouter) to the project's dependencies and configure the app to use MaterialApp.router if using GoRouter.\n<info added on 2025-07-21T20:02:08.048Z>\nAdded go_router package (version 14.6.1) to pubspec.yaml dependencies. Created app_router.dart file with a complete routing configuration that includes all main application screens:\n- Invitation screen\n- Gallery screen\n- Location screen\n- Guestbook screen\n- Share screen\n- Editor screen\n\nImplemented Material Design transitions between screens for a smooth user experience. The router is configured but currently has import errors that need to be resolved by creating placeholder screen widgets for each route.\n</info added on 2025-07-21T20:02:08.048Z>",
+            "status": "done",
+            "testStrategy": "Verify that the routing package is correctly installed and the app compiles without errors. Confirm that the app launches with the routing system initialized."
+          },
+          {
+            "id": 2,
+            "title": "Define Route Configuration for All Main Screens",
+            "description": "Set up the route configuration to include all required screens: Invitation display, Photo gallery, Location/maps, Guest messages, Sharing options, and Editor system.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create a GoRouter or Navigator 2.0 route table with paths and builders for each main screen. Ensure each route is uniquely addressable and matches the app's navigation structure.\n<info added on 2025-07-22T05:27:18.319Z>\nImplemented GoRouter configuration with named routes for all screens including the new GuestbookScreen. Added route parameters and builders to ensure proper navigation flow. The guestbook screen (방명록) is now properly integrated into the routing system with appropriate transitions. Route definitions include path parameters for detail views and query parameters where needed. All routes are uniquely addressable and follow the application's navigation hierarchy.\n</info added on 2025-07-22T05:27:18.319Z>",
+            "status": "done",
+            "testStrategy": "Write unit tests to ensure each route path renders the correct screen widget. Manually navigate to each route and verify correct screen display."
+          },
+          {
+            "id": 3,
+            "title": "Implement Navigation Transitions and Material Animations",
+            "description": "Configure smooth transitions and animations between screens, following Material Design guidelines.",
+            "dependencies": [
+              2
+            ],
+            "details": "Customize page transitions in the route configuration using GoRouter's pageBuilder or Navigator 2.0's transition delegates. Ensure animations are consistent with Material Design.\n<info added on 2025-07-22T18:34:45.112Z>\nSuccessfully implemented navigation transitions and Material Design animations using go_router package. Created a comprehensive routing system for all 6 main screens:\n\n1. Invitation (Home): Fade transition\n2. Gallery: Slide from right\n3. Location: Slide from bottom\n4. Guestbook: Slide from left\n5. Share: Scale with bounce effect\n6. Editor: Slide from top\n\nUpdated main.dart to use MaterialApp.router with dependency injection initialization. All screens are fully functional, featuring Korean localization and modern Material Design UI. Build test passed successfully, confirming the implementation's stability and correctness.\n</info added on 2025-07-22T18:34:45.112Z>",
+            "status": "done",
+            "testStrategy": "Manually navigate between all screens and verify that transitions are smooth and match Material Design standards. Use widget tests to check for animation triggers."
+          },
+          {
+            "id": 4,
+            "title": "Enable Deep Linking Support",
+            "description": "Set up deep linking so users can navigate directly to specific screens via external URLs.",
+            "dependencies": [
+              2
+            ],
+            "details": "Configure the routing system to handle incoming deep links and map them to the correct routes. Test with various URL schemes and ensure correct screen rendering.\n<info added on 2025-07-22T18:54:54.337Z>\nDeep linking system implemented with the following key features:\n\n1. Clean URLs without hash (#) for improved SEO and sharing\n2. Automatic route validation with fallback to home screen\n3. Analytics tracking for deep link usage\n4. Shareable URL generation for social media\n5. Comprehensive error handling for invalid routes\n6. Debug logging for development and troubleshooting\n\nImplementation details:\n- Added flutter_web_plugins dependency\n- Configured usePathUrlStrategy() in main.dart\n- Enhanced GoRouter with redirect handler for deep link validation\n- Created DeepLinkHelper utility class for parsing, generating, and logging deep links\n- Extended AppRouterExtension with currentRouteName and shareableUrl utilities\n- Implemented route validation and error handling\n- Configured error page with Korean localization\n\nSupported direct navigation routes:\n- /gallery, /location, /guestbook, /share, /editor\n\nAdditional features:\n- URL query parameter support\n- Proper browser back/forward navigation\n- Share-friendly URLs for social media and messaging apps\n\nTested and verified functionality for all supported routes.\n</info added on 2025-07-22T18:54:54.337Z>",
+            "status": "done",
+            "testStrategy": "Test deep links on supported platforms (Android/iOS/web) by opening URLs that target each route. Verify the app navigates to the intended screen."
+          },
+          {
+            "id": 5,
+            "title": "Validate Key User Flows and Navigation Logic",
+            "description": "Test and validate that all key user flows outlined in the PRD are supported by the navigation system.",
+            "dependencies": [
+              3,
+              4
+            ],
+            "details": "Review the PRD to identify all critical navigation scenarios. Perform end-to-end testing to ensure users can move between screens as intended, including edge cases and error handling.",
+            "status": "done",
+            "testStrategy": "Create integration tests for each user flow. Manually test navigation paths, including back navigation and error routes, to confirm expected behavior."
+          }
+        ]
       },
       {
         "id": 3,
@@ -36,8 +145,62 @@
           1,
           2
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design Responsive Layout Structure",
+            "description": "Create the foundational layout for the invitation screen, ensuring it adapts seamlessly to various screen sizes and device orientations.",
+            "dependencies": [],
+            "details": "Implement a flexible layout using Flutter's layout widgets (e.g., Column, Row, Stack, MediaQuery) to support responsiveness across phones and tablets. Ensure all elements scale and reposition appropriately.",
+            "status": "done",
+            "testStrategy": "Test on multiple device simulators and orientations to verify consistent appearance and usability."
+          },
+          {
+            "id": 2,
+            "title": "Integrate Dynamic Data Loading",
+            "description": "Connect the screen to the InvitationModel to fetch and display real wedding invitation data dynamically.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement data fetching logic and bind InvitationModel fields (names, date, venue) to UI elements. Ensure the UI updates reactively when data changes.",
+            "status": "done",
+            "testStrategy": "Use mock and real data to confirm correct data binding and live updates."
+          },
+          {
+            "id": 3,
+            "title": "Implement Animated Entrance for Invitation Details",
+            "description": "Develop staggered and smooth entrance animations for the main invitation details using Flutter's animation framework.",
+            "dependencies": [
+              2
+            ],
+            "details": "Apply AnimationController, Tween, and CurvedAnimation to animate the appearance of text and graphic elements. Sequence animations for a polished, elegant effect.",
+            "status": "done",
+            "testStrategy": "Visually inspect animation timing and smoothness; use Flutter's performance tools to ensure no dropped frames."
+          },
+          {
+            "id": 4,
+            "title": "Apply Design System Typography and Styling",
+            "description": "Style all text and UI elements according to the established design system, focusing on typography, color, and spacing.",
+            "dependencies": [
+              3
+            ],
+            "details": "Reference the project's design tokens and theme settings to ensure consistent font sizes, weights, and colors. Adjust padding and margins for visual harmony.",
+            "status": "done",
+            "testStrategy": "Compare UI against design specifications and perform accessibility checks for text contrast and readability."
+          },
+          {
+            "id": 5,
+            "title": "Validate and Optimize for Responsiveness and Animation Performance",
+            "description": "Conduct comprehensive testing to ensure the screen remains responsive and animations perform smoothly across all supported devices.",
+            "dependencies": [
+              4
+            ],
+            "details": "Test on a range of devices and screen sizes, checking for layout issues, animation glitches, and performance bottlenecks. Optimize code as needed.",
+            "status": "done",
+            "testStrategy": "Run automated and manual UI tests, profile animation performance, and gather user feedback for final adjustments."
+          }
+        ]
       },
       {
         "id": 4,
@@ -178,17 +341,63 @@
       {
         "id": 9,
         "title": "Develop Drag-and-Drop Widget Editor System",
-        "description": "Create a customizable editor system for invitation personalization",
-        "details": "Implement a drag-and-drop widget editor system with the following features:\n1. Customizable widget library for invitation elements\n2. Drag-and-drop functionality for positioning elements\n3. Widget property editors for customization\n4. Live preview of changes\n5. Save and restore custom layouts\n\nUse CustomWidgetModel to represent editable components. Implement a grid-based layout system for precise positioning.\n\nExample implementation:\n```dart\nclass EditorScreen extends StatefulWidget {\n  @override\n  _EditorScreenState createState() => _EditorScreenState();\n}\n\nclass _EditorScreenState extends State<EditorScreen> {\n  final List<CustomWidgetModel> _widgets = [];\n  CustomWidgetModel? _selectedWidget;\n  \n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      body: Row(\n        children: [\n          // Widget palette\n          WidgetPalette(\n            onWidgetSelected: _addWidget,\n          ),\n          // Editor canvas\n          Expanded(\n            child: Stack(\n              children: [\n                // Background grid\n                GridPaper(\n                  color: Colors.grey.withOpacity(0.2),\n                  divisions: 1,\n                  subdivisions: 1,\n                ),\n                // Placed widgets\n                ..._widgets.map((widget) => DraggableWidget(\n                  widget: widget,\n                  isSelected: _selectedWidget == widget,\n                  onTap: () => setState(() => _selectedWidget = widget),\n                  onDragEnd: (offset) => _updateWidgetPosition(widget, offset),\n                )),\n              ],\n            ),\n          ),\n          // Property editor\n          if (_selectedWidget != null)\n            PropertyEditor(\n              widget: _selectedWidget!,\n              onPropertyChanged: _updateWidgetProperty,\n            ),\n        ],\n      ),\n      floatingActionButton: FloatingActionButton(\n        child: Icon(Icons.save),\n        onPressed: _saveLayout,\n      ),\n    );\n  }\n  \n  void _addWidget(WidgetType type) {\n    setState(() {\n      _widgets.add(CustomWidgetModel(\n        type: type,\n        position: Offset(100, 100),\n        size: Size(200, 100),\n        properties: {},\n      ));\n    });\n  }\n  \n  void _updateWidgetPosition(CustomWidgetModel widget, Offset position) {\n    setState(() {\n      final index = _widgets.indexOf(widget);\n      _widgets[index] = widget.copyWith(position: position);\n    });\n  }\n  \n  void _updateWidgetProperty(String property, dynamic value) {\n    if (_selectedWidget != null) {\n      setState(() {\n        final index = _widgets.indexOf(_selectedWidget!);\n        final updatedProperties = Map<String, dynamic>.from(_selectedWidget!.properties);\n        updatedProperties[property] = value;\n        _widgets[index] = _selectedWidget!.copyWith(properties: updatedProperties);\n        _selectedWidget = _widgets[index];\n      });\n    }\n  }\n  \n  Future<void> _saveLayout() async {\n    // Save layout to repository\n  }\n}\n```\n\nImplement widget rendering based on the CustomWidgetModel type and properties.",
-        "testStrategy": "Test drag-and-drop functionality for accurate positioning. Verify widget property editing updates the preview correctly. Test saving and loading layouts. Verify the editor works on different screen sizes. Test performance with many widgets on the canvas. Create integration tests for complete editing workflows.",
-        "priority": "low",
+        "description": "Create a customizable editor system for invitation personalization with specialized widget behavior",
+        "status": "pending",
         "dependencies": [
           1,
           2,
           3
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "low",
+        "details": "Implement a drag-and-drop widget editor system with the following features:\n1. Customizable widget library for invitation elements\n2. Drag-and-drop functionality for positioning elements\n3. Widget property editors for customization\n4. Live preview of changes\n5. Save and restore custom layouts\n6. Widget-specific lock/drag behavior (especially for map widgets)\n\nUse CustomWidgetModel to represent editable components. Implement a grid-based layout system for precise positioning.\n\nRecent implementation progress:\n- Fixed critical compilation error by adding missing Guestbook case in switch statement\n- Implemented comprehensive map widget lock/drag prevention system\n- Added isDraggable property to DraggableWidget with gesture handler checks\n- Created _isWidgetDraggable method that returns !isLocked for map widgets\n- Added onLockStateChanged callback and initialLockState parameter to MultiMapWidget\n- Implemented lock state persistence in widget.data['isLocked']\n- Updated widget_renderer.dart to pass lock state and handle updates\n\nExample implementation:\n```dart\nclass EditorScreen extends StatefulWidget {\n  @override\n  _EditorScreenState createState() => _EditorScreenState();\n}\n\nclass _EditorScreenState extends State<EditorScreen> {\n  final List<CustomWidgetModel> _widgets = [];\n  CustomWidgetModel? _selectedWidget;\n  \n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      body: Row(\n        children: [\n          // Widget palette\n          WidgetPalette(\n            onWidgetSelected: _addWidget,\n          ),\n          // Editor canvas\n          Expanded(\n            child: Stack(\n              children: [\n                // Background grid\n                GridPaper(\n                  color: Colors.grey.withOpacity(0.2),\n                  divisions: 1,\n                  subdivisions: 1,\n                ),\n                // Placed widgets\n                ..._widgets.map((widget) => DraggableWidget(\n                  widget: widget,\n                  isSelected: _selectedWidget == widget,\n                  isDraggable: _isWidgetDraggable(widget),\n                  onTap: () => setState(() => _selectedWidget = widget),\n                  onDragEnd: (offset) => _updateWidgetPosition(widget, offset),\n                  onLockStateChanged: (isLocked) => _updateWidgetLockState(widget, isLocked),\n                )),\n              ],\n            ),\n          ),\n          // Property editor\n          if (_selectedWidget != null)\n            PropertyEditor(\n              widget: _selectedWidget!,\n              onPropertyChanged: _updateWidgetProperty,\n            ),\n        ],\n      ),\n      floatingActionButton: FloatingActionButton(\n        child: Icon(Icons.save),\n        onPressed: _saveLayout,\n      ),\n    );\n  }\n  \n  bool _isWidgetDraggable(CustomWidgetModel widget) {\n    // For map widgets, check lock state\n    if (widget.type == WidgetType.map) {\n      return !(widget.properties['isLocked'] ?? true);\n    }\n    // Other widgets are always draggable\n    return true;\n  }\n  \n  void _addWidget(WidgetType type) {\n    setState(() {\n      Map<String, dynamic> properties = {};\n      \n      // Set default properties based on widget type\n      if (type == WidgetType.map) {\n        properties['isLocked'] = true;\n      }\n      \n      _widgets.add(CustomWidgetModel(\n        type: type,\n        position: Offset(100, 100),\n        size: Size(200, 100),\n        properties: properties,\n      ));\n    });\n  }\n  \n  void _updateWidgetPosition(CustomWidgetModel widget, Offset position) {\n    setState(() {\n      final index = _widgets.indexOf(widget);\n      _widgets[index] = widget.copyWith(position: position);\n    });\n  }\n  \n  void _updateWidgetProperty(String property, dynamic value) {\n    if (_selectedWidget != null) {\n      setState(() {\n        final index = _widgets.indexOf(_selectedWidget!);\n        final updatedProperties = Map<String, dynamic>.from(_selectedWidget!.properties);\n        updatedProperties[property] = value;\n        _widgets[index] = _selectedWidget!.copyWith(properties: updatedProperties);\n        _selectedWidget = _widgets[index];\n      });\n    }\n  }\n  \n  void _updateWidgetLockState(CustomWidgetModel widget, bool isLocked) {\n    setState(() {\n      final index = _widgets.indexOf(widget);\n      final updatedProperties = Map<String, dynamic>.from(widget.properties);\n      updatedProperties['isLocked'] = isLocked;\n      _widgets[index] = widget.copyWith(properties: updatedProperties);\n      if (_selectedWidget == widget) {\n        _selectedWidget = _widgets[index];\n      }\n    });\n  }\n  \n  Future<void> _saveLayout() async {\n    // Save layout to repository\n  }\n}\n```\n\nImplement widget rendering based on the CustomWidgetModel type and properties, with special handling for widget-specific behaviors like map locking.",
+        "testStrategy": "Test drag-and-drop functionality for accurate positioning. Verify widget property editing updates the preview correctly. Test saving and loading layouts. Verify the editor works on different screen sizes. Test performance with many widgets on the canvas. Create integration tests for complete editing workflows.\n\nAdditional test cases:\n1. Verify map widgets respect lock state for canvas dragging while allowing internal map interaction when unlocked\n2. Test lock state persistence when saving and loading layouts\n3. Verify the Guestbook widget type renders and functions correctly\n4. Test the lock/unlock UI controls for map widgets\n5. Verify that non-map widgets maintain normal draggable behavior",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Fix Guestbook widget compilation error",
+            "description": "Add missing Guestbook case to switch statement in custom_draggable_editor.dart and implement _showGuestbookEditDialog method",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement map widget lock/drag system",
+            "description": "Create a system to manage map widget lock states and prevent dragging when locked",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Expand widget type library",
+            "description": "Add more widget types beyond the current implementation, focusing on invitation-specific elements",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implement comprehensive property editors",
+            "description": "Create specialized property editors for each widget type that allow detailed customization",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Enhance widget data persistence",
+            "description": "Improve the save/load functionality to properly maintain all widget states including lock states",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          }
+        ]
       },
       {
         "id": 10,
@@ -213,7 +422,7 @@
         "id": 11,
         "title": "Fix Widget Rendering Issues in Editor System",
         "description": "Resolve existing bugs in the widget editor system, focusing on positioning issues, state management problems, and visual glitches during drag operations in key files.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           9
         ],
@@ -553,7 +762,7 @@
             "dependencies": [
               2
             ],
-            "details": "Integrate Google Maps Geocoding, Kakao Local API, and Naver Map Geocoding for location search. Ensure the search bar dynamically uses the active provider's API and displays results appropriately.",
+            "details": "Integrate Google Maps Geocoding, Kakao Local API, and Naver Map Geocoding for location search. Ensure the search bar dynamically uses the active provider's API and displays results appropriately.\n<info added on 2025-07-13T14:37:10.540Z>\nFixed Google Maps location search to support global search without location bias. Removed the Korean language restriction and location bias parameters that were limiting search results to the current map viewport. Updated the search service to allow searching for any location worldwide while maintaining multi-language support through device locale detection. This resolves the issue where search results were constrained to the visible map area.\n</info added on 2025-07-13T14:37:10.540Z>",
             "status": "done",
             "testStrategy": "Perform searches with each provider, verify that results are accurate, markers appear on the map, and selecting a result updates the map view."
           },
@@ -609,11 +818,27 @@
         ],
         "priority": "medium",
         "subtasks": []
+      },
+      {
+        "id": 18,
+        "title": "Create Comprehensive Guestbook Widget for Wedding Invitations",
+        "description": "Develop a feature-rich guestbook widget that allows wedding guests to leave congratulatory messages with support for multi-language text, relationship tagging, moderation, and persistent storage.",
+        "details": "Implement a comprehensive guestbook widget with the following features:\n\n1. **Message Creation and Display**:\n   - Create a form for guests to submit congratulatory messages\n   - Support for anonymous posting with optional name field\n   - Relationship tagging system (신랑측, 신부측, 친구, etc.) with customizable tags\n   - Real-time timestamps for messages\n   - Multi-language text support using the app's localization system\n\n2. **Message Storage and Persistence**:\n   - Implement SharedPreferences for local storage of messages\n   - Create a GuestbookRepository class to handle CRUD operations\n   - Implement data models for guestbook entries:\n   ```dart\n   class GuestbookEntry {\n     final String id;\n     final String message;\n     final String? authorName;\n     final String relationshipTag;\n     final DateTime timestamp;\n     final bool isApproved;\n     \n     // Constructor and serialization methods\n   }\n   ```\n\n3. **Moderation System**:\n   - Admin view for message approval/rejection\n   - Flagging system for inappropriate content\n   - Batch approval/rejection functionality\n   - Message filtering by status (approved, pending, rejected)\n\n4. **UI Components**:\n   - Customizable styling options (colors, fonts, backgrounds)\n   - Empty state design for when no messages exist\n   - Pagination for large numbers of messages\n   - Animation for new message additions\n   - Edit mode with delete functionality for administrators\n\n5. **Integration with Wedding Invitation Editor**:\n   - Widget configuration panel in the editor system\n   - Drag-and-drop placement within invitation layout\n   - Preview mode to test functionality\n   - Style synchronization with overall invitation theme\n\nImplementation approach:\n- Use a StatefulWidget for the main guestbook component\n- Implement the Repository pattern for data operations\n- Use Provider or Bloc for state management\n- Create custom animations for message transitions\n- Implement form validation for message submission\n\nExample implementation for the main widget:\n```dart\nclass GuestbookWidget extends StatefulWidget {\n  final GuestbookConfig config;\n  \n  const GuestbookWidget({Key? key, required this.config}) : super(key: key);\n  \n  @override\n  _GuestbookWidgetState createState() => _GuestbookWidgetState();\n}\n\nclass _GuestbookWidgetState extends State<GuestbookWidget> {\n  late GuestbookRepository _repository;\n  List<GuestbookEntry> _entries = [];\n  bool _isLoading = true;\n  \n  @override\n  void initState() {\n    super.initState();\n    _repository = GuestbookRepository();\n    _loadEntries();\n  }\n  \n  Future<void> _loadEntries() async {\n    setState(() => _isLoading = true);\n    final entries = await _repository.getApprovedEntries();\n    setState(() {\n      _entries = entries;\n      _isLoading = false;\n    });\n  }\n  \n  // Widget build and other methods\n}\n```",
+        "testStrategy": "Implement a comprehensive testing strategy to verify the guestbook widget functionality:\n\n1. **Unit Tests**:\n   - Test GuestbookRepository methods for proper data operations\n   - Verify message serialization/deserialization works correctly\n   - Test filtering logic for approved/pending/rejected messages\n   - Validate relationship tag handling and customization\n\n2. **Widget Tests**:\n   - Test form submission with various input combinations\n   - Verify validation logic prevents invalid submissions\n   - Test empty state rendering when no messages exist\n   - Verify proper rendering of relationship tags\n   - Test pagination controls with large datasets\n   - Verify multi-language text displays correctly\n   - Test admin mode functionality for message moderation\n\n3. **Integration Tests**:\n   - Test persistence of messages using SharedPreferences\n   - Verify integration with the wedding invitation editor system\n   - Test style customization propagates correctly to the widget\n   - Verify drag-and-drop functionality in the editor\n   - Test real-time updates when messages are added or moderated\n\n4. **Performance Tests**:\n   - Measure rendering performance with large numbers of messages\n   - Test scrolling performance in the message list\n   - Verify memory usage remains within acceptable limits\n\n5. **User Acceptance Testing**:\n   - Create test scenarios for common user journeys\n   - Verify anonymous vs. named posting works as expected\n   - Test moderation workflow from submission to approval\n   - Verify edit/delete functionality works correctly\n\n6. **Edge Cases**:\n   - Test behavior with very long messages\n   - Verify handling of special characters and emojis\n   - Test with different device orientations and screen sizes\n   - Verify graceful handling of network/storage failures",
+        "status": "done",
+        "dependencies": [
+          1,
+          6,
+          9,
+          13
+        ],
+        "priority": "medium",
+        "subtasks": []
       }
     ],
     "metadata": {
       "created": "2025-07-01T13:41:34.057Z",
-      "updated": "2025-07-08T18:16:10.067Z",
+      "updated": "2025-07-22T19:17:58.350Z",
       "description": "Tasks for master context"
     }
   }

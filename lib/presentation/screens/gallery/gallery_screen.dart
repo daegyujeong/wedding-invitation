@@ -1,6 +1,9 @@
 // lib/presentation/screens/gallery/gallery_screen.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'photo_viewer_screen.dart';
 
 class GalleryScreen extends StatelessWidget {
   const GalleryScreen({super.key});
@@ -88,20 +91,18 @@ class GalleryScreen extends StatelessWidget {
           ),
         ),
         
-        // Gallery grid
+        // Enhanced gallery grid with lazy loading
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.0,
-              ),
+            child: MasonryGridView.count(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
               itemCount: imageUrls.length,
+              physics: const BouncingScrollPhysics(),
               itemBuilder: (context, index) {
-                return _buildPhotoCard(context, imageUrls[index], index);
+                return _buildPhotoThumbnail(context, imageUrls[index], index, imageUrls);
               },
             ),
           ),
@@ -110,7 +111,7 @@ class GalleryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPhotoCard(BuildContext context, String imageUrl, int index) {
+  Widget _buildPhotoThumbnail(BuildContext context, String imageUrl, int index, List<String> allImages) {
     return Hero(
       tag: 'photo_$index',
       child: Card(
@@ -120,27 +121,58 @@ class GalleryScreen extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => _showPhotoDialog(context, imageUrl, index),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PhotoViewerScreen(
+                  imageUrls: allImages,
+                  initialIndex: index,
+                ),
+              ),
+            );
+          },
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Placeholder with gradient
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.purple.shade100,
-                      Colors.purple.shade200,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              // Cached network image with loading placeholder
+              CachedNetworkImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.purple.shade100,
+                        Colors.purple.shade200,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-                child: const Center(
-                  child: Icon(
-                    Icons.photo,
-                    size: 48,
-                    color: Colors.white,
+                errorWidget: (context, url, error) => Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.purple.shade100,
+                        Colors.purple.shade200,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -175,78 +207,4 @@ class GalleryScreen extends StatelessWidget {
     );
   }
 
-  void _showPhotoDialog(BuildContext context, String imageUrl, int index) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Stack(
-          children: [
-            // Photo
-            Hero(
-              tag: 'photo_$index',
-              child: Container(
-                width: double.infinity,
-                height: 400,
-                margin: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.purple.shade100,
-                      Colors.purple.shade200,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.photo,
-                        size: 64,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        '사진 ${index + 1}',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            
-            // Close button
-            Positioned(
-              top: 10,
-              right: 10,
-              child: IconButton(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.close,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'google_map_widget_wrapper.dart';
 import 'naver_map_widget.dart';
-import 'kakao_map_widget.dart';
 import 'map_navigation_helper.dart';
 import 'location_search_widget.dart';
 import '../../../../data/services/location_search_service.dart';
@@ -73,6 +72,24 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
   }
 
   @override
+  void didUpdateWidget(MultiMapWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // Update coordinates when venue changes
+    if (oldWidget.latitude != widget.latitude ||
+        oldWidget.longitude != widget.longitude ||
+        oldWidget.venue != widget.venue ||
+        oldWidget.provider != widget.provider) {
+      setState(() {
+        _currentLatitude = widget.latitude;
+        _currentLongitude = widget.longitude;
+        _currentVenueName = widget.venue;
+        _currentProvider = widget.provider;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -107,30 +124,42 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
         // Ensure minimum map height
         availableMapHeight = availableMapHeight.clamp(100.0, widget.height);
             
-        return SingleChildScrollView(
+        return SizedBox(
+          height: widget.height + (widget.showDirections ? 100 : 0) + (widget.showSearch ? 180 : 0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (widget.showSearch) _buildSearchSection(),
               if (widget.isEditMode) _buildMapProviderSelector(context),
-              Stack(
-                children: [
-                  Container(
-                    width: mapWidth,
-                    height: availableMapHeight, // Use calculated height instead of widget.height
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: _buildMap(availableMapHeight),
+              Expanded(
+                child: Container(
+                  width: mapWidth,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade300),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Stack(
+                      children: [
+                        _buildMap(widget.height),
+                        if (widget.isEditMode) _buildMapLockButton(),
+                      ],
                     ),
                   ),
-                  if (widget.isEditMode) _buildMapLockButton(),
-                ],
+                ),
               ),
-              if (widget.showDirections) _buildNavigationButtons(context),
+              if (widget.showDirections) ...[
+                const SizedBox(height: 16),
+                _buildNavigationButtons(context),
+              ],
               if (widget.showSearch) _buildSaveButton(),
             ],
           ),
@@ -334,12 +363,13 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
     
     switch (_currentProvider) {
       case MapProvider.google:
+        // Use Google Maps wrapper for all platforms
         return GoogleMapWidgetWrapper(
           latitude: _currentLatitude,
           longitude: _currentLongitude,
           venue: _currentVenueName,
           showControls: enableControls,
-          height: mapHeight, // Pass calculated height
+          height: mapHeight,
         );
       case MapProvider.naver:
         return NaverMapWidget(
@@ -347,15 +377,20 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
           longitude: _currentLongitude,
           venue: _currentVenueName,
           showControls: enableControls,
-          height: mapHeight, // Pass calculated height
+          height: mapHeight,
+          isLocked: widget.isEditMode ? _isMapLocked : false,
         );
       case MapProvider.kakao:
-        return KakaoMapWidget(
-          latitude: _currentLatitude,
-          longitude: _currentLongitude,
-          venue: _currentVenueName,
-          showControls: enableControls,
-          height: mapHeight, // Pass calculated height
+        return Container(
+          height: mapHeight,
+          color: Colors.grey.shade200,
+          child: const Center(
+            child: Text(
+              'Kakao Map\n(Not Available)',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
         );
     }
   }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/utils/validators.dart';
 
 class MessageInputDialog extends StatefulWidget {
-  final Function(String name, String message) onSubmit;
+  final Function(String name, String message, String? password) onSubmit;
 
   const MessageInputDialog({
     super.key,
@@ -17,11 +17,14 @@ class _MessageInputDialogState extends State<MessageInputDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _messageController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _showPassword = false;
 
   @override
   void dispose() {
     _nameController.dispose();
     _messageController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -52,6 +55,27 @@ class _MessageInputDialogState extends State<MessageInputDialog> {
               maxLines: 4,
               validator: Validators.validateMessage,
             ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _passwordController,
+              obscureText: !_showPassword,
+              decoration: InputDecoration(
+                labelText: '삭제 비밀번호 (선택사항)',
+                hintText: '메시지 삭제시 필요한 비밀번호',
+                helperText: '나중에 메시지를 삭제하려면 비밀번호를 설정하세요',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _showPassword ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.grey,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _showPassword = !_showPassword;
+                    });
+                  },
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -66,6 +90,7 @@ class _MessageInputDialogState extends State<MessageInputDialog> {
               widget.onSubmit(
                 _nameController.text,
                 _messageController.text,
+                _passwordController.text.isNotEmpty ? _passwordController.text : null,
               );
               Navigator.pop(context);
             }

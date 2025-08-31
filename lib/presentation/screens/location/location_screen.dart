@@ -1,8 +1,11 @@
 // lib/presentation/screens/location/location_screen.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../widgets/location/google_place_picker_web.dart';
+import 'package:provider/provider.dart';
+import '../../../features/location/presentation/widgets/multi_map_widget.dart';
 import '../../../data/models/location_model.dart';
+import '../../../providers/venue_provider.dart';
+import '../../../providers/locale_provider.dart';
 
 class LocationScreen extends StatefulWidget {
   const LocationScreen({super.key});
@@ -13,6 +16,28 @@ class LocationScreen extends StatefulWidget {
 
 class _LocationScreenState extends State<LocationScreen> {
   LocationModel? _selectedLocation;
+  
+  // Venue locations
+  static const Map<String, Map<String, dynamic>> _venues = {
+    'my': {
+      'name': 'AC Hotel Kuantan',
+      'latitude': 3.8077,
+      'longitude': 103.3260,
+      'address': 'Jalan Teluk Sisek, Kuantan, Pahang, Malaysia',
+    },
+    'sg': {
+      'name': 'Arbora',
+      'latitude': 1.273806,
+      'longitude': 103.817497,
+      'address': '109 Mount Faber Road, Singapore 099203',
+    },
+    'ko': {
+      'name': '일월의정원',
+      'latitude': 35.6288349,
+      'longitude': 129.2087028,
+      'address': '울산광역시 울주군 두동면 은편리 891',
+    },
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +45,7 @@ class _LocationScreenState extends State<LocationScreen> {
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: const Text(
-          '오시는 길',
+          'Location',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -54,29 +79,37 @@ class _LocationScreenState extends State<LocationScreen> {
                 end: Alignment.bottomRight,
               ),
             ),
-            child: const Column(
+            child: Column(
               children: [
-                Icon(
+                const Icon(
                   Icons.location_on,
                   size: 32,
                   color: Colors.white,
                 ),
-                SizedBox(height: 12),
-                Text(
-                  '웨딩홀 위치',
+                const SizedBox(height: 12),
+                const Text(
+                  'Wedding Venue',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
-                  '편리한 교통으로 찾아오세요',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
+                const SizedBox(height: 8),
+                Consumer<VenueProvider>(
+                  builder: (context, venueProvider, child) {
+                    final selectedVenue = venueProvider.selectedVenue;
+                    final venueData = _venues[selectedVenue] ?? _venues['sg']!;
+                    final venueName = venueData['name'] as String;
+                    
+                    return Text(
+                      'Directions to $venueName',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -89,12 +122,12 @@ class _LocationScreenState extends State<LocationScreen> {
           
           const SizedBox(height: 16),
           
-          // Map placeholder
+          // Interactive map
           _buildMapCard(context),
           
           const SizedBox(height: 16),
           
-          // Place picker demo
+          // Place picker demo (search info)
           _buildPlacePickerDemo(),
           
           const SizedBox(height: 16),
@@ -109,6 +142,36 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   Widget _buildVenueCard() {
+    final venueProvider = Provider.of<VenueProvider>(context);
+    final selectedVenue = venueProvider.selectedVenue;
+    
+    // If no specific venue is selected or 'all' is selected, show all venues
+    if (selectedVenue == null || selectedVenue == 'all') {
+      return _buildAllVenuesCard();
+    }
+    
+    // Get venue data
+    final venueData = _venues[selectedVenue];
+    if (venueData == null) return const SizedBox.shrink();
+    
+    final venueName = venueData['name'] as String;
+    final address = venueData['address'] as String;
+    
+    // Get phone number based on venue
+    String phoneNumber;
+    switch (selectedVenue) {
+      case 'ko':
+        phoneNumber = '052-264-0891';
+        break;
+      case 'my':
+        phoneNumber = '+60 9-505 7888';
+        break;
+      case 'sg':
+      default:
+        phoneNumber = '+65 6377 9688';
+        break;
+    }
+    
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(24),
@@ -141,22 +204,22 @@ class _LocationScreenState extends State<LocationScreen> {
                 ),
               ),
               const SizedBox(width: 16),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '그랜드 웨딩홀',
-                      style: TextStyle(
+                      venueName,
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      '2층 로얄홀',
-                      style: TextStyle(
+                      _getVenueSubtitle(selectedVenue ?? 'sg'),
+                      style: const TextStyle(
                         fontSize: 14,
                         color: Colors.grey,
                       ),
@@ -179,27 +242,14 @@ class _LocationScreenState extends State<LocationScreen> {
                 size: 20,
               ),
               const SizedBox(width: 12),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '서울시 강남구 테헤란로 123',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      '(우편번호: 12345)',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
+              Expanded(
+                child: Text(
+                  address,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
             ],
@@ -216,9 +266,9 @@ class _LocationScreenState extends State<LocationScreen> {
                 size: 20,
               ),
               const SizedBox(width: 12),
-              const Text(
-                '02-1234-5678',
-                style: TextStyle(
+              Text(
+                phoneNumber,
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black87,
                 ),
@@ -229,11 +279,44 @@ class _LocationScreenState extends State<LocationScreen> {
       ),
     );
   }
+  
+  String _getVenueSubtitle(String venue) {
+    switch (venue) {
+      case 'ko':
+        return 'Ulsan Garden Wedding';
+      case 'my':
+        return 'Kuantan Beach Resort';
+      case 'sg':
+      default:
+        return 'Mount Faber Peak';
+    }
+  }
 
   Widget _buildMapCard(BuildContext context) {
+    final venueProvider = Provider.of<VenueProvider>(context);
+    final selectedVenue = venueProvider.selectedVenue;
+    
+    // If no specific venue is selected or 'all' is selected, show all venues
+    if (selectedVenue == null || selectedVenue == 'all') {
+      return _buildAllVenuesMaps();
+    }
+    
+    // Get venue data
+    final venueData = _venues[selectedVenue];
+    if (venueData == null) return const SizedBox.shrink();
+    
+    final venueName = venueData['name'] as String;
+    final latitude = venueData['latitude'] as double;
+    final longitude = venueData['longitude'] as double;
+    
+    // For Korea venue, show tabs based on language, otherwise use default provider
+    if (selectedVenue == 'ko') {
+      return _buildKoreaMapWithTabs(latitude, longitude, venueName);
+    }
+    
+    // Use Google Maps for other venues
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      height: 200,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -247,101 +330,23 @@ class _LocationScreenState extends State<LocationScreen> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          children: [
-            // Map placeholder
-            Container(
-              width: double.infinity,
-              height: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.green.shade100, Colors.green.shade200],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.map,
-                      size: 48,
-                      color: Colors.white,
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      '지도 보기',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            
-            // Overlay with navigation buttons
-            Positioned(
-              bottom: 16,
-              right: 16,
-              child: Column(
-                children: [
-                  _buildMapButton(
-                    icon: Icons.navigation,
-                    label: '네비게이션',
-                    onTap: () => _showSnackBar(context, '네비게이션 앱을 실행합니다'),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildMapButton(
-                    icon: Icons.map_outlined,
-                    label: '지도 앱',
-                    onTap: () => _showSnackBar(context, '지도 앱을 실행합니다'),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        child: MultiMapWidget(
+          key: ValueKey('${selectedVenue}_google_map'),
+          latitude: latitude,
+          longitude: longitude,
+          venue: venueName,
+          provider: MapProvider.google,
+          height: 400,
+          showControls: true,
+          showDirections: true,
+          onMapTap: () {
+            _showSnackBar(context, 'Map tapped - $venueName');
+          },
         ),
       ),
     );
   }
 
-  Widget _buildMapButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
-      elevation: 2,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 16, color: Colors.green.shade600),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.green.shade600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildTransportationSection() {
     return Column(
@@ -350,7 +355,7 @@ class _LocationScreenState extends State<LocationScreen> {
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            '교통편 안내',
+            'Transportation Guide',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -360,28 +365,29 @@ class _LocationScreenState extends State<LocationScreen> {
         ),
         const SizedBox(height: 16),
         
-        // Subway
+        // MRT
         _buildTransportCard(
           icon: Icons.train,
-          title: '지하철',
+          title: 'MRT',
           color: Colors.blue,
           details: [
-            '2호선 강남역 3번 출구 도보 5분',
-            '9호선 신논현역 1번 출구 도보 10분',
+            'HarbourFront MRT Station (NE1/CC29)',
+            'Take Exit A to VivoCity',
+            'Cable car from HarbourFront Tower 2',
           ],
         ),
         
         const SizedBox(height: 12),
         
-        // Bus
+        // Cable Car
         _buildTransportCard(
-          icon: Icons.directions_bus,
-          title: '버스',
+          icon: Icons.cable,
+          title: 'Cable Car',
           color: Colors.orange,
           details: [
-            '간선버스: 146, 360, 740',
-            '지선버스: 3422, 6411',
-            '강남역 정류장 하차 도보 5분',
+            'Singapore Cable Car from HarbourFront',
+            'Mount Faber Line to Mount Faber Peak',
+            'Operating hours: 8:45 AM - 10:00 PM',
           ],
         ),
         
@@ -390,12 +396,12 @@ class _LocationScreenState extends State<LocationScreen> {
         // Car
         _buildTransportCard(
           icon: Icons.directions_car,
-          title: '자가용',
+          title: 'By Car',
           color: Colors.red,
           details: [
-            '네비게이션: "그랜드 웨딩홀" 검색',
-            '주차: 건물 지하 1-3층 (3시간 무료)',
-            '발렛파킹 서비스 이용 가능',
+            'GPS: Arbora, Mount Faber Peak',
+            'Parking available at Mount Faber',
+            'Valet parking service available',
           ],
         ),
       ],
@@ -519,7 +525,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Google 장소 검색',
+                      'Google Places Search',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -528,7 +534,7 @@ class _LocationScreenState extends State<LocationScreen> {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      '실시간으로 장소를 검색해보세요',
+                      'Search for places in real-time',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey,
@@ -542,25 +548,29 @@ class _LocationScreenState extends State<LocationScreen> {
           
           const SizedBox(height: 20),
           
-          // Place picker widget
-          GooglePlacePickerWeb(
-            onPlacePicked: (location) {
-              setState(() {
-                _selectedLocation = location;
-              });
-              
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('선택됨: ${location.name}'),
-                  backgroundColor: Colors.green.shade400,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+          // Location search functionality
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.search, color: Colors.grey.shade600),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Place search is available in the map view',
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
-              );
-            },
-            hintText: '웨딩홀, 카페, 레스토랑 등을 검색해보세요...',
+              ],
+            ),
           ),
           
           // Selected location display
@@ -586,7 +596,7 @@ class _LocationScreenState extends State<LocationScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '선택된 장소',
+                          'Selected Location',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -623,8 +633,8 @@ class _LocationScreenState extends State<LocationScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '위도: ${_selectedLocation!.latitude.toStringAsFixed(6)}, '
-                        '경도: ${_selectedLocation!.longitude.toStringAsFixed(6)}',
+                        'Lat: ${_selectedLocation!.latitude.toStringAsFixed(6)}, '
+                        'Lng: ${_selectedLocation!.longitude.toStringAsFixed(6)}',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey.shade600,
@@ -637,6 +647,224 @@ class _LocationScreenState extends State<LocationScreen> {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildAllVenuesCard() {
+    return Column(
+      children: _venues.entries.map((entry) {
+        final venueData = entry.value;
+        final venueName = venueData['name'] as String;
+        final address = venueData['address'] as String;
+        
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                venueName,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                address,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+  
+  Widget _buildAllVenuesMaps() {
+    return Column(
+      children: _venues.entries.map((entry) {
+        final venueCode = entry.key;
+        final venueData = entry.value;
+        final venueName = venueData['name'] as String;
+        final latitude = venueData['latitude'] as double;
+        final longitude = venueData['longitude'] as double;
+        
+        // Use venue-specific map provider  
+        MapProvider mapProvider = venueCode == 'ko' 
+            ? MapProvider.naver 
+            : MapProvider.google;
+        
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  venueName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(16),
+                  bottomRight: Radius.circular(16),
+                ),
+                child: MultiMapWidget(
+                  key: ValueKey('${venueCode}_${mapProvider.name}_map'),
+                  latitude: latitude,
+                  longitude: longitude,
+                  venue: venueName,
+                  provider: mapProvider,
+                  height: 200,
+                  showControls: false,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+  
+  Widget _buildKoreaMapWithTabs(double latitude, double longitude, String venueName) {
+    final localeProvider = Provider.of<LocaleProvider>(context);
+    final venueProvider = Provider.of<VenueProvider>(context);
+    final selectedVenue = venueProvider.selectedVenue;
+    final isKorean = localeProvider.locale.languageCode == 'ko';
+    
+    return DefaultTabController(
+      length: 2,
+      initialIndex: isKorean ? 0 : 1, // Naver for Korean, Google for others
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Tab bar
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey.shade200),
+                ),
+              ),
+              child: TabBar(
+                tabs: const [
+                  Tab(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('네이버 지도', style: TextStyle(fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                  Tab(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Google Maps', style: TextStyle(fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                ],
+                labelColor: Colors.green.shade600,
+                unselectedLabelColor: Colors.grey.shade600,
+                indicatorColor: Colors.green.shade600,
+                indicatorWeight: 3,
+              ),
+            ),
+            // Tab views
+            SizedBox(
+              height: 400,
+              child: TabBarView(
+                children: [
+                  // Naver Map
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(16),
+                      bottomRight: Radius.circular(16),
+                    ),
+                    child: MultiMapWidget(
+                      key: ValueKey('${selectedVenue}_naver_map'),
+                      latitude: latitude,
+                      longitude: longitude,
+                      venue: venueName,
+                      provider: MapProvider.naver,
+                      height: 400,
+                      showControls: true,
+                      showDirections: true,
+                    ),
+                  ),
+                  // Google Map
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(16),
+                      bottomRight: Radius.circular(16),
+                    ),
+                    child: MultiMapWidget(
+                      key: ValueKey('${selectedVenue}_google_map'),
+                      latitude: latitude,
+                      longitude: longitude,
+                      venue: venueName,
+                      provider: MapProvider.google,
+                      height: 400,
+                      showControls: true,
+                      showDirections: true,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

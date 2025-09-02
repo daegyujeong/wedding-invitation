@@ -12,7 +12,7 @@ import '../../../data/models/editor_widget_model.dart';
 import '../../../data/models/guestbook_message_model.dart';
 import '../../../data/repositories/interfaces/guestbook_repository.dart';
 import '../../../core/di/dependency_injection.dart';
-import '../../widgets/floating_music_player.dart';
+// import '../../widgets/floating_music_player.dart'; // Hidden music player
 import '../../../features/location/presentation/widgets/multi_map_widget.dart';
 import '../../widgets/auto_scroll_gallery_preview.dart';
 import '../../../widgets/language_selector.dart';
@@ -21,6 +21,8 @@ import '../../widgets/welcome_selection_popup.dart';
 import '../../../providers/venue_provider.dart';
 import '../../../providers/locale_provider.dart';
 import '../../widgets/guestbook/guestbook_message_card.dart';
+import '../../../data/models/rsvp_model.dart';
+import '../../../data/repositories/interfaces/rsvp_repository.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Guestbook state
   IGuestbookRepository? _guestbookRepository;
+  IRSVPRepository? _rsvpRepository;
   List<GuestbookMessage> _messages = [];
   bool _isLoadingMessages = true;
   final TextEditingController _nameController = TextEditingController();
@@ -63,9 +66,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Timer? _slideshowTimer;
   int _currentSlideIndex = 0;
   final List<String> _heroImages = [
-    'assets/images/M01.01_dance_together.jpg',
-    'assets/images/M03.03_beach_wedding.jpg',
-    'assets/images/M04.04_sky_field_portrait.jpg',
+    'assets/images/M01.01_dance_together.webp',
+    'assets/images/M03.03_beach_wedding.webp',
+    'assets/images/M04.04_sky_field_portrait.webp',
   ];
 
   @override
@@ -100,6 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final uri = GoRouterState.of(context).uri;
     final venueParam = uri.queryParameters['venue'];
     final languageParam = uri.queryParameters['ln'];
+    final parentsParam = uri.queryParameters['parents'];
 
     // Set language from URL parameter
     if (languageParam != null) {
@@ -110,9 +114,10 @@ class _HomeScreenState extends State<HomeScreen> {
       localeProvider.setLocale(locale);
     }
 
-    // Set venue from URL parameter
-    if (venueParam != null) {
-      venueProvider.setFromUrlParams(venueParam);
+    // Set venue from URL parameter with parents mode option
+    if (venueParam != null || parentsParam == 'true') {
+      venueProvider.setFromUrlParams(venueParam,
+          isParentsMode: parentsParam == 'true');
     }
 
     // Show popup if user hasn't made selections yet
@@ -130,6 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _initializeGuestbook() {
     try {
       _guestbookRepository = serviceLocator<IGuestbookRepository>();
+      _rsvpRepository = serviceLocator<IRSVPRepository>();
       _setupRealtimeUpdates();
     } catch (e) {
       setState(() {
@@ -237,91 +243,104 @@ class _HomeScreenState extends State<HomeScreen> {
 
               return Container(
                 color: const Color(0xFFFAF7F4), // Warm beige background
-                child: SingleChildScrollView(
-                  controller: _scrollController,
-                  child: Column(
-                    children: [
-                      // Title section
-                      _buildTitleSection(),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      child: Column(
+                        children: [
+                          // Title section
+                          _buildTitleSection(),
 
-                      // Hero wedding photo section
-                      _buildHeroSection(),
+                          // Hero wedding photo section
+                          _buildHeroSection(),
 
-                      // Wedding announcement
-                      _buildWeddingAnnouncement(invitation, greetingText),
+                          // Wedding announcement
+                          _buildWeddingAnnouncement(invitation, greetingText),
 
-                      // Couple and parents info section
-                      _buildFamilySection(invitation),
+                          // Couple and parents info section
+                          _buildFamilySection(invitation),
 
-                      // Location and map - filter by venue
-                      Consumer<VenueProvider>(
-                        builder: (context, venueProvider, child) {
-                          // Only show location section if we have venues to display
-                          final hasVenuesToShow =
-                              venueProvider.shouldShowVenue('my') ||
-                                  venueProvider.shouldShowVenue('sg') ||
-                                  venueProvider.shouldShowVenue('ko');
+                          // Location and map - filter by venue
+                          Consumer<VenueProvider>(
+                            builder: (context, venueProvider, child) {
+                              // Only show location section if we have venues to display
+                              final hasVenuesToShow =
+                                  venueProvider.shouldShowVenue('my') ||
+                                      venueProvider.shouldShowVenue('sg') ||
+                                      venueProvider.shouldShowVenue('ko');
 
-                          if (hasVenuesToShow) {
-                            return _buildLocationSection(weddingVenue);
-                          }
-                          return const SizedBox.shrink();
-                        },
+                              if (hasVenuesToShow) {
+                                return _buildLocationSection(weddingVenue);
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+
+                          // Gallery preview section
+                          _buildGalleryPreview(),
+
+                          // Guestbook section
+                          _buildKoreanGuestbook(),
+
+                          // Banking information - show for Korea or hideKorea mode
+                          Consumer<VenueProvider>(
+                            builder: (context, venueProvider, child) {
+                              // Show banking for Korea venues or when in parents mode
+                              if (venueProvider.shouldShowVenue('ko') ||
+                                  venueProvider.isParentsMode) {
+                                return const ExpandableBankingWidget();
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+
+                          // RSVP section - hide when hideKorea is true
+                          Consumer<VenueProvider>(
+                            builder: (context, venueProvider, child) {
+                              if (!venueProvider.isParentsMode) {
+                                return _buildKoreanRSVPSection();
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+
+                          // Footer
+                          _buildFooter(),
+
+                          const SizedBox(
+                              height: 100), // Space for floating music player
+                        ],
                       ),
-
-                      // Gallery preview section
-                      _buildGalleryPreview(),
-
-                      // Guestbook section
-                      _buildKoreanGuestbook(),
-
-                      // Banking information - only show for Korea
-                      Consumer<VenueProvider>(
-                        builder: (context, venueProvider, child) {
-                          // Only show banking section for Korea or All venues
-                          if (venueProvider.shouldShowVenue('ko')) {
-                            return const ExpandableBankingWidget();
-                          }
-                          return const SizedBox.shrink();
-                        },
-                      ),
-
-                      // RSVP section
-                      _buildKoreanRSVPSection(),
-
-                      // Footer
-                      _buildFooter(),
-
-                      const SizedBox(
-                          height: 100), // Space for floating music player
-                    ],
+                    ),
                   ),
                 ),
               );
             },
           ),
 
-          // Floating Music Player
-          FloatingMusicPlayer(
-            playlist: [
-              WeddingSong(
-                title: '결혼행진곡',
-                artist: '멘델스존',
-                duration: const Duration(minutes: 3, seconds: 30),
-              ),
-              WeddingSong(
-                title: '사랑의 인사',
-                artist: '엘가',
-                duration: const Duration(minutes: 2, seconds: 45),
-              ),
-              WeddingSong(
-                title: '캐논 변주곡',
-                artist: '파헬벨',
-                duration: const Duration(minutes: 4, seconds: 20),
-              ),
-            ],
-            autoPlay: false,
-          ),
+          // Floating Music Player - Hidden
+          // FloatingMusicPlayer(
+          //   playlist: [
+          //     WeddingSong(
+          //       title: '결혼행진곡',
+          //       artist: '멘델스존',
+          //       duration: const Duration(minutes: 3, seconds: 30),
+          //     ),
+          //     WeddingSong(
+          //       title: '사랑의 인사',
+          //       artist: '엘가',
+          //       duration: const Duration(minutes: 2, seconds: 45),
+          //     ),
+          //     WeddingSong(
+          //       title: '캐논 변주곡',
+          //       artist: '파헬벨',
+          //       duration: const Duration(minutes: 4, seconds: 20),
+          //     ),
+          //   ],
+          //   autoPlay: false,
+          // ),
 
           // Welcome selection popup overlay
           if (_showWelcomePopup)
@@ -364,36 +383,47 @@ class _HomeScreenState extends State<HomeScreen> {
             child: CompactLanguageSelector(),
           ),
           // Title content
-          Column(
-            children: [
-              Text(
-                l10n.weddingInvitation.toUpperCase(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: smallFontSize,
-                  fontWeight: FontWeight.w600,
+          Center(
+            child: Column(
+              children: [
+                Text(
+                  'WEDDING INVITATION',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: smallFontSize,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFFD4A574),
+                    letterSpacing: letterSpacing,
+                  ),
+                ),
+                SizedBox(height: isMobile ? 12 : 16),
+                Consumer<LocaleProvider>(
+                  builder: (context, localeProvider, child) {
+                    final isKorean = localeProvider.locale.languageCode == 'ko';
+                    final coupleNames = isKorean
+                        ? '정대규 & Irene Chia'
+                        : 'Jeong Daegyu & Irene Chia';
+
+                    return Text(
+                      coupleNames,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: largeFontSize,
+                        fontWeight: FontWeight.w300,
+                        color: Colors.black87,
+                        letterSpacing: largeLetterSpacing,
+                      ),
+                    );
+                  },
+                ),
+                SizedBox(height: isMobile ? 16 : 20),
+                Container(
+                  width: isMobile ? 50 : 60,
+                  height: 2,
                   color: const Color(0xFFD4A574),
-                  letterSpacing: letterSpacing,
                 ),
-              ),
-              SizedBox(height: isMobile ? 12 : 16),
-              Text(
-                l10n.weddingInvitation,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: largeFontSize,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.black87,
-                  letterSpacing: largeLetterSpacing,
-                ),
-              ),
-              SizedBox(height: isMobile ? 16 : 20),
-              Container(
-                width: isMobile ? 50 : 60,
-                height: 2,
-                color: const Color(0xFFD4A574),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -535,6 +565,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
           SizedBox(height: spacing),
 
+          // Our Story button - hidden for now
+          // ElevatedButton(
+          //   onPressed: () => _showOurStoryModal(),
+          //   style: ElevatedButton.styleFrom(
+          //     backgroundColor: const Color(0xFFD4A574),
+          //     foregroundColor: Colors.white,
+          //     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          //     shape: RoundedRectangleBorder(
+          //       borderRadius: BorderRadius.circular(25),
+          //     ),
+          //   ),
+          //   child: Text(
+          //     l10n.ourStoryTitle,
+          //     style: const TextStyle(
+          //       fontSize: 14,
+          //       fontWeight: FontWeight.w600,
+          //     ),
+          //   ),
+          // ),
+
+          SizedBox(height: spacing),
+
           // Decorative element
           Container(
             width: decoratorWidth,
@@ -543,6 +595,183 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showOurStoryModal() {
+    final l10n = AppLocalizations.of(context)!;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          insetPadding: const EdgeInsets.all(20),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n.ourStoryTitle,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFD4A574),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                // Timeline content
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: _buildStoryTimeline(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStoryTimeline() {
+    final l10n = AppLocalizations.of(context)!;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
+    return Column(
+      children: [
+        _buildTimelineItem(
+          title: l10n.howWeMet,
+          story: l10n.firstMeetingStory,
+          year: "2019",
+          color: const Color(0xFFFFB74D),
+          isMobile: isMobile,
+        ),
+        _buildTimelineConnector(isMobile),
+        _buildTimelineItem(
+          title: l10n.reunited,
+          story: l10n.reunitedStory,
+          year: "2020",
+          color: const Color(0xFF81C784),
+          isMobile: isMobile,
+        ),
+        _buildTimelineConnector(isMobile),
+        _buildTimelineItem(
+          title: l10n.longDistance,
+          story: l10n.longDistanceStory,
+          year: "2020-2024",
+          color: const Color(0xFF9575CD),
+          isMobile: isMobile,
+        ),
+        _buildTimelineConnector(isMobile),
+        _buildTimelineItem(
+          title: l10n.together,
+          story: l10n.togetherStory,
+          year: "2025",
+          color: const Color(0xFFD4A574),
+          isMobile: isMobile,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimelineItem({
+    required String title,
+    required String story,
+    required String year,
+    required Color color,
+    required bool isMobile,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Year circle
+        Container(
+          width: isMobile ? 50 : 60,
+          height: isMobile ? 50 : 60,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Text(
+              year,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isMobile ? 10 : 11,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 16),
+
+        // Story content
+        Expanded(
+          child: Container(
+            padding: EdgeInsets.all(isMobile ? 12 : 16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withOpacity(0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: isMobile ? 14 : 16,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  story,
+                  style: TextStyle(
+                    fontSize: isMobile ? 12 : 13,
+                    color: Colors.grey.shade700,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimelineConnector(bool isMobile) {
+    return Container(
+      width: 2,
+      height: isMobile ? 20 : 24,
+      color: const Color(0xFFD4A574).withOpacity(0.3),
+      margin: EdgeInsets.only(left: isMobile ? 24 : 29),
     );
   }
 
@@ -566,128 +795,173 @@ class _HomeScreenState extends State<HomeScreen> {
           horizontal: horizontalPadding, vertical: verticalPadding),
       child: Column(
         children: [
-          Text(
-            l10n.ourJourney,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: titleFontSize,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-              letterSpacing: letterSpacing,
-            ),
-          ),
-
-          SizedBox(height: titleSpacing),
-
-          // Bookmark navigation - show all venues, highlight selected, enable only selected
+          // Show journey section only if not in parents mode
           Consumer<VenueProvider>(
             builder: (context, venueProvider, child) {
-              // Define all venues with highlight/enable status
-              final allVenues = [
-                {
-                  'icon': '🇲🇾',
-                  'label': l10n.malaysia,
-                  'date': 'Sep 12',
-                  'index': 0,
-                  'venueCode': 'my',
-                },
-                {
-                  'icon': '🇸🇬',
-                  'label': l10n.singapore,
-                  'date': 'Nov 9',
-                  'index': 1,
-                  'venueCode': 'sg',
-                },
-                {
-                  'icon': '🇰🇷',
-                  'label': l10n.korea,
-                  'date': 'Nov 30',
-                  'index': 2,
-                  'venueCode': 'ko',
-                }
-              ];
-
-              if (isNarrow) {
-                // Narrow layout - show all venues in column
+              if (venueProvider.isParentsMode) {
+                // For parents version, show "결혼식" title instead of journey
                 return Column(
-                  children: allVenues.map((venue) {
-                    final isSelected = venueProvider
-                        .shouldShowVenue(venue['venueCode'] as String);
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _buildBookmark(
-                        icon: venue['icon'] as String,
-                        label: venue['label'] as String,
-                        date: venue['date'] as String,
-                        onTap: isSelected
-                            ? () => _scrollToTicket(venue['index'] as int)
-                            : null,
-                        compact: true,
-                        isHighlighted: isSelected,
-                        isEnabled: isSelected,
+                  children: [
+                    Text(
+                      '결혼식',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: titleFontSize,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                        letterSpacing: letterSpacing,
                       ),
-                    );
-                  }).toList(),
+                    ),
+                    SizedBox(height: titleSpacing),
+                  ],
                 );
               }
 
-              // Wide layout - show all venues in row with arrows
-              final widgets = <Widget>[];
-              for (int i = 0; i < allVenues.length; i++) {
-                final venue = allVenues[i];
-                final isSelected =
-                    venueProvider.shouldShowVenue(venue['venueCode'] as String);
-
-                // Add venue bookmark
-                widgets.add(_buildBookmark(
-                  icon: venue['icon'] as String,
-                  label: venue['label'] as String,
-                  date: venue['date'] as String,
-                  onTap: isSelected
-                      ? () => _scrollToTicket(venue['index'] as int)
-                      : null,
-                  isHighlighted: isSelected,
-                  isEnabled: isSelected,
-                ));
-
-                // Add arrow between venues (not after the last one)
-                if (i < allVenues.length - 1) {
-                  widgets.add(Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          isMobile ? Icons.flight_land : Icons.flight_takeoff,
-                          size: 16,
-                          color: Colors.black54,
-                        ),
-                        const SizedBox(height: 2),
-                        Container(
-                          width: 20,
-                          height: 1,
-                          color: Colors.black54,
-                        ),
-                        const SizedBox(height: 2),
-                        Icon(
-                          isMobile ? Icons.south : Icons.arrow_forward_ios,
-                          size: 12,
-                          color: Colors.black54,
-                        ),
-                      ],
+              // Regular journey section for non-parents mode
+              if (!venueProvider.isParentsMode) {
+                return Column(
+                  children: [
+                    Text(
+                      l10n.ourJourney,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: titleFontSize,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                        letterSpacing: letterSpacing,
+                      ),
                     ),
-                  ));
-                }
-              }
+                    SizedBox(height: titleSpacing),
 
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: widgets,
-              );
+                    // Bookmark navigation - show all venues, highlight selected, enable only selected
+                    Builder(
+                      builder: (context) {
+                        // Define all venues with highlight/enable status
+                        final allVenues = [
+                          {
+                            'icon': '🇲🇾',
+                            'label': l10n.malaysia,
+                            'date': 'Sep 12',
+                            'index': 0,
+                            'venueCode': 'my',
+                          },
+                          {
+                            'icon': '🇸🇬',
+                            'label': l10n.singapore,
+                            'date': 'Nov 9',
+                            'index': 1,
+                            'venueCode': 'sg',
+                          },
+                          {
+                            'icon': '🇰🇷',
+                            'label': l10n.korea,
+                            'date': 'Nov 30',
+                            'index': 2,
+                            'venueCode': 'ko',
+                          }
+                        ];
+
+                        if (isNarrow) {
+                          // Narrow layout - show all venues in column
+                          return Column(
+                            children: allVenues.map((venue) {
+                              final shouldShow = venueProvider.shouldShowVenue(
+                                  venue['venueCode'] as String);
+                              final shouldHighlight =
+                                  venueProvider.selectedVenue != null &&
+                                      venueProvider.selectedVenue != 'all' &&
+                                      venueProvider.selectedVenue ==
+                                          venue['venueCode'];
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: _buildBookmark(
+                                  icon: venue['icon'] as String,
+                                  label: venue['label'] as String,
+                                  date: venue['date'] as String,
+                                  onTap: shouldShow
+                                      ? () =>
+                                          _scrollToTicket(venue['index'] as int)
+                                      : null,
+                                  compact: true,
+                                  isHighlighted: shouldHighlight,
+                                  isEnabled: shouldShow,
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        }
+
+                        // Wide layout - show all venues in row with arrows
+                        final widgets = <Widget>[];
+                        for (int i = 0; i < allVenues.length; i++) {
+                          final venue = allVenues[i];
+                          final shouldShow = venueProvider
+                              .shouldShowVenue(venue['venueCode'] as String);
+                          final shouldHighlight = venueProvider.selectedVenue !=
+                                  null &&
+                              venueProvider.selectedVenue != 'all' &&
+                              venueProvider.selectedVenue == venue['venueCode'];
+
+                          // Add venue bookmark
+                          widgets.add(_buildBookmark(
+                            icon: venue['icon'] as String,
+                            label: venue['label'] as String,
+                            date: venue['date'] as String,
+                            onTap: shouldShow
+                                ? () => _scrollToTicket(venue['index'] as int)
+                                : null,
+                            isHighlighted: shouldHighlight,
+                            isEnabled: shouldShow,
+                          ));
+
+                          // Add arrow between venues (not after the last one)
+                          if (i < allVenues.length - 1) {
+                            widgets.add(Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    isMobile
+                                        ? Icons.flight_land
+                                        : Icons.flight_takeoff,
+                                    size: 16,
+                                    color: Colors.black54,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Container(
+                                    width: 20,
+                                    height: 1,
+                                    color: Colors.black54,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Icon(
+                                    isMobile
+                                        ? Icons.south
+                                        : Icons.arrow_forward_ios,
+                                    size: 12,
+                                    color: Colors.black54,
+                                  ),
+                                ],
+                              ),
+                            ));
+                          }
+                        }
+
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: widgets,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 30),
+                  ],
+                );
+              }
+              return const SizedBox.shrink();
             },
           ),
-
-          const SizedBox(height: 30),
 
           // Bride and Groom names section (moved above tickets)
           Container(
@@ -757,6 +1031,25 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.eldestSon,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: isMobile ? 10.0 : 11.0,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          Text(
+                            '${l10n.groomParentFather} · ${l10n.groomParentMother}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: isMobile ? 9.0 : 10.0,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -796,6 +1089,25 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.youngestDaughter,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: isMobile ? 10.0 : 11.0,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          Text(
+                            '${l10n.brideParentFather} · ${l10n.brideParentMother}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: isMobile ? 9.0 : 10.0,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -810,13 +1122,15 @@ class _HomeScreenState extends State<HomeScreen> {
           // Malaysia Dinner Party - September 12
           Consumer<VenueProvider>(
             builder: (context, venueProvider, child) {
-              if (!venueProvider.shouldShowVenue('my'))
+              if (!venueProvider.shouldShowVenue('my')) {
                 return const SizedBox.shrink();
+              }
               return Container(
                 key: _ticketKeys[0],
                 child: _buildEventTicket(
-                  eventTitle: l10n.dinnerParty,
-                  date: '2025년 9월 12일 금요일',
+                  eventTitle:
+                      venueProvider.isParentsMode ? '결혼식' : l10n.dinnerParty,
+                  date: l10n.malaysiaDinnerDate,
                   location: '쿠안탄, 말레이시아',
                   locationSub: 'Kuantan, Malaysia',
                   time: '7:00 PM',
@@ -834,8 +1148,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
           Consumer<VenueProvider>(
             builder: (context, venueProvider, child) {
-              if (!venueProvider.shouldShowVenue('my'))
+              if (!venueProvider.shouldShowVenue('my')) {
                 return const SizedBox.shrink();
+              }
               return const SizedBox(height: 20);
             },
           ),
@@ -843,16 +1158,17 @@ class _HomeScreenState extends State<HomeScreen> {
           // Singapore ROM - November 9
           Consumer<VenueProvider>(
             builder: (context, venueProvider, child) {
-              if (!venueProvider.shouldShowVenue('sg'))
+              if (!venueProvider.shouldShowVenue('sg')) {
                 return const SizedBox.shrink();
+              }
               return Container(
                 key: _ticketKeys[1],
                 child: _buildEventTicket(
                   eventTitle: l10n.registryOfMarriage,
-                  date: '2025년 11월 9일 일요일',
+                  date: l10n.singaporeRegistryDate,
                   location: '싱가폴',
                   locationSub: 'Singapore',
-                  time: '7:00 PM',
+                  time: '6:00 PM',
                   gradientColors: const [
                     Color(0xFFE8F5E8),
                     Color(0xFF4CAF50)
@@ -867,8 +1183,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
           Consumer<VenueProvider>(
             builder: (context, venueProvider, child) {
-              if (!venueProvider.shouldShowVenue('sg'))
+              if (!venueProvider.shouldShowVenue('sg')) {
                 return const SizedBox.shrink();
+              }
               return const SizedBox(height: 20);
             },
           ),
@@ -876,16 +1193,17 @@ class _HomeScreenState extends State<HomeScreen> {
           // Korea Wedding - November 30
           Consumer<VenueProvider>(
             builder: (context, venueProvider, child) {
-              if (!venueProvider.shouldShowVenue('ko'))
+              if (!venueProvider.shouldShowVenue('ko')) {
                 return const SizedBox.shrink();
+              }
               return Container(
                 key: _ticketKeys[2],
                 child: _buildEventTicket(
                   eventTitle: l10n.afterParty,
-                  date: '2025년 11월 30일 일요일',
+                  date: l10n.koreaAfterPartyDate,
                   location: '울산, 대한민국',
                   locationSub: 'Ulsan, South Korea',
-                  time: '7:00 PM',
+                  time: '2:30 PM',
                   gradientColors: const [
                     Color(0xFFE3F2FD),
                     Color(0xFFBBDEFB)
@@ -1201,29 +1519,59 @@ class _HomeScreenState extends State<HomeScreen> {
 
               SizedBox(height: isMobile ? 16 : 20),
 
-              // Directions button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _navigateToMap(mapIndex),
-                  icon: const Icon(Icons.location_on, size: 18),
-                  label: Text(
-                    l10n.directions,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+              // Action buttons row
+              Row(
+                children: [
+                  // Directions button
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _navigateToMap(mapIndex),
+                      icon: const Icon(Icons.location_on, size: 18),
+                      label: Text(
+                        l10n.directions,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white.withOpacity(0.9),
+                        foregroundColor: Colors.black87,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        elevation: 2,
+                      ),
                     ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.9),
-                    foregroundColor: Colors.black87,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
+
+                  const SizedBox(width: 12),
+
+                  // Add to Calendar button
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _addToCalendar(mapIndex),
+                      icon: const Icon(Icons.calendar_today, size: 18),
+                      label: Text(
+                        l10n.addToCalendar,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFD4A574),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        elevation: 2,
+                      ),
                     ),
-                    elevation: 2,
                   ),
-                ),
+                ],
               ),
             ],
           ),
@@ -1246,8 +1594,8 @@ class _HomeScreenState extends State<HomeScreen> {
         'flagIcon': '🇲🇾',
         'color': const Color(0xFFFFCC02),
         'venue': 'AC Hotel Kuantan',
-        'latitude': 3.8077,
-        'longitude': 103.3260,
+        'latitude': 3.816691981866172,
+        'longitude': 103.33681728473105,
       },
       {
         'title': isKorean ? '싱가폴' : 'Singapore',
@@ -1256,20 +1604,20 @@ class _HomeScreenState extends State<HomeScreen> {
         'flagIcon': '🇸🇬',
         'color': const Color(0xFF4CAF50),
         'venue': 'Arbora',
-        'latitude': 1.273806,
-        'longitude': 103.817497,
+        'latitude': 1.2713102232292395,
+        'longitude': 103.81929169938385,
       },
       {
         'title': isKorean ? '울산, 대한민국' : 'Ulsan, South Korea',
         'subtitle': isKorean ? 'Ulsan, South Korea' : '',
         'address': isKorean
-            ? '일월의정원\n울산광역시 울주군 두동면 은편리 891\nTel. 052-264-0891'
+            ? l10n.koreaVenueFullAddress
             : 'Garden of the Sun and the Moon\n891 Eunpyeon-ri, Dudong-myeon\nUlju-gun, Ulsan\nTel. 052-264-0891',
         'flagIcon': '🇰🇷',
         'color': const Color(0xFF2196F3),
-        'venue': isKorean ? '일월의정원' : 'Garden of the Sun and the Moon',
-        'latitude': 35.6288349,
-        'longitude': 129.2087028,
+        'venue': l10n.koreaVenueName,
+        'latitude': 35.62885057440548,
+        'longitude': 129.21897305040977,
       },
     ];
 
@@ -1479,16 +1827,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ],
                                 ),
                               )
-                            : Consumer<VenueProvider>(
-                                builder: (context, venueProvider, child) {
-                                  final selectedVenue =
-                                      venueProvider.selectedVenue;
+                            : Consumer2<VenueProvider, LocaleProvider>(
+                                builder: (context, venueProvider,
+                                    localeProvider, child) {
+                                  final isKorean =
+                                      localeProvider.locale.languageCode ==
+                                          'ko';
 
-                                  // Use venue-specific map provider
-                                  MapProvider mapProvider =
-                                      selectedVenue == 'ko'
-                                          ? MapProvider.naver
-                                          : MapProvider.google;
+                                  // Check if current displayed location is Korea (index 2 in original array)
+                                  final originalIndex =
+                                      filteredLocations[currentIndex].key;
+                                  final isKoreaLocation = originalIndex == 2;
+
+                                  // For Korea venue, show tabs; for others, use Google Maps
+                                  // Don't show Korea tabs if in parents mode
+                                  if (isKoreaLocation &&
+                                      !venueProvider.isParentsMode) {
+                                    return _buildKoreaMapWithTabs(
+                                      currentLocation['latitude'] ?? 0.0,
+                                      currentLocation['longitude'] ?? 0.0,
+                                      currentLocation['venue'] ?? '',
+                                      currentLocation['address'] ?? '',
+                                      isKorean,
+                                    );
+                                  }
 
                                   return MultiMapWidget(
                                     latitude:
@@ -1496,10 +1858,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     longitude:
                                         currentLocation['longitude'] ?? 0.0,
                                     venue: currentLocation['venue'] ?? '',
-                                    provider: mapProvider,
+                                    address: currentLocation['address'] ?? '',
+                                    provider: MapProvider.google,
                                     showControls: true,
-                                    showDirections: true,
-                                    height: 400,
+                                    showDirections: false,
+                                    height: 350,
                                     isEditMode: false,
                                   );
                                 },
@@ -1510,64 +1873,193 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 20),
 
                     // Show navigation buttons only for Korea location
-                    if (filteredLocations[currentIndex].key == 2) ...[
-                      // Navigation apps title
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Text(
-                          l10n.navigationApps,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade700,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      // Navigation apps grid
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildNavigationButton(
-                              l10n.kakaoNavi,
-                              '🟡',
-                              Colors.amber.shade600,
-                              () => _openKakaoMap(
-                                currentLocation['latitude'],
-                                currentLocation['longitude'],
-                                currentLocation['venue'],
+                    Builder(
+                      builder: (context) {
+                        // Check if current location is Korea by checking multiple conditions
+                        final originalIndex =
+                            filteredLocations[currentIndex].key;
+                        final venueCode = originalIndex == 0
+                            ? 'my'
+                            : (originalIndex == 1 ? 'sg' : 'ko');
+                        final venueProvider =
+                            Provider.of<VenueProvider>(context);
+                        final isKoreaVenue = originalIndex == 2 &&
+                            venueCode == 'ko' &&
+                            venueProvider.selectedVenue == 'ko';
+
+                        if (isKoreaVenue) {
+                          return Column(
+                            children: [
+                              // Navigation apps title
+                              Container(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                child: Text(
+                                  l10n.navigationApps,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildNavigationButton(
-                              l10n.naverMap,
-                              '🟢',
-                              Colors.green.shade600,
-                              () => _openNaverMap(
-                                currentLocation['latitude'],
-                                currentLocation['longitude'],
-                                currentLocation['venue'],
+                              // Navigation apps grid
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildNavigationButton(
+                                      l10n.kakaoNavi,
+                                      '🟡',
+                                      Colors.amber.shade600,
+                                      () => _openKakaoMap(
+                                        currentLocation['latitude'],
+                                        currentLocation['longitude'],
+                                        currentLocation['venue'],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _buildNavigationButton(
+                                      l10n.naverMap,
+                                      '🟢',
+                                      Colors.green.shade600,
+                                      () => _openNaverMap(
+                                        currentLocation['latitude'],
+                                        currentLocation['longitude'],
+                                        currentLocation['venue'],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _buildNavigationButton(
+                                      l10n.tmap,
+                                      '🔵',
+                                      Colors.blue.shade700,
+                                      () => _openTMap(
+                                        currentLocation['latitude'],
+                                        currentLocation['longitude'],
+                                        currentLocation['venue'],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildNavigationButton(
-                              l10n.tmap,
-                              '🔵',
-                              Colors.blue.shade700,
-                              () => _openTMap(
-                                currentLocation['latitude'],
-                                currentLocation['longitude'],
-                                currentLocation['venue'],
+
+                              // Transportation guide for Korea
+                              const SizedBox(height: 24),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade50,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border:
+                                      Border.all(color: Colors.grey.shade200),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      l10n.transportationInfo,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.grey.shade800,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    // By Car section
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Icon(
+                                          Icons.directions_car,
+                                          size: 18,
+                                          color: Colors.blue.shade600,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                l10n.byCarInfo,
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.grey.shade800,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                l10n.parkingInfo,
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey.shade600,
+                                                  height: 1.4,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                    const SizedBox(height: 16),
+
+                                    // Public transport section
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Icon(
+                                          Icons.directions_bus,
+                                          size: 18,
+                                          color: Colors.green.shade600,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                l10n.publicTransportInfo,
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.grey.shade800,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                l10n.busInfo,
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey.shade600,
+                                                  height: 1.4,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                            ],
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -1578,26 +2070,177 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildInterviewSection() {
+    final l10n = AppLocalizations.of(context)!;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 480),
+      child: Container(
+        margin: EdgeInsets.symmetric(
+          horizontal: isMobile ? 20 : 40,
+          vertical: isMobile ? 40 : 60,
+        ),
+        padding: EdgeInsets.all(isMobile ? 24 : 32),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Interview header
+            Text(
+              l10n.interview,
+              style: TextStyle(
+                fontSize: isMobile ? 12 : 14,
+                letterSpacing: 2,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              l10n.coupleInterviewTitle,
+              style: TextStyle(
+                fontSize: isMobile ? 20 : 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.coupleInterviewSubtitle,
+              style: TextStyle(
+                fontSize: isMobile ? 13 : 15,
+                color: Colors.grey.shade600,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 32),
+
+            // Photo section
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: isMobile ? 200 : 250,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      image: const DecorationImage(
+                        image: AssetImage(
+                            'assets/images/G05.05_bride_solo_flowers.webp'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Container(
+                    height: isMobile ? 200 : 250,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      image: const DecorationImage(
+                        image:
+                            AssetImage('assets/images/G10.10_classic_pose.webp'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 32),
+
+            // Interview Q&A
+            _buildInterviewItem(l10n.q1, l10n.q1Answer, isMobile),
+            const SizedBox(height: 24),
+            _buildInterviewItem(l10n.q2, l10n.q2Answer, isMobile),
+            const SizedBox(height: 24),
+            _buildInterviewItem(l10n.q3, l10n.q3Answer, isMobile),
+
+            const SizedBox(height: 32),
+
+            // Read more button
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: Text(
+                l10n.guestBookRequest,
+                style: TextStyle(
+                  fontSize: isMobile ? 13 : 14,
+                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInterviewItem(String question, String answer, bool isMobile) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          question,
+          style: TextStyle(
+            fontSize: isMobile ? 14 : 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          answer,
+          style: TextStyle(
+            fontSize: isMobile ? 13 : 14,
+            color: Colors.grey.shade700,
+            height: 1.5,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildGalleryPreview() {
     final l10n = AppLocalizations.of(context)!;
     // Featured wedding photos for preview - DSC series
     final List<String> galleryPhotos = [
-      'assets/images/DSC07932.jpg',
-      'assets/images/DSC07939.jpg',
-      'assets/images/DSC07943.jpg',
-      'assets/images/DSC07956.jpg',
-      'assets/images/DSC08050.jpg',
-      'assets/images/DSC08078.jpg',
-      'assets/images/DSC08089.jpg',
-      'assets/images/DSC08219.jpg',
-      'assets/images/DSC08212.jpg',
-      'assets/images/DSC08174.jpg',
-      'assets/images/DSC08298.jpg',
-      'assets/images/DSC08383.jpg',
-      'assets/images/DSC08488.jpg',
-      'assets/images/DSC08428.jpg',
-      'assets/images/DSC08514.jpg',
-      'assets/images/DSC08496.jpg',
+      'assets/images/DSC07932.webp',
+      'assets/images/DSC07939.webp',
+      'assets/images/DSC07943.webp',
+      'assets/images/DSC07956.webp',
+      'assets/images/DSC08050.webp',
+      'assets/images/DSC08078.webp',
+      'assets/images/DSC08089.webp',
+      'assets/images/DSC08219.webp',
+      'assets/images/DSC08212.webp',
+      'assets/images/DSC08174.webp',
+      'assets/images/DSC08298.webp',
+      'assets/images/DSC08383.webp',
+      'assets/images/DSC08488.webp',
+      'assets/images/DSC08428.webp',
+      'assets/images/DSC08514.webp',
+      'assets/images/DSC08496.webp',
     ];
 
     return Container(
@@ -2388,14 +3031,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(l10n.attendanceConfirmed),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  },
+                  onPressed: () => _showVenueSelectionDialog(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green.shade600,
                     foregroundColor: Colors.white,
@@ -2411,14 +3047,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(l10n.absenceConfirmed),
-                        backgroundColor: Colors.orange,
-                      ),
-                    );
-                  },
+                  onPressed: () => _showNotAttendingDialog(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey.shade500,
                     foregroundColor: Colors.white,
@@ -2470,6 +3099,184 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  void _showVenueSelectionDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    final nameController = TextEditingController();
+    final notesController = TextEditingController();
+    final selectedVenues = <String>{};
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(l10n.selectVenues),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.venueSelectionNote,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Venue checkboxes
+                    CheckboxListTile(
+                      title: Text(l10n.malaysia),
+                      subtitle: Text(l10n.malaysiaDinnerDate),
+                      value: selectedVenues.contains('my'),
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value == true) {
+                            selectedVenues.add('my');
+                          } else {
+                            selectedVenues.remove('my');
+                          }
+                        });
+                      },
+                    ),
+                    CheckboxListTile(
+                      title: Text(l10n.singapore),
+                      subtitle: Text(l10n.singaporeRegistryDate),
+                      value: selectedVenues.contains('sg'),
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value == true) {
+                            selectedVenues.add('sg');
+                          } else {
+                            selectedVenues.remove('sg');
+                          }
+                        });
+                      },
+                    ),
+                    CheckboxListTile(
+                      title: Text(l10n.korea),
+                      subtitle: Text(l10n.koreaAfterPartyDate),
+                      value: selectedVenues.contains('ko'),
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value == true) {
+                            selectedVenues.add('ko');
+                          } else {
+                            selectedVenues.remove('ko');
+                          }
+                        });
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Guest information fields
+                    TextField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                        labelText: l10n.guestName,
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: notesController,
+                      decoration: InputDecoration(
+                        labelText: l10n.additionalNotes,
+                        border: const OutlineInputBorder(),
+                      ),
+                      maxLines: 3,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.cancel),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (selectedVenues.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(l10n.pleaseSelectVenue)),
+                      );
+                      return;
+                    }
+
+                    if (nameController.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(l10n.requiredFields)),
+                      );
+                      return;
+                    }
+
+                    // Create RSVP model
+                    final rsvp = RSVPModel(
+                      id: DateTime.now().millisecondsSinceEpoch.toString(),
+                      guestName: nameController.text.trim(),
+                      email: '', // No email required
+                      isAttending: true,
+                      selectedVenues: selectedVenues.toList(),
+                      additionalNotes: notesController.text.trim().isNotEmpty
+                          ? notesController.text.trim()
+                          : null,
+                      submittedAt: DateTime.now(),
+                    );
+
+                    // Save to database
+                    _saveRSVP(rsvp);
+
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(l10n.rsvpSubmitted)),
+                    );
+                  },
+                  child: Text(l10n.confirm),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _saveRSVP(RSVPModel rsvp) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    try {
+      final success = await _rsvpRepository!.submitRSVP(rsvp);
+
+      if (success) {
+        // RSVP saved successfully - the success message is already shown
+        // from the dialog before calling this method
+      } else {
+        // Show error if save failed
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to save RSVP. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Show error if exception occurred
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving RSVP: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _showAddMessageDialog() {
@@ -2572,9 +3379,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   controller: _passwordController,
                   obscureText: !_showPassword,
                   decoration: InputDecoration(
-                    labelText: '삭제 비밀번호 (선택사항)',
-                    hintText: '메시지 삭제시 필요한 비밀번호',
-                    helperText: '나중에 메시지를 삭제하려면 비밀번호를 설정하세요',
+                    labelText: l10n.deletePassword,
+                    hintText: l10n.deletePasswordHint,
+                    helperText: l10n.deletePasswordHelper,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -2650,7 +3457,8 @@ class _HomeScreenState extends State<HomeScreen> {
       name: _nameController.text.trim(),
       message: _messageController.text.trim(),
       createdAt: DateTime.now(),
-      password: _passwordController.text.isNotEmpty ? _passwordController.text : null,
+      password:
+          _passwordController.text.isNotEmpty ? _passwordController.text : null,
     );
 
     try {
@@ -2695,6 +3503,117 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Build Korea map with Naver/Google tabs
+  Widget _buildKoreaMapWithTabs(
+    double latitude,
+    double longitude,
+    String venue,
+    String address,
+    bool isKorean,
+  ) {
+    return DefaultTabController(
+      length: 2,
+      initialIndex: isKorean ? 0 : 1, // Naver for Korean, Google for others
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Tab bar
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey.shade200),
+                ),
+              ),
+              child: TabBar(
+                tabs: const [
+                  Tab(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('네이버 지도', style: TextStyle(fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                  Tab(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Google Maps', style: TextStyle(fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                ],
+                labelColor: Colors.green.shade600,
+                unselectedLabelColor: Colors.grey.shade600,
+                indicatorColor: Colors.green.shade600,
+                indicatorWeight: 3,
+              ),
+            ),
+            // Tab views
+            SizedBox(
+              height: 400,
+              child: TabBarView(
+                children: [
+                  // Naver Map
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(12),
+                      bottomRight: Radius.circular(12),
+                    ),
+                    child: MultiMapWidget(
+                      key: const ValueKey('home_ko_naver_map'),
+                      latitude: latitude,
+                      longitude: longitude,
+                      venue: venue,
+                      address: address,
+                      provider: MapProvider.naver,
+                      height: 400,
+                      showControls: true,
+                      showDirections: false,
+                    ),
+                  ),
+                  // Google Map
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(12),
+                      bottomRight: Radius.circular(12),
+                    ),
+                    child: MultiMapWidget(
+                      key: const ValueKey('home_ko_google_map'),
+                      latitude: latitude,
+                      longitude: longitude,
+                      venue: venue,
+                      address: address,
+                      provider: MapProvider.google,
+                      height: 400,
+                      showControls: true,
+                      showDirections: false,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Navigate to map section with specific tab
   void _navigateToMap(int tabIndex) {
     setState(() {
@@ -2713,18 +3632,22 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _handleDeleteMessage(String messageIdWithPassword) async {
+    final l10n = AppLocalizations.of(context)!;
     final parts = messageIdWithPassword.split('|');
     if (parts.length != 2) return;
-    
+
     final messageId = parts[0];
     final password = parts[1];
-    
+
     try {
-      final success = await _guestbookRepository!.deleteMessageWithPassword(messageId, password);
+      final success = await _guestbookRepository!
+          .deleteMessageWithPassword(messageId, password);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(success ? '메시지가 삭제되었습니다.' : '비밀번호가 일치하지 않습니다.'),
+            content: Text(success
+                ? l10n.passwordDeleteSuccess
+                : l10n.passwordDeleteFailed),
             backgroundColor: success ? Colors.green : Colors.red,
           ),
         );
@@ -2732,8 +3655,8 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('삭제 중 오류가 발생했습니다.'),
+          SnackBar(
+            content: Text(l10n.deleteError),
             backgroundColor: Colors.red,
           ),
         );
@@ -2930,7 +3853,139 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Add event to calendar
+  void _addToCalendar(int mapIndex) async {
+    final venues = [
+      {
+        'title': 'Wedding Dinner',
+        'date': '20250912',
+        'time': '1900',
+        'location': 'Malaysia',
+        'description': 'Join us for our wedding dinner celebration in Malaysia',
+      },
+      {
+        'title': 'Registry of Marriage',
+        'date': '20251109',
+        'time': '1800',
+        'location': 'Singapore',
+        'description': 'Registry of Marriage ceremony in Singapore',
+      },
+      {
+        'title': 'Wedding Lunch',
+        'date': '20251130',
+        'time': '1430',
+        'location': '일월의정원, 울산',
+        'description':
+            'Wedding lunch celebration at Garden of the Sun and the Moon, Ulsan',
+      },
+    ];
+
+    final venue = venues[mapIndex];
+
+    // Create calendar URL for cross-platform compatibility
+    final startDateTime = '${venue['date']}T${venue['time']}00';
+    final endDateTime =
+        '${venue['date']}T${int.parse(venue['time']!) + 200}00'; // 2 hours later
+
+    final calendarUrl =
+        Uri.parse('https://calendar.google.com/calendar/render?action=TEMPLATE'
+            '&text=${Uri.encodeComponent(venue['title']!)}'
+            '&dates=$startDateTime/$endDateTime'
+            '&location=${Uri.encodeComponent(venue['location']!)}'
+            '&details=${Uri.encodeComponent(venue['description']!)}');
+
+    try {
+      if (await canLaunchUrl(calendarUrl)) {
+        await launchUrl(calendarUrl);
+      }
+    } catch (e) {
+      debugPrint('Error opening calendar: $e');
+    }
+  }
+
   // Show app install dialog
+  void _showNotAttendingDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    final TextEditingController nameController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(l10n.notAttending),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  l10n.requiredFields,
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: l10n.guestName,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return l10n.requiredFields;
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  // Create RSVP model for not attending
+                  final rsvp = RSVPModel(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    guestName: nameController.text.trim(),
+                    email: '', // No email required
+                    isAttending: false, // Not attending
+                    selectedVenues: [], // No venue selection for not attending
+                    additionalNotes: null,
+                    submittedAt: DateTime.now(),
+                  );
+
+                  // Save to database
+                  _saveRSVP(rsvp);
+
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.absenceConfirmed),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey.shade600,
+              ),
+              child: Text(l10n.confirm),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showAppInstallDialog(
       String appName, String playStoreUrl, String appStoreUrl) {
     showDialog(
@@ -2980,13 +4035,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Get detailed address for boarding pass
   String _getDetailedAddress(int mapIndex) {
+    final l10n = AppLocalizations.of(context)!;
     switch (mapIndex) {
       case 0: // Malaysia
         return 'AC Hotel Kuantan\nJalan Teluk Sisek, Kuantan, Pahang, Malaysia';
       case 1: // Singapore
         return 'Arbora\n109 Mount Faber Road, Singapore 099203';
       case 2: // Korea
-        return '일월의정원\n울산광역시 울주군 두동면 은편리 891\nTel. 052-264-0891';
+        return l10n.koreaVenueFullAddress;
       default:
         return 'Address information';
     }
@@ -2994,13 +4050,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Get venue code for boarding pass
   String _getVenueCode(int mapIndex) {
+    final l10n = AppLocalizations.of(context)!;
     switch (mapIndex) {
       case 0: // Malaysia
         return 'AC HOTEL';
       case 1: // Singapore
         return 'ARBORA';
       case 2: // Korea
-        return '일월의정원';
+        return l10n.koreaVenueName;
       default:
         return 'VENUE';
     }

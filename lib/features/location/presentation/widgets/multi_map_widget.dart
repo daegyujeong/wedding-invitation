@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'google_map_widget_wrapper.dart';
 import 'naver_map_widget.dart';
-import 'map_navigation_helper.dart';
 import 'location_search_widget.dart';
 import '../../../../data/services/location_search_service.dart';
 import '../../../../data/repositories/saved_locations_repository.dart';
@@ -17,6 +16,7 @@ class MultiMapWidget extends StatefulWidget {
   final double latitude;
   final double longitude;
   final String venue;
+  final String? address;
   final MapProvider provider;
   final bool showControls;
   final bool showDirections;
@@ -34,6 +34,7 @@ class MultiMapWidget extends StatefulWidget {
     required this.latitude,
     required this.longitude,
     required this.venue,
+    this.address,
     this.provider = MapProvider.google,
     this.showControls = true,
     this.showDirections = true,
@@ -111,10 +112,6 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
           availableMapHeight -= 48; // Selector height + margin
         }
         
-        // Account for navigation buttons height if showing directions
-        if (widget.showDirections) {
-          availableMapHeight -= 80; // Navigation buttons height + margin
-        }
         
         // Account for save button height if showing search
         if (widget.showSearch) {
@@ -124,49 +121,42 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
         // Ensure minimum map height
         availableMapHeight = availableMapHeight.clamp(100.0, widget.height);
             
-        return SizedBox(
-          height: widget.height + (widget.showDirections ? 100 : 0) + (widget.showSearch ? 180 : 0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (widget.showSearch) _buildSearchSection(),
-              if (widget.isEditMode) _buildMapProviderSelector(context),
-              Expanded(
-                child: Container(
-                  width: mapWidth,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (widget.showSearch) _buildSearchSection(),
+            if (widget.isEditMode) _buildMapProviderSelector(context),
+            Container(
+              width: mapWidth,
+              height: availableMapHeight,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Stack(
-                      children: [
-                        _buildMap(widget.height),
-                        if (widget.isEditMode) _buildMapLockButton(),
-                      ],
-                    ),
-                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Stack(
+                  children: [
+                    _buildMap(availableMapHeight),
+                    if (widget.isEditMode) _buildMapLockButton(),
+                  ],
                 ),
               ),
-              if (widget.showDirections) ...[
-                const SizedBox(height: 16),
-                _buildNavigationButtons(context),
-              ],
-              if (widget.showSearch) _buildSaveButton(),
-            ],
-          ),
+            ),
+            if (widget.showSearch) _buildSaveButton(),
+          ],
         );
       },
     );
   }
+
 
   Widget _buildMapProviderSelector(BuildContext context) {
     return Container(
@@ -376,6 +366,7 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
           latitude: _currentLatitude,
           longitude: _currentLongitude,
           venue: _currentVenueName,
+          address: widget.address,
           showControls: enableControls,
           height: mapHeight,
           isLocked: widget.isEditMode ? _isMapLocked : false,
@@ -395,83 +386,4 @@ class _MultiMapWidgetState extends State<MultiMapWidget> {
     }
   }
 
-  Widget _buildNavigationButtons(BuildContext context) {
-    return Container(
-      height: 72, // Fixed height for predictable layout
-      margin: const EdgeInsets.only(top: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildNavButton(
-            context,
-            'Kakao Map',
-            Icons.map,
-            Colors.yellow.shade700,
-            () => MapNavigationHelper.openKakaoMap(
-              latitude: widget.latitude,
-              longitude: widget.longitude,
-              venue: widget.venue,
-            ),
-          ),
-          _buildNavButton(
-            context,
-            'Naver Map',
-            Icons.map,
-            Colors.green,
-            () => MapNavigationHelper.openNaverMap(
-              latitude: widget.latitude,
-              longitude: widget.longitude,
-              venue: widget.venue,
-            ),
-          ),
-          _buildNavButton(
-            context,
-            'Google Maps',
-            Icons.map,
-            Colors.blue,
-            () => MapNavigationHelper.openGoogleMaps(
-              latitude: widget.latitude,
-              longitude: widget.longitude,
-              venue: widget.venue,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavButton(
-    BuildContext context,
-    String label,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

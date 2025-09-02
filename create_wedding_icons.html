@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wedding Icon Generator</title>
+    <style>
+        .icon-canvas {
+            margin: 20px;
+            border: 1px solid #ccc;
+        }
+        .download-links {
+            margin: 20px;
+        }
+        .download-links a {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f0f0f0;
+            text-decoration: none;
+            color: #333;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Wedding Icon Generator</h1>
+    
+    <canvas id="favicon" class="icon-canvas" width="32" height="32"></canvas>
+    <canvas id="icon192" class="icon-canvas" width="192" height="192"></canvas>
+    <canvas id="icon512" class="icon-canvas" width="512" height="512"></canvas>
+    
+    <div class="download-links">
+        <a id="downloadFavicon" download="favicon.png">Download Favicon (32x32)</a>
+        <a id="downloadIcon192" download="Icon-192.png">Download Icon 192x192</a>
+        <a id="downloadIcon512" download="Icon-512.png">Download Icon 512x512</a>
+    </div>
+
+    <script>
+        function createWeddingIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            
+            // Wedding theme gradient (soft pink to rose gold)
+            gradient.addColorStop(0, '#fef7f3');
+            gradient.addColorStop(0.5, '#f8c4a5');
+            gradient.addColorStop(1, '#d4a574');
+            
+            // Background
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Wedding rings or heart symbol
+            ctx.fillStyle = '#8B4513'; // Warm brown color
+            ctx.font = `${size * 0.6}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Use wedding ring emoji or heart
+            const symbol = '💍'; // Wedding rings emoji
+            ctx.fillText(symbol, size / 2, size / 2);
+            
+            // Add subtle border
+            ctx.strokeStyle = '#d4a574';
+            ctx.lineWidth = size * 0.02;
+            ctx.strokeRect(0, 0, size, size);
+        }
+
+        function createAlternativeIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            
+            // Soft wedding background
+            const gradient = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+            gradient.addColorStop(0, '#fff8f5');
+            gradient.addColorStop(1, '#f4e6d9');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Draw stylized "D" for Daegyu
+            ctx.fillStyle = '#8B4513';
+            ctx.font = `bold ${size * 0.7}px serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('D', size / 2, size / 2);
+            
+            // Add decorative elements
+            ctx.fillStyle = '#d4a574';
+            const starSize = size * 0.05;
+            
+            // Small decorative stars around the letter
+            ctx.font = `${starSize * 2}px Arial`;
+            ctx.fillText('✨', size * 0.2, size * 0.3);
+            ctx.fillText('✨', size * 0.8, size * 0.7);
+            
+            // Border
+            ctx.strokeStyle = '#d4a574';
+            ctx.lineWidth = size * 0.01;
+            ctx.strokeRect(0, 0, size, size);
+        }
+
+        // Create icons
+        const favicon = document.getElementById('favicon');
+        const icon192 = document.getElementById('icon192');
+        const icon512 = document.getElementById('icon512');
+
+        createAlternativeIcon(favicon, 32);
+        createAlternativeIcon(icon192, 192);
+        createAlternativeIcon(icon512, 512);
+
+        // Set up download links
+        document.getElementById('downloadFavicon').href = favicon.toDataURL();
+        document.getElementById('downloadIcon192').href = icon192.toDataURL();
+        document.getElementById('downloadIcon512').href = icon512.toDataURL();
+    </script>
+</body>
+</html>

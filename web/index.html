@@ -18,18 +18,41 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
+  <meta name="description" content="You're invited to our wedding celebration | Daegyu & Irene Wedding">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Cache busting meta tags -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="version" content="v2.2.0-webp-optimized">
+  <meta name="build-time" content="2025-09-03T02:30:00Z">
+  
+  <!-- Security headers for better web app compatibility -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: wss: https:; connect-src 'self' https: wss: data: blob:;">
+  
+  <!-- Open Graph meta tags for social sharing -->
+  <meta property="og:title" content="Daegyu & Irene Wedding Invitation">
+  <meta property="og:description" content="Join us for our special day - 대규 & Irene">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Daegyu & Irene Wedding Celebration">
+  
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="wedding_invitation">
+  <meta name="apple-mobile-web-app-title" content="Daegyu & Irene Wedding">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
+  
+  <!-- CSS for emoji font support -->
+  <link rel="stylesheet" href="styles.css">
 
-  <title>wedding_invitation</title>
+  <title>Daegyu & Irene Wedding Invitation</title>
   <link rel="manifest" href="manifest.json">
   
   <!-- Google Maps JavaScript API -->
@@ -42,10 +65,44 @@
   <!-- Fix for Google Maps empty style JSON parsing error -->
   <script src="google_maps_style_fix.js"></script>
   
-  <!-- Google Places Search Service -->
-  <script src="places_search.js"></script>
+  <!-- Wedding Map Styles -->
+  <script src="wedding_map_styles.js"></script>
+  
+  <!-- Enhanced Wedding Map with Info Window -->
+  <script src="enhanced_wedding_map.js"></script>
+  
+  <!-- Naver Maps API -->
+  <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=judjrcgb97"></script>
+  
+  <!-- Naver Map Implementation -->
+  <script src="naver_map.js"></script>
 </head>
 <body>
+  <!-- Version-based cache busting script -->
+  <script>
+    (function() {
+      const currentVersion = 'v2.2.0-webp-optimized';
+      const lastVersion = localStorage.getItem('app-version');
+      
+      if (lastVersion && lastVersion !== currentVersion) {
+        // Version changed, force clear cache and reload
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            return Promise.all(names.map(name => caches.delete(name)));
+          }).then(() => {
+            localStorage.setItem('app-version', currentVersion);
+            window.location.reload(true);
+          });
+        } else {
+          localStorage.setItem('app-version', currentVersion);
+          window.location.reload(true);
+        }
+      } else {
+        localStorage.setItem('app-version', currentVersion);
+      }
+    })();
+  </script>
+  
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

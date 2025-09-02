@@ -228,9 +228,9 @@ class CommonEditorFields {
     required Function(String) onChanged,
   }) {
     const availableAssets = [
-      'assets/images/gallery1.jpg',
-      'assets/images/gallery2.jpg',
-      'assets/images/gallery3.jpg',
+      'assets/images/gallery1.webp',
+      'assets/images/gallery2.webp',
+      'assets/images/gallery3.webp',
       'assets/images/background.png',
       'assets/images/placeholder.png',
     ];

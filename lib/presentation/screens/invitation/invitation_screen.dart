@@ -9,7 +9,7 @@ class InvitationScreen extends StatefulWidget {
   State<InvitationScreen> createState() => _InvitationScreenState();
 }
 
-class _InvitationScreenState extends State<InvitationScreen> 
+class _InvitationScreenState extends State<InvitationScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -141,7 +141,7 @@ class _InvitationScreenState extends State<InvitationScreen>
             ),
           ),
           const SizedBox(height: 24),
-          
+
           // Wedding date and time
           Container(
             padding: const EdgeInsets.all(20),
@@ -176,9 +176,9 @@ class _InvitationScreenState extends State<InvitationScreen>
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Venue
           Container(
             padding: const EdgeInsets.all(20),
@@ -220,9 +220,9 @@ class _InvitationScreenState extends State<InvitationScreen>
               ],
             ),
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Message
           Text(
             '저희 두 사람이 사랑으로 하나가 되는 소중한 순간에\n함께해 주시면 더없는 기쁨이겠습니다.',
@@ -294,14 +294,16 @@ class _InvitationScreenState extends State<InvitationScreen>
           ...navigationItems.asMap().entries.map((entry) {
             final index = entry.key;
             final item = entry.value;
-            
+
             return AnimatedBuilder(
               animation: _animationController,
               builder: (context, child) {
                 // Calculate safe interval values that don't exceed 1.0
-                final double startInterval = (0.3 + (index * 0.08)).clamp(0.0, 0.9);
-                final double endInterval = (startInterval + 0.3).clamp(0.0, 1.0);
-                
+                final double startInterval =
+                    (0.3 + (index * 0.08)).clamp(0.0, 0.9);
+                final double endInterval =
+                    (startInterval + 0.3).clamp(0.0, 1.0);
+
                 final itemAnimation = Tween<double>(
                   begin: 0.0,
                   end: 1.0,
@@ -333,7 +335,8 @@ class _InvitationScreenState extends State<InvitationScreen>
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: (item['color'] as Color).withOpacity(0.1),
+                                  color:
+                                      (item['color'] as Color).withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'google_map_widget.dart';
+import 'simple_web_map_widget_web.dart' if (dart.library.io) 'simple_web_map_widget_stub.dart';
 
 /// Wrapper widget that safely initializes Google Maps to avoid JSON parsing errors
 class GoogleMapWidgetWrapper extends StatefulWidget {
@@ -95,7 +97,18 @@ class _GoogleMapWidgetWrapperState extends State<GoogleMapWidgetWrapper> {
       );
     }
 
-    // Wrap in error boundary
+    // Use web-specific implementation for web platform to avoid close button
+    if (kIsWeb) {
+      return createSimpleWebMap(
+        latitude: widget.latitude,
+        longitude: widget.longitude,
+        venue: widget.venue,
+        showControls: widget.showControls,
+        height: widget.height,
+      );
+    }
+
+    // Wrap in error boundary for native platforms
     return ErrorBoundary(
       onError: (error, stackTrace) {
         debugPrint('Google Map Error: $error');

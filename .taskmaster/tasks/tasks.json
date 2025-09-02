@@ -275,7 +275,7 @@
         "id": 5,
         "title": "Develop Location and Maps Integration",
         "description": "Create an interactive map screen with venue information, navigation capabilities, and location search functionality",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           1,
           2
@@ -288,7 +288,7 @@
             "id": 1,
             "title": "Implement basic map integration",
             "description": "Set up the map widget with initial venue location and marker",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "details": "",
             "testStrategy": ""
@@ -297,7 +297,7 @@
             "id": 2,
             "title": "Create VenueModel and repository",
             "description": "Implement data model and repository for venue location information",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "details": "",
             "testStrategy": ""
@@ -306,7 +306,7 @@
             "id": 3,
             "title": "Implement navigation app integration",
             "description": "Add functionality to open external navigation apps with venue coordinates",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "details": "",
             "testStrategy": ""
@@ -315,7 +315,7 @@
             "id": 4,
             "title": "Implement location search functionality",
             "description": "Add search bar and integrate with Google Places API for location search",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "details": "",
             "testStrategy": ""
@@ -324,7 +324,7 @@
             "id": 5,
             "title": "Create PlacesService for API integration",
             "description": "Implement service class to handle Google Places API calls for autocomplete and place details",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "details": "",
             "testStrategy": ""
@@ -333,7 +333,7 @@
             "id": 6,
             "title": "Implement location selection and saving",
             "description": "Add functionality to select locations from search results and save them as venue locations",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "details": "",
             "testStrategy": ""
@@ -342,7 +342,7 @@
             "id": 7,
             "title": "Update UI for location details display",
             "description": "Enhance VenueInfoCard to display detailed location information and add save button",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "details": "",
             "testStrategy": ""
@@ -360,8 +360,62 @@
           1,
           2
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set Up Firebase Firestore Integration",
+            "description": "Configure Firebase Firestore in the Flutter project to enable real-time data storage and retrieval for guest messages.",
+            "dependencies": [],
+            "details": "Install necessary Firebase packages, initialize Firebase in the app, and verify Firestore connectivity for both Android and iOS platforms.\n<info added on 2025-08-18T08:28:11.271Z>\nInstall necessary Supabase packages, initialize Supabase in the app, and verify connectivity for both Android and iOS platforms. Create a SupabaseService class that handles initialization with proper environment variables. Set up database tables for guestbook messages with appropriate schema design. Configure real-time subscriptions to enable instant message updates. Replace existing SharedPreferences implementation with Supabase storage for persistent data. Ensure proper error handling and connection state management across platforms.\n</info added on 2025-08-18T08:28:11.271Z>",
+            "status": "done",
+            "testStrategy": "Run the app and confirm successful connection to Firestore by reading and writing test data."
+          },
+          {
+            "id": 2,
+            "title": "Design and Implement Message Submission Form",
+            "description": "Create a user interface for guests to submit congratulatory messages, including fields for sender information and message content.",
+            "dependencies": [
+              1
+            ],
+            "details": "Develop a form with validation for required fields and integrate it with Firestore to store submitted messages.",
+            "status": "pending",
+            "testStrategy": "Submit test messages and verify their appearance in the Firestore database."
+          },
+          {
+            "id": 3,
+            "title": "Develop Real-time Message Display with Animations",
+            "description": "Implement a real-time message list that updates instantly when new messages are submitted, including animated transitions for new entries.",
+            "dependencies": [
+              2
+            ],
+            "details": "Use Firestore streams to listen for message updates and apply Flutter animations for smooth message appearance.",
+            "status": "pending",
+            "testStrategy": "Submit messages and observe real-time updates and animations in the message list."
+          },
+          {
+            "id": 4,
+            "title": "Implement Message Moderation Capabilities",
+            "description": "Enable the wedding couple to moderate messages by approving, hiding, or deleting inappropriate content.",
+            "dependencies": [
+              3
+            ],
+            "details": "Add moderation controls to the UI and update Firestore documents to reflect moderation actions.",
+            "status": "pending",
+            "testStrategy": "Test moderation actions and verify changes in both the UI and Firestore."
+          },
+          {
+            "id": 5,
+            "title": "Support Adaptive UI for Different Message Lengths",
+            "description": "Ensure the message display adapts gracefully to varying message lengths, maintaining readability and aesthetics.",
+            "dependencies": [
+              3
+            ],
+            "details": "Implement responsive UI components that adjust layout and font size based on message length.",
+            "status": "pending",
+            "testStrategy": "Submit messages of various lengths and verify correct display and UI adaptation."
+          }
+        ]
       },
       {
         "id": 7,
@@ -889,11 +943,182 @@
         ],
         "priority": "medium",
         "subtasks": []
+      },
+      {
+        "id": 19,
+        "title": "Fix Mobile Editing Issues in Wedding Invitation App",
+        "description": "Investigate and resolve editing functionality problems when using mobile devices, ensuring a consistent user experience across all platforms.",
+        "details": "This task involves identifying and fixing issues with the editing functionality on mobile devices for the wedding invitation app:\n\n1. **Investigation Phase**:\n   - Perform comprehensive testing on various mobile devices (iOS and Android) to identify specific editing issues\n   - Document all observed problems with screenshots and reproduction steps\n   - Analyze differences in behavior between desktop and mobile implementations\n   - Review touch event handling and responsive design implementation\n\n2. **Common Mobile Editing Issues to Address**:\n   - Touch precision problems when selecting and manipulating widgets\n   - Keyboard overlay issues affecting the editing interface\n   - Performance lag during editing operations on lower-end devices\n   - Inconsistent widget resizing and positioning behavior\n   - Z-index handling for overlapping elements\n\n3. **Implementation Fixes**:\n   - Improve touch target sizes for better interaction on smaller screens:\n   ```dart\n   class EditableWidget extends StatelessWidget {\n     @override\n     Widget build(BuildContext context) {\n       return GestureDetector(\n         // Increase touch target with padding\n         behavior: HitTestBehavior.translucent,\n         onTap: () => _handleSelection(),\n         child: Padding(\n           padding: EdgeInsets.all(8.0), // Larger touch area\n           child: _buildWidgetContent(),\n         ),\n       );\n     }\n   }\n   ```\n   \n   - Implement responsive editor controls that adapt to screen size:\n   ```dart\n   Widget _buildEditorControls(BuildContext context) {\n     final isSmallScreen = MediaQuery.of(context).size.width < 600;\n     \n     return isSmallScreen \n       ? _buildCompactControls()\n       : _buildFullControls();\n   }\n   ```\n   \n   - Fix keyboard handling to ensure the editing area remains visible:\n   ```dart\n   Scaffold(\n     resizeToAvoidBottomInset: true,\n     body: SingleChildScrollView(\n       child: Padding(\n         padding: EdgeInsets.only(\n           bottom: MediaQuery.of(context).viewInsets.bottom,\n         ),\n         child: EditorContent(),\n       ),\n     ),\n   )\n   ```\n   \n   - Optimize performance for mobile devices:\n     - Implement widget caching for complex elements\n     - Reduce unnecessary rebuilds using const constructors and memoization\n     - Implement lazy loading for editor components\n\n4. **Cross-Platform Consistency**:\n   - Ensure the EditorWidget system works consistently across platforms\n   - Standardize touch and mouse interactions to provide similar experiences\n   - Implement platform-specific optimizations while maintaining feature parity",
+        "testStrategy": "1. **Manual Testing on Multiple Devices**:\n   - Test on at least 3 different iOS devices (varying screen sizes)\n   - Test on at least 3 different Android devices (varying screen sizes)\n   - Create a test matrix documenting behavior across all devices\n   - Verify all editing operations (select, move, resize, delete, edit properties)\n\n2. **Automated Testing**:\n   - Create widget tests that simulate touch interactions:\n   ```dart\n   testWidgets('Widget can be selected and moved on mobile', (WidgetTester tester) async {\n     await tester.pumpWidget(MyApp());\n     \n     // Find the editable widget\n     final widget = find.byType(EditableWidget).first;\n     \n     // Test selection\n     await tester.tap(widget);\n     await tester.pump();\n     expect(find.byType(SelectionHandles), findsOneWidget);\n     \n     // Test movement\n     final startLocation = tester.getCenter(widget);\n     final endLocation = Offset(startLocation.dx + 50, startLocation.dy + 50);\n     await tester.dragFrom(startLocation, endLocation - startLocation);\n     await tester.pump();\n     \n     // Verify new position\n     final newLocation = tester.getCenter(widget);\n     expect(newLocation, endLocation);\n   });\n   ```\n   \n   - Implement integration tests for complete editing workflows\n   - Test keyboard interaction and visibility of editing area\n\n3. **Regression Testing**:\n   - Verify that desktop functionality remains intact\n   - Ensure all existing editor features work on mobile devices\n   - Test backward compatibility with previously created invitations\n\n4. **Performance Testing**:\n   - Measure and document frame rates during editing operations\n   - Test memory usage during extended editing sessions\n   - Verify smooth scrolling and interaction on lower-end devices\n\n5. **User Acceptance Testing**:\n   - Create specific test scenarios for common editing tasks\n   - Document completion rates and user feedback\n   - Compare task completion times between mobile and desktop",
+        "status": "pending",
+        "dependencies": [
+          3,
+          14,
+          18
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 20,
+        "title": "Implement Welcome Popup with Venue and Language Selection",
+        "description": "Create a popup dialog that asks users to select venue (Malaysia, Singapore, Korea, All) and language preference, with URL parameter persistence and SharedPreferences storage.",
+        "details": "Implement a welcome popup dialog with the following features:\n\n1. **Popup Dialog UI**:\n   - Create a modal dialog that appears on first app launch\n   - Design an attractive layout with wedding theme styling\n   - Include venue selection options (Malaysia, Singapore, Korea, All)\n   - Add language selection options (English, Korean)\n   - Include a \"Remember my choice\" checkbox\n   - Add a \"Continue\" button to dismiss the dialog\n\n2. **Data Persistence**:\n   - Store user selections in SharedPreferences for subsequent app launches\n   - Implement URL parameter parsing to pre-select options when app is opened via shared links\n   - Create a preferences manager class to handle reading/writing these settings\n\n3. **Integration with Navigation**:\n   - Ensure the popup appears before the main content loads\n   - Pass selected venue and language to appropriate app components\n   - Update the app state based on selections\n\n4. **Language Integration**:\n   - Connect language selection to the internationalization system\n   - Trigger language change when selection is made\n   - Update UI text immediately to reflect language choice\n\nExample implementation:\n```dart\nclass WelcomePopup extends StatefulWidget {\n  @override\n  _WelcomePopupState createState() => _WelcomePopupState();\n}\n\nclass _WelcomePopupState extends State<WelcomePopup> {\n  String _selectedVenue = 'All';\n  String _selectedLanguage = 'English';\n  bool _rememberChoice = true;\n  \n  @override\n  void initState() {\n    super.initState();\n    _loadSavedPreferences();\n    _checkUrlParameters();\n  }\n  \n  Future<void> _loadSavedPreferences() async {\n    final prefs = await SharedPreferences.getInstance();\n    setState(() {\n      _selectedVenue = prefs.getString('selectedVenue') ?? 'All';\n      _selectedLanguage = prefs.getString('selectedLanguage') ?? 'English';\n    });\n  }\n  \n  void _checkUrlParameters() {\n    // Parse URL parameters if app was opened via deep link\n    // Update selections based on parameters\n  }\n  \n  Future<void> _savePreferences() async {\n    if (_rememberChoice) {\n      final prefs = await SharedPreferences.getInstance();\n      await prefs.setString('selectedVenue', _selectedVenue);\n      await prefs.setString('selectedLanguage', _selectedLanguage);\n    }\n  }\n  \n  @override\n  Widget build(BuildContext context) {\n    return Dialog(\n      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),\n      child: Padding(\n        padding: const EdgeInsets.all(16.0),\n        child: Column(\n          mainAxisSize: MainAxisSize.min,\n          children: [\n            Text('Welcome', style: Theme.of(context).textTheme.headline5),\n            SizedBox(height: 16),\n            \n            // Venue selection\n            Text('Select Venue:'),\n            DropdownButton<String>(\n              value: _selectedVenue,\n              items: ['Malaysia', 'Singapore', 'Korea', 'All']\n                  .map((venue) => DropdownMenuItem(\n                        value: venue,\n                        child: Text(venue),\n                      ))\n                  .toList(),\n              onChanged: (value) {\n                setState(() {\n                  _selectedVenue = value!;\n                });\n              },\n            ),\n            \n            SizedBox(height: 16),\n            \n            // Language selection\n            Text('Select Language:'),\n            DropdownButton<String>(\n              value: _selectedLanguage,\n              items: ['English', 'Korean']\n                  .map((language) => DropdownMenuItem(\n                        value: language,\n                        child: Text(language),\n                      ))\n                  .toList(),\n              onChanged: (value) {\n                setState(() {\n                  _selectedLanguage = value!;\n                });\n                // Update app language\n                context.read<LanguageProvider>().setLanguage(\n                      _selectedLanguage == 'Korean' ? 'ko' : 'en',\n                    );\n              },\n            ),\n            \n            SizedBox(height: 16),\n            \n            // Remember choice checkbox\n            CheckboxListTile(\n              title: Text('Remember my choice'),\n              value: _rememberChoice,\n              onChanged: (value) {\n                setState(() {\n                  _rememberChoice = value!;\n                });\n              },\n            ),\n            \n            SizedBox(height: 16),\n            \n            // Continue button\n            ElevatedButton(\n              onPressed: () async {\n                await _savePreferences();\n                Navigator.of(context).pop({\n                  'venue': _selectedVenue,\n                  'language': _selectedLanguage,\n                });\n              },\n              child: Text('Continue'),\n            ),\n          ],\n        ),\n      ),\n    );\n  }\n}\n\n// Usage in main app\nvoid showWelcomePopupIfNeeded(BuildContext context) async {\n  final prefs = await SharedPreferences.getInstance();\n  final hasSeenWelcome = prefs.getBool('hasSeenWelcome') ?? false;\n  \n  if (!hasSeenWelcome) {\n    final result = await showDialog(\n      context: context,\n      barrierDismissible: false,\n      builder: (context) => WelcomePopup(),\n    );\n    \n    if (result != null) {\n      // Update app state with selected venue and language\n      context.read<VenueProvider>().setVenue(result['venue']);\n      \n      // Mark welcome as seen\n      await prefs.setBool('hasSeenWelcome', true);\n    }\n  }\n}\n```\n\n5. **URL Parameter Handling**:\n   - Implement deep link handling to extract venue and language parameters\n   - Create a utility class to parse and validate URL parameters\n   - Update the welcome popup based on these parameters\n\n```dart\nclass UrlParameterHandler {\n  static Map<String, String> parseUrlParameters(Uri uri) {\n    return uri.queryParameters;\n  }\n  \n  static void applyParametersToApp(Map<String, String> parameters, BuildContext context) {\n    if (parameters.containsKey('venue')) {\n      final venue = parameters['venue'];\n      if (['Malaysia', 'Singapore', 'Korea', 'All'].contains(venue)) {\n        context.read<VenueProvider>().setVenue(venue!);\n      }\n    }\n    \n    if (parameters.containsKey('lang')) {\n      final lang = parameters['lang'];\n      if (['en', 'ko'].contains(lang)) {\n        context.read<LanguageProvider>().setLanguage(lang!);\n      }\n    }\n  }\n}",
+        "testStrategy": "1. **Unit Testing**:\n   - Test SharedPreferences integration for saving and loading preferences\n   - Verify URL parameter parsing logic works correctly\n   - Test the preferences manager class methods\n\n2. **Widget Testing**:\n   - Test the welcome popup UI renders correctly with all options\n   - Verify dropdown selections update state correctly\n   - Test \"Remember my choice\" checkbox functionality\n   - Verify the continue button correctly saves preferences and dismisses dialog\n\n3. **Integration Testing**:\n   - Test the popup appears on first launch but not on subsequent launches\n   - Verify language selection correctly changes app language\n   - Test venue selection affects content filtering\n   - Verify deep linking with parameters correctly pre-selects options\n\n4. **User Acceptance Testing**:\n   - Test on different screen sizes to ensure responsive layout\n   - Verify all UI elements are properly translated in both languages\n   - Test with actual users to ensure the flow is intuitive\n\n5. **Specific Test Cases**:\n   - Launch app for first time, verify popup appears\n   - Select venue and language, continue, then restart app - verify popup doesn't appear\n   - Launch app with URL parameters, verify correct options are pre-selected\n   - Test \"Remember my choice\" unchecked - verify preferences aren't saved\n   - Test language switching updates UI text immediately\n   - Verify URL parameters override saved preferences when present",
+        "status": "done",
+        "dependencies": [
+          1,
+          2,
+          8
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 21,
+        "title": "Update Banking Account Information in Expandable Widget",
+        "description": "Update the expandable banking widget to display correct account information including bank names, account numbers, and integrate KakaoPay links for each account.",
+        "details": "Implement updates to the expandable banking widget with the following requirements:\n\n1. **Account Information Display**:\n   - Update the widget to display the following banking accounts:\n     - 정대규 국민은행 67500204110684\n     - 정주상 농협 81511352032161\n     - 최윤교 농협 81511352001378\n   - Format each entry with proper spacing and typography\n   - Include bank logos next to each account entry\n   - Implement copy-to-clipboard functionality for account numbers\n\n2. **KakaoPay Integration**:\n   - Add KakaoPay link buttons for each account\n   - Configure links to open the KakaoPay app with pre-filled recipient information\n   - Implement fallback behavior if KakaoPay app is not installed\n   - Add visual indicators for KakaoPay payment option\n\n3. **UI Enhancements**:\n   - Ensure the expandable widget animates smoothly when opening/closing\n   - Implement proper spacing between account entries\n   - Add visual separators between different accounts\n   - Ensure text is properly aligned and readable on all device sizes\n\n4. **Code Implementation**:\n   ```dart\n   class BankingAccountWidget extends StatelessWidget {\n     final List<BankAccount> accounts = [\n       BankAccount(\n         name: \"정대규\",\n         bank: \"국민은행\",\n         accountNumber: \"67500204110684\",\n         kakaoPayLink: \"https://qr.kakaopay.com/[UNIQUE_CODE_HERE]\",\n       ),\n       BankAccount(\n         name: \"정주상\",\n         bank: \"농협\",\n         accountNumber: \"81511352032161\",\n         kakaoPayLink: \"https://qr.kakaopay.com/[UNIQUE_CODE_HERE]\",\n       ),\n       BankAccount(\n         name: \"최윤교\",\n         bank: \"농협\",\n         accountNumber: \"81511352001378\",\n         kakaoPayLink: \"https://qr.kakaopay.com/[UNIQUE_CODE_HERE]\",\n       ),\n     ];\n     \n     // Widget implementation...\n   }\n   ```\n\n5. **Localization Support**:\n   - Ensure all text elements support both Korean and English languages\n   - Implement appropriate translations for banking terms and instructions",
+        "testStrategy": "1. **Manual Testing**:\n   - Verify all account information is displayed correctly with proper formatting\n   - Test the expandable widget opens and closes smoothly on different devices\n   - Confirm copy-to-clipboard functionality works for all account numbers\n   - Test KakaoPay links open correctly on devices with the app installed\n   - Verify fallback behavior works on devices without KakaoPay\n\n2. **UI Testing**:\n   - Test the widget on various screen sizes (small phones to tablets)\n   - Verify text remains readable and properly aligned on all devices\n   - Check that bank logos display correctly and at appropriate sizes\n   - Ensure proper contrast between text and background for accessibility\n\n3. **Integration Testing**:\n   - Verify the banking widget integrates correctly with the rest of the application\n   - Test that the widget state persists correctly when navigating between screens\n   - Confirm the widget appears in the correct location within the invitation layout\n\n4. **Localization Testing**:\n   - Switch between Korean and English language settings to verify all text elements translate correctly\n   - Ensure banking terms and instructions are appropriately localized",
+        "status": "done",
+        "dependencies": [
+          11,
+          13
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 22,
+        "title": "Implement Venue Content Filtering for Selected Countries",
+        "description": "Enhance the welcome popup functionality to completely hide non-selected venue information throughout the app when a user selects a specific country/venue, ensuring a focused user experience.",
+        "details": "Implement comprehensive venue content filtering with the following requirements:\n\n1. **Filter Logic Implementation**:\n   - Create a VenueFilterService class that manages the visibility of venue-specific content\n   - Extend the existing venue selection logic from the welcome popup to propagate selected venue information to all relevant components\n   - Implement filtering logic that completely hides content for non-selected venues when a specific country is chosen\n   - Ensure \"All\" option continues to display all venue information\n\n2. **UI Updates**:\n   - Modify all venue-specific UI components to respect the venue filter settings\n   - Update list views, cards, and information panels to only display content relevant to the selected venue\n   - Implement smooth transitions when filtering content (avoid jarring UI changes)\n   - Add visual indicators showing which venue filter is currently active\n\n3. **Data Layer Integration**:\n   - Extend the SharedPreferences implementation to store and retrieve venue filter preferences\n   - Create filter predicates that can be applied to venue data collections\n   - Implement venue filtering in repository classes that provide data to UI components\n   - Ensure venue filter settings persist across app restarts\n\n4. **Edge Cases and Special Handling**:\n   - Handle cases where venue-specific content is embedded within general content\n   - Implement special handling for mixed content that applies to multiple but not all venues\n   - Create fallback content display for cases where filtering would result in empty sections\n   - Ensure critical information is never hidden regardless of filter settings\n\n5. **Performance Considerations**:\n   - Optimize filtering operations to minimize impact on UI responsiveness\n   - Implement lazy loading for filtered content where appropriate\n   - Consider caching filtered results to improve performance\n   - Ensure filtering operations don't cause unnecessary UI rebuilds",
+        "testStrategy": "1. **Unit Testing**:\n   - Test VenueFilterService class methods for correct filtering behavior\n   - Verify SharedPreferences integration for saving and loading venue filter preferences\n   - Test filter predicates with various data combinations\n   - Validate edge case handling for mixed venue content\n\n2. **Widget Testing**:\n   - Test UI components with different venue filter settings\n   - Verify that non-selected venue information is completely hidden\n   - Test transitions between different venue selections\n   - Ensure \"All\" option correctly displays all venue information\n\n3. **Integration Testing**:\n   - Verify filter settings propagate correctly from welcome popup to all app components\n   - Test persistence of filter settings across app restarts\n   - Validate that repository classes correctly apply venue filters\n   - Test performance impact of filtering on large data sets\n\n4. **Manual Testing**:\n   - Create a test matrix covering all venue selection options\n   - Verify all app screens respect venue filter settings\n   - Test on different device sizes to ensure filtered layouts remain visually appealing\n   - Perform user journey tests starting from welcome popup through to viewing venue-specific content",
+        "status": "done",
+        "dependencies": [
+          20
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 23,
+        "title": "Hide Banking Account Section for Singapore and Malaysia Venues",
+        "description": "Modify the banking account widget to conditionally display only when Korea venue is selected, hiding it for Singapore and Malaysia venues to respect cultural appropriateness.",
+        "details": "Implement conditional visibility for the banking account section with the following requirements:\n\n1. **Venue-based Visibility Logic**:\n   - Integrate with the existing VenueFilterService from Task 22\n   - Modify the banking account widget (from Task 21) to check the currently selected venue\n   - Display the banking section only when Korea venue is selected (either alone or as part of multiple selections)\n   - Hide the banking section completely when only Singapore and/or Malaysia venues are selected\n   - Ensure the widget gracefully handles appearance/disappearance without layout shifts\n\n2. **Implementation Approach**:\n   - Add a dependency on the VenueFilterService in the banking widget component\n   - Subscribe to venue selection changes using the existing observer pattern\n   - Implement a conditional rendering function that evaluates whether Korea is among selected venues\n   - Use CSS transitions for smooth appearance/disappearance of the banking section\n   - Ensure proper cleanup of subscriptions when the widget is disposed\n\n3. **Edge Cases to Handle**:\n   - Initial app load with no venue selection (default to showing the section)\n   - Switching between venue selections (ensure smooth transitions)\n   - \"All venues\" selection (banking section should be visible)\n   - Persistence of visibility state across app restarts\n\n4. **Code Structure**:\n   ```dart\n   // Example implementation approach\n   class BankingAccountWidget extends StatefulWidget {\n     @override\n     _BankingAccountWidgetState createState() => _BankingAccountWidgetState();\n   }\n   \n   class _BankingAccountWidgetState extends State<BankingAccountWidget> {\n     bool _shouldShowBankingSection = false;\n     StreamSubscription? _venueSubscription;\n     \n     @override\n     void initState() {\n       super.initState();\n       _venueSubscription = VenueFilterService.instance.selectedVenuesStream.listen(_updateVisibility);\n       _updateVisibility(VenueFilterService.instance.selectedVenues);\n     }\n     \n     void _updateVisibility(List<Venue> selectedVenues) {\n       setState(() {\n         _shouldShowBankingSection = selectedVenues.contains(Venue.korea) || \n                                    selectedVenues.isEmpty || \n                                    selectedVenues.length == Venue.values.length;\n       });\n     }\n     \n     @override\n     void dispose() {\n       _venueSubscription?.cancel();\n       super.dispose();\n     }\n     \n     @override\n     Widget build(BuildContext context) {\n       if (!_shouldShowBankingSection) {\n         return SizedBox.shrink(); // Hide completely when not visible\n       }\n       \n       return AnimatedOpacity(\n         opacity: _shouldShowBankingSection ? 1.0 : 0.0,\n         duration: Duration(milliseconds: 300),\n         child: // Existing banking widget implementation\n       );\n     }\n   }\n   ```",
+        "testStrategy": "1. **Unit Testing**:\n   - Test the visibility logic function with various venue selection combinations:\n     - Korea only (should show banking section)\n     - Singapore only (should hide banking section)\n     - Malaysia only (should hide banking section)\n     - Singapore and Malaysia (should hide banking section)\n     - Korea and Singapore (should show banking section)\n     - All venues (should show banking section)\n     - No venue selected (should show banking section)\n   - Verify proper subscription to venue selection changes\n   - Test cleanup of subscriptions on widget disposal\n\n2. **Widget Testing**:\n   - Create widget tests that simulate different venue selections\n   - Verify the banking section appears and disappears correctly\n   - Test that no layout shifts occur when the section visibility changes\n   - Verify animations work smoothly for appearance/disappearance\n\n3. **Integration Testing**:\n   - Test the banking section visibility in conjunction with the welcome popup venue selection\n   - Verify persistence of visibility state when navigating between app screens\n   - Test that URL parameters for venue selection correctly affect banking section visibility\n\n4. **Manual Testing**:\n   - Test on various devices and screen sizes to ensure proper layout\n   - Verify cultural appropriateness by having stakeholders from Singapore and Malaysia review\n   - Test performance impact of conditional rendering\n   - Verify no console errors occur during venue switching",
+        "status": "done",
+        "dependencies": [
+          21,
+          22,
+          20
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 24,
+        "title": "Implement Bilingual Text in Welcome Popup",
+        "description": "Enhance the welcome popup to display text in both English and Korean languages, ensuring proper localization and respecting the user's venue selection.",
+        "details": "Implement bilingual text support in the welcome popup with the following requirements:\n\n1. **Text Localization**:\n   - Update the welcome popup to display all text in both English and Korean simultaneously\n   - Implement proper text styling to visually distinguish between languages (e.g., different font weights or subtle separators)\n   - Ensure proper text alignment and spacing for both languages\n   - Maintain readability on all device sizes\n\n2. **Content Structure**:\n   - Format the popup to show English text first, followed by Korean text\n   - Include bilingual text for:\n     - Popup title/header\n     - Venue selection options (Malaysia, Singapore, Korea, All)\n     - Language selection options\n     - \"Remember my choice\" checkbox\n     - \"Continue\" button\n\n3. **Integration with Existing Components**:\n   - Modify the existing welcome popup widget from Task 20\n   - Ensure the bilingual display respects the venue filtering logic from Task 22\n   - Update any related UI components that interact with the welcome popup\n\n4. **Implementation Approach**:\n   - Create a LocalizedText widget that accepts both English and Korean text\n   - Use a consistent styling approach for all bilingual text elements\n   - Ensure text scales appropriately on different device sizes\n   - Consider using a Column layout for each text element to stack English and Korean versions\n\n5. **Code Example**:\n   ```dart\n   class LocalizedText extends StatelessWidget {\n     final String englishText;\n     final String koreanText;\n     final TextStyle? englishStyle;\n     final TextStyle? koreanStyle;\n     \n     const LocalizedText({\n       required this.englishText,\n       required this.koreanText,\n       this.englishStyle,\n       this.koreanStyle,\n       Key? key,\n     }) : super(key: key);\n     \n     @override\n     Widget build(BuildContext context) {\n       return Column(\n         crossAxisAlignment: CrossAxisAlignment.start,\n         mainAxisSize: MainAxisSize.min,\n         children: [\n           Text(englishText, style: englishStyle ?? TextStyle(fontWeight: FontWeight.normal)),\n           const SizedBox(height: 2),\n           Text(koreanText, style: koreanStyle ?? TextStyle(fontWeight: FontWeight.w300)),\n         ],\n       );\n     }\n   }\n   ```\n\n6. **Performance Considerations**:\n   - Ensure the popup still loads quickly despite additional text content\n   - Optimize text rendering to prevent layout jank\n   - Consider text overflow handling for longer Korean translations",
+        "testStrategy": "1. **Unit Testing**:\n   - Test the LocalizedText widget renders both languages correctly\n   - Verify text styling is applied properly to each language\n   - Test with various text lengths to ensure proper layout handling\n\n2. **Widget Testing**:\n   - Test the welcome popup renders with bilingual text for all elements\n   - Verify proper alignment and spacing between English and Korean text\n   - Test that text remains readable on different screen sizes\n   - Ensure the popup layout adjusts appropriately with the additional text content\n\n3. **Integration Testing**:\n   - Verify the welcome popup displays correctly with bilingual text when app is first launched\n   - Test that venue selection options display correctly in both languages\n   - Confirm that language selection still functions properly despite bilingual display\n   - Test that \"Remember my choice\" and \"Continue\" functionality works with bilingual text\n\n4. **Localization Testing**:\n   - Verify Korean characters render correctly without artifacts\n   - Test with different system font sizes to ensure accessibility\n   - Verify text doesn't overlap or break layout on smaller devices\n\n5. **Visual Regression Testing**:\n   - Compare screenshots before and after implementation to ensure design integrity\n   - Verify the popup maintains visual appeal with bilingual text\n   - Test on multiple device sizes to ensure responsive design\n\n6. **Manual Testing**:\n   - Have native Korean speakers review the Korean text for accuracy and natural phrasing\n   - Test the popup on actual devices with different screen sizes and resolutions",
+        "status": "done",
+        "dependencies": [
+          20,
+          22
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 25,
+        "title": "Fix Location Section Localization",
+        "description": "Implement proper localization for location names, addresses, and navigation app names to ensure they translate correctly based on the user's selected language.",
+        "details": "Implement comprehensive localization for the location section with the following requirements:\n\n1. **Location Data Localization**:\n   - Create localization keys for all location names and addresses in both Korean and English\n   - Update the VenueModel to support localized data retrieval based on current locale\n   - Implement a mechanism to dynamically switch location data when language changes\n   - Ensure proper formatting of addresses according to country conventions\n\n2. **Navigation App Localization**:\n   - Add localization keys for navigation app names (Google Maps, Apple Maps, Kakao Maps, etc.)\n   - Create a NavigationAppModel that supports localized app names and icons\n   - Implement conditional display of navigation apps based on platform (iOS/Android) and locale\n\n3. **Integration with Existing Systems**:\n   - Connect with the language selection system from Task 8 and Task 20\n   - Ensure location data updates reactively when language is changed\n   - Maintain compatibility with the venue filtering system from Task 22\n\n4. **Implementation Example**:\n```dart\n// In l10n/app_en.arb\n{\n  \"locationKoreaName\": \"Grand Hyatt Seoul\",\n  \"locationKoreaAddress\": \"322 Sowol-ro, Yongsan-gu, Seoul\",\n  \"locationSingaporeName\": \"Marina Bay Sands\",\n  \"locationSingaporeAddress\": \"10 Bayfront Avenue, Singapore 018956\",\n  \"navigationGoogleMaps\": \"Google Maps\",\n  \"navigationAppleMaps\": \"Apple Maps\",\n  \"navigationKakaoMaps\": \"Kakao Maps\"\n}\n\n// In l10n/app_ko.arb\n{\n  \"locationKoreaName\": \"그랜드 하얏트 서울\",\n  \"locationKoreaAddress\": \"서울특별시 용산구 소월로 322\",\n  \"locationSingaporeName\": \"마리나 베이 샌즈\",\n  \"locationSingaporeAddress\": \"10 베이프런트 애비뉴, 싱가포르 018956\",\n  \"navigationGoogleMaps\": \"구글 지도\",\n  \"navigationAppleMaps\": \"애플 지도\",\n  \"navigationKakaoMaps\": \"카카오맵\"\n}\n\n// Updated VenueModel\nclass VenueModel {\n  final String id;\n  final Map<String, String> localizedNames;\n  final Map<String, String> localizedAddresses;\n  \n  String getLocalizedName(String locale) {\n    return localizedNames[locale] ?? localizedNames['en'] ?? '';\n  }\n  \n  String getLocalizedAddress(String locale) {\n    return localizedAddresses[locale] ?? localizedAddresses['en'] ?? '';\n  }\n}\n\n// Navigation app localization\nclass NavigationApp {\n  final String id;\n  final String iconAsset;\n  final Map<String, String> localizedNames;\n  final String urlScheme;\n  \n  String getLocalizedName(String locale) {\n    return localizedNames[locale] ?? localizedNames['en'] ?? id;\n  }\n  \n  String generateNavigationUrl(VenueModel venue, String locale) {\n    // Generate appropriate URL based on app and venue\n  }\n}\n```\n\n5. **UI Updates**:\n   - Modify the location screen to use localized venue data\n   - Update navigation app buttons to display localized app names\n   - Ensure proper text direction and alignment for RTL languages if supported in the future",
+        "testStrategy": "1. **Unit Testing**:\n   - Test VenueModel's localized data retrieval methods with different locales\n   - Verify NavigationApp class correctly returns localized app names\n   - Test URL generation for different navigation apps and venues\n   - Validate the localization system handles missing translations gracefully\n\n2. **Widget Testing**:\n   - Create widget tests for the location screen with different locales\n   - Verify location names and addresses display correctly in both Korean and English\n   - Test that navigation app buttons show correct localized text\n   - Ensure the UI updates properly when language is changed\n\n3. **Integration Testing**:\n   - Test the complete flow from language selection to location display\n   - Verify location data changes correctly when switching languages\n   - Test integration with the venue filtering system\n   - Validate that deep links to the location screen work with proper localization\n\n4. **Manual Testing**:\n   - Verify all location names and addresses display correctly in both languages\n   - Test navigation app launching with localized parameters\n   - Check for any text overflow or layout issues with longer translated text\n   - Verify proper formatting of addresses according to country conventions\n\n5. **Regression Testing**:\n   - Ensure existing location functionality continues to work\n   - Verify venue filtering still functions correctly with localized data\n   - Test that map markers and other visual elements display properly",
+        "status": "done",
+        "dependencies": [
+          5,
+          8,
+          20,
+          22
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 26,
+        "title": "Develop Secure Admin Page for Managing Guestbook Comments and RSVP Information",
+        "description": "Create an admin interface at the /admin route for authenticated management of guestbook messages and RSVP responses, including viewing, editing, deleting, sorting/filtering, and exporting guest lists.",
+        "details": "Implement an admin page accessible via the /admin route, protected by robust authentication (e.g., OAuth, JWT, or integration with the app's existing admin authentication system). The admin interface should provide:\n\n- **Data Tables**: Display guestbook messages and RSVP responses in sortable and filterable tables. Use a data grid component that supports column sorting, multi-field filtering, and pagination for scalability.\n- **CRUD Operations**: Allow admins to view, edit, and delete guestbook messages and RSVP entries. Editing should open a modal or inline editor with validation. Deletion should require confirmation to prevent accidental data loss.\n- **Export Functionality**: Provide export options (CSV, XLSX, or PDF) for guest lists and RSVP data, ensuring proper formatting and inclusion of all relevant fields.\n- **Security Measures**: Enforce authentication and authorization checks on all admin endpoints. Sanitize all user input and output to prevent XSS and injection attacks. Log all admin actions for audit purposes.\n- **UI/UX**: Design the admin page for clarity and efficiency, with clear separation between guestbook and RSVP management. Include search and filter controls, bulk actions (e.g., delete multiple entries), and responsive design for desktop and tablet use.\n- **Integration**: Connect the admin page to the existing guestbook and RSVP data models and repositories. Ensure real-time updates if the underlying data changes (e.g., via WebSockets or polling).\n\nConsider using established admin UI libraries (e.g., Flutter DataTable, Syncfusion, or Material DataTable) for rapid development and consistency. Ensure the admin page is not accessible to unauthorized users by implementing route guards and backend checks.",
+        "testStrategy": "1. Verify that only authenticated admins can access the /admin route and all admin API endpoints.\n2. Test viewing, sorting, and filtering of guestbook and RSVP data with various data volumes and filter combinations.\n3. Test editing and deleting individual and multiple entries, ensuring changes are reflected in the database and UI updates in real time.\n4. Test export functionality for accuracy, correct formatting, and inclusion of all relevant fields.\n5. Attempt unauthorized access and common attack vectors (e.g., XSS, CSRF) to confirm security measures are effective.\n6. Perform UI/UX testing for usability, responsiveness, and accessibility.\n7. Review audit logs to ensure all admin actions are properly recorded.",
+        "status": "pending",
+        "dependencies": [
+          1,
+          6,
+          18
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Robust Authentication and Authorization for Admin Route",
+            "description": "Set up secure authentication (e.g., OAuth, JWT, or integration with existing admin auth) and enforce authorization checks for all /admin endpoints to ensure only authorized users can access and perform admin actions.",
+            "dependencies": [],
+            "details": "Apply multi-factor authentication and session management best practices. Protect against unauthorized access by implementing route guards and backend authorization checks. Log all admin actions for audit purposes.",
+            "status": "pending",
+            "testStrategy": "Attempt to access /admin and related endpoints with unauthorized and authorized accounts, verify access control, and check audit logs for all admin actions."
+          },
+          {
+            "id": 2,
+            "title": "Design and Develop Data Tables for Guestbook and RSVP Management",
+            "description": "Create sortable, filterable, and paginated data tables for displaying guestbook messages and RSVP responses using a modern data grid component.",
+            "dependencies": [
+              1
+            ],
+            "details": "Ensure clear separation between guestbook and RSVP data. Include search, multi-field filtering, and responsive design for desktop and tablet. Use established UI libraries for consistency and scalability.",
+            "status": "pending",
+            "testStrategy": "Populate tables with sample data, verify sorting, filtering, pagination, and responsive layout across devices."
+          },
+          {
+            "id": 3,
+            "title": "Implement CRUD Operations with Validation and Confirmation",
+            "description": "Enable admins to view, edit (with validation), and delete guestbook and RSVP entries, using modals or inline editors and confirmation dialogs for deletions.",
+            "dependencies": [
+              2
+            ],
+            "details": "Editing should validate input and prevent invalid data. Deletion must require explicit confirmation to avoid accidental loss. Support bulk actions such as deleting multiple entries.",
+            "status": "pending",
+            "testStrategy": "Perform create, read, update, and delete operations on entries; verify validation, confirmation dialogs, and correct data updates in the UI and backend."
+          },
+          {
+            "id": 4,
+            "title": "Develop Export Functionality for Guest Lists and RSVP Data",
+            "description": "Provide options to export guestbook and RSVP data in CSV, XLSX, or PDF formats, ensuring all relevant fields are included and properly formatted.",
+            "dependencies": [
+              3
+            ],
+            "details": "Allow admins to select export format and scope (e.g., filtered results). Ensure exported files are accurate, well-formatted, and compatible with common spreadsheet and document tools.",
+            "status": "pending",
+            "testStrategy": "Export data in all supported formats, open files in target applications, and verify completeness and formatting."
+          },
+          {
+            "id": 5,
+            "title": "Enforce Security Best Practices and Real-Time Data Integration",
+            "description": "Apply secure coding practices (input/output sanitization, XSS/injection prevention), ensure encrypted transmission, and integrate real-time updates for admin data tables.",
+            "dependencies": [
+              4
+            ],
+            "details": "Sanitize all user input/output, use TLS for all admin communications, and implement real-time updates via WebSockets or polling. Regularly review and update security controls per OWASP and NCSC guidelines.",
+            "status": "pending",
+            "testStrategy": "Conduct security testing (e.g., XSS, injection attempts), verify encrypted connections, and test real-time updates by modifying data from another session."
+          }
+        ]
       }
     ],
     "metadata": {
       "created": "2025-07-01T13:41:34.057Z",
-      "updated": "2025-08-17T17:47:39.252Z",
+      "updated": "2025-08-31T17:08:59.244Z",
       "description": "Tasks for master context"
     }
   }

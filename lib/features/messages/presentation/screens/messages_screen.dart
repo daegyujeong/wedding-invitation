@@ -79,12 +79,13 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> {
     showDialog(
       context: context,
       builder: (context) => MessageInputDialog(
-        onSubmit: (name, message) {
+        onSubmit: (name, message, password) {
           setState(() {
             _messages.insert(0, {
               'id': DateTime.now().millisecondsSinceEpoch.toString(),
               'name': name,
               'message': message,
+              'password': password,
               'createdAt': DateTime.now(),
               'likes': 0,
             });

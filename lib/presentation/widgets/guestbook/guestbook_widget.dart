@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../data/models/editor_widget_model.dart';
 import '../../../data/models/guestbook_message_model.dart';
 import '../../../data/repositories/guestbook_repository.dart';
+import '../../../core/di/dependency_injection.dart';
+import '../../../data/repositories/interfaces/guestbook_repository.dart';
 import 'guestbook_message_card.dart';
 import 'add_message_dialog.dart';
 
@@ -20,13 +22,14 @@ class GuestbookWidgetRenderer extends StatefulWidget {
 }
 
 class _GuestbookWidgetRendererState extends State<GuestbookWidgetRenderer> {
-  final GuestbookRepository _repository = GuestbookRepository();
+  late final IGuestbookRepository _repository;
   List<GuestbookMessage> _messages = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _repository = serviceLocator<IGuestbookRepository>();
     _loadMessages();
   }
 
@@ -236,12 +239,36 @@ class _GuestbookWidgetRendererState extends State<GuestbookWidgetRenderer> {
                       textColor: _parseColor(widget.widget.textColor),
                       accentColor: _parseColor(widget.widget.accentColor),
                       isEditMode: widget.isEditMode,
-                      onDelete: widget.isEditMode ? (messageId) async {
-                        final success = await _repository.deleteMessage(messageId);
+                      onDelete: (messageIdWithPassword) async {
+                        // Parse messageId and password
+                        final parts = messageIdWithPassword.split('|');
+                        if (parts.length != 2) return;
+                        
+                        final messageId = parts[0];
+                        final password = parts[1];
+                        
+                        final success = await _repository.deleteMessageWithPassword(messageId, password);
                         if (success) {
                           await _loadMessages();
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('메시지가 삭제되었습니다'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
+                        } else {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('비밀번호가 일치하지 않습니다'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
                         }
-                      } : null,
+                      },
                     ),
                   );
                 }),

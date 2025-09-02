@@ -4,8 +4,6 @@ import '../../../data/models/editor_widget_model.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import '../../../features/location/presentation/widgets/multi_map_widget.dart' show MapProvider, MultiMapWidget;
 import '../../../features/location/presentation/widgets/google_map_widget_wrapper.dart';
-import '../../../features/location/presentation/widgets/naver_map_widget.dart' as naver_map;
-import '../../../features/location/presentation/widgets/kakao_map_widget.dart' as kakao_map;
 import '../guestbook/guestbook_widget.dart';
 
 class WidgetRenderer extends StatelessWidget {
@@ -370,12 +368,15 @@ class WidgetRenderer extends StatelessWidget {
         return SizedBox(
           width: mapWidth,
           height: naverMapWidget.height,
-          child: naver_map.NaverMapWidget(
-            latitude: naverMapWidget.latitude,
-            longitude: naverMapWidget.longitude,
-            venue: naverMapWidget.venue,
-            showControls: !isEditMode && naverMapWidget.showControls,
-            height: naverMapWidget.height,
+          child: Container(
+            color: Colors.grey.shade200,
+            child: const Center(
+              child: Text(
+                'Naver Map\n(Not Available)',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
           ),
         );
       },
@@ -396,12 +397,15 @@ class WidgetRenderer extends StatelessWidget {
         return SizedBox(
           width: mapWidth,
           height: kakaoMapWidget.height,
-          child: kakao_map.KakaoMapWidget(
-            latitude: kakaoMapWidget.latitude,
-            longitude: kakaoMapWidget.longitude,
-            venue: kakaoMapWidget.venue,
-            showControls: !isEditMode && kakaoMapWidget.showControls,
-            height: kakaoMapWidget.height,
+          child: Container(
+            color: Colors.grey.shade200,
+            child: const Center(
+              child: Text(
+                'Kakao Map\n(Not Available)',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
           ),
         );
       },

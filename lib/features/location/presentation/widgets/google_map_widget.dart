@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 import '../../../../core/config/environment.dart';
 
@@ -45,7 +46,7 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
   void didUpdateWidget(GoogleMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Check if coordinates have changed
-    if (oldWidget.latitude != widget.latitude || 
+    if (oldWidget.latitude != widget.latitude ||
         oldWidget.longitude != widget.longitude) {
       _initializeMap();
       _updateMapCamera();
@@ -58,9 +59,45 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
       zoom: widget.zoom,
     );
 
-    // Disable markers to avoid LegacyJavaScriptObject error on web
-    // TODO: Find alternative marker solution for web platform
-    _markers = <Marker>{};
+    // Create marker with info window
+    _markers = <Marker>{
+      Marker(
+        markerId: const MarkerId('wedding_venue'),
+        position: LatLng(widget.latitude, widget.longitude),
+        infoWindow: InfoWindow(
+          title: widget.venue,
+          snippet: 'Tap for directions 🧭',
+          onTap: () async {
+            // Use specific Google Maps links for each location
+            String mapUrl;
+
+            if (widget.venue.contains('AC Hotel Kuantan')) {
+              // Malaysia location
+              mapUrl = 'https://maps.app.goo.gl/NQh4bPQZ6Mqd45rx6';
+            } else if (widget.venue.contains('Arbora')) {
+              // Singapore location
+              mapUrl = 'https://maps.app.goo.gl/YTLSyvffXX8HFUiRA';
+            } else if (widget.venue.contains('Ulsan')) {
+              // Korea location
+              mapUrl = 'https://maps.app.goo.gl/MEbVPxKa3UYWWGmj8';
+            } else {
+              // Fallback to generic search
+              mapUrl =
+                  'https://maps.google.com/maps?q=${widget.latitude},${widget.longitude}&navigate=yes';
+            }
+
+            final Uri url = Uri.parse(mapUrl);
+            try {
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
+            } catch (e) {
+              debugPrint('Error launching URL: $e');
+            }
+          },
+        ),
+      ),
+    };
   }
 
   Future<void> _updateMapCamera() async {
@@ -99,30 +136,37 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
     return Stack(
       children: [
         GoogleMap(
-                mapType: MapType.normal,
-                initialCameraPosition: _initialPosition,
-                markers: _markers,
-                onMapCreated: (GoogleMapController controller) {
-                  try {
-                    if (!_controller.isCompleted) {
-                      _controller.complete(controller);
-                    }
-                  } catch (e) {
-                    debugPrint('GoogleMap onMapCreated error: $e');
-                    // Don't set error state for map creation issues
-                    // The map often loads successfully despite initial errors
-                  }
-                },
-                zoomControlsEnabled: widget.showControls,
-                myLocationEnabled: false,
-                myLocationButtonEnabled: false,
-                mapToolbarEnabled: widget.showControls,
-                compassEnabled: widget.showControls,
-                // Disable all gestures for preview mode
-                zoomGesturesEnabled: widget.showControls,
-                scrollGesturesEnabled: widget.showControls,
-                tiltGesturesEnabled: widget.showControls,
-                rotateGesturesEnabled: widget.showControls,
+          mapType: MapType.normal,
+          initialCameraPosition: _initialPosition,
+          markers: _markers,
+          onMapCreated: (GoogleMapController controller) async {
+            try {
+              if (!_controller.isCompleted) {
+                _controller.complete(controller);
+              }
+
+              // Auto-show info window after map loads
+              await Future.delayed(const Duration(seconds: 2));
+              if (_markers.isNotEmpty) {
+                controller
+                    .showMarkerInfoWindow(const MarkerId('wedding_venue'));
+              }
+            } catch (e) {
+              debugPrint('GoogleMap onMapCreated error: $e');
+              // Don't set error state for map creation issues
+              // The map often loads successfully despite initial errors
+            }
+          },
+          zoomControlsEnabled: widget.showControls,
+          myLocationEnabled: false,
+          myLocationButtonEnabled: false,
+          mapToolbarEnabled: widget.showControls,
+          compassEnabled: widget.showControls,
+          // Disable all gestures for preview mode
+          zoomGesturesEnabled: widget.showControls,
+          scrollGesturesEnabled: widget.showControls,
+          tiltGesturesEnabled: widget.showControls,
+          rotateGesturesEnabled: widget.showControls,
         ),
         if (!widget.showControls)
           Positioned(

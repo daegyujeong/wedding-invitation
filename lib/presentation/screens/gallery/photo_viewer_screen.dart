@@ -1,6 +1,5 @@
 // lib/presentation/screens/gallery/photo_viewer_screen.dart
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
@@ -56,7 +55,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent, // Transparent for dialog overlay
       body: Stack(
         children: [
           // Enhanced photo gallery with PhotoView
@@ -64,7 +63,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
             scrollPhysics: const BouncingScrollPhysics(),
             builder: (BuildContext context, int index) {
               return PhotoViewGalleryPageOptions(
-                imageProvider: CachedNetworkImageProvider(widget.imageUrls[index]),
+                imageProvider: AssetImage(widget.imageUrls[index]),
                 initialScale: PhotoViewComputedScale.contained,
                 minScale: PhotoViewComputedScale.contained * 0.3,
                 maxScale: PhotoViewComputedScale.covered * 3,
@@ -101,7 +100,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
               ),
             ),
             backgroundDecoration: const BoxDecoration(
-              color: Colors.black,
+              color: Colors.transparent,
             ),
             pageController: _pageController,
             onPageChanged: (index) {
@@ -141,6 +140,10 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
                           Icons.close,
                           color: Colors.white,
                           size: 28,
+                        ),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.black.withOpacity(0.5),
+                          shape: const CircleBorder(),
                         ),
                       ),
                       

@@ -414,14 +414,19 @@ class _GuestbookScreenState extends State<GuestbookScreen> {
         icon: const Icon(Icons.edit),
         label: const Text('메시지 남기기'),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _loadMessages,
-              child: _allMessages.isEmpty
-                  ? _buildEmptyState()
-                  : _buildMessagesList(),
-            ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                  onRefresh: _loadMessages,
+                  child: _allMessages.isEmpty
+                      ? _buildEmptyState()
+                      : _buildMessagesList(),
+                ),
+        ),
+      ),
     );
   }
 
@@ -618,32 +623,35 @@ class _GuestbookScreenState extends State<GuestbookScreen> {
           ),
           
           // Page indicators
-          Row(
-            children: List.generate(_totalPages, (index) {
-              final isCurrentPage = index == _currentPage;
-              return GestureDetector(
-                onTap: () => _goToPage(index),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: isCurrentPage ? Colors.pink.shade400 : Colors.grey.shade200,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${index + 1}',
-                      style: TextStyle(
-                        color: isCurrentPage ? Colors.white : Colors.black87,
-                        fontWeight: isCurrentPage ? FontWeight.bold : FontWeight.normal,
-                        fontSize: 14,
+          Flexible(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(_totalPages.clamp(1, 5), (index) {
+                final isCurrentPage = index == _currentPage;
+                return GestureDetector(
+                  onTap: () => _goToPage(index),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: isCurrentPage ? Colors.pink.shade400 : Colors.grey.shade200,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${index + 1}',
+                        style: TextStyle(
+                          color: isCurrentPage ? Colors.white : Colors.black87,
+                          fontWeight: isCurrentPage ? FontWeight.bold : FontWeight.normal,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+            ),
           ),
           
           // Next button

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Rendering Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .emoji-large {
+            font-size: 48px;
+            margin: 10px;
+        }
+        
+        .emoji-medium {
+            font-size: 24px;
+            margin: 5px;
+        }
+        
+        .emoji-inline {
+            font-size: 16px;
+        }
+        
+        .fallback-test {
+            font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <h1>Wedding App Emoji Rendering Test</h1>
+    
+    <div class="test-section">
+        <h2>Large Emojis (48px)</h2>
+        <div class="emoji-large">
+            🎉 💕 ✨ 💐 💛 🌸 💖
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Medium Emojis (24px)</h2>
+        <div class="emoji-medium">
+            🎉 💕 ✨ 💐 💛 🌸 💖
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Inline Text with Emojis</h2>
+        <p class="emoji-inline">
+            🎉 Welcome to our wedding celebration! 💕<br>
+            ✨ Join us for our special day ✨<br>
+            💐 We can't wait to celebrate with you 💐<br>
+            💛 KakaoPay 💛<br>
+            🌸 Cherry blossom season 🌸<br>
+            💖 Love and happiness 💖
+        </p>
+    </div>
+    
+    <div class="test-section">
+        <h2>CSS Class Test (.emoji)</h2>
+        <div class="emoji fallback-test emoji-large">
+            🎉 💕 ✨ 💐 💛 🌸 💖
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Browser Info</h2>
+        <div id="browser-info"></div>
+    </div>
+
+    <script>
+        // Display browser and emoji support information
+        const browserInfo = document.getElementById('browser-info');
+        const userAgent = navigator.userAgent;
+        const isWebKit = userAgent.includes('WebKit');
+        const isChrome = userAgent.includes('Chrome');
+        const isSafari = userAgent.includes('Safari') && !userAgent.includes('Chrome');
+        const isFirefox = userAgent.includes('Firefox');
+        
+        browserInfo.innerHTML = `
+            <p><strong>User Agent:</strong> ${userAgent}</p>
+            <p><strong>Browser:</strong> ${
+                isChrome ? 'Chrome' : 
+                isSafari ? 'Safari' : 
+                isFirefox ? 'Firefox' : 'Other'
+            }</p>
+            <p><strong>WebKit-based:</strong> ${isWebKit ? 'Yes' : 'No'}</p>
+            <p><strong>Color emoji support:</strong> ${
+                CSS.supports('font-variant-emoji', 'emoji') ? 'Yes (font-variant-emoji)' : 'Unknown'
+            }</p>
+        `;
+    </script>
+</body>
+</html>

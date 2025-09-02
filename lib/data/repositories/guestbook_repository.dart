@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/guestbook_message_model.dart';
@@ -7,6 +8,14 @@ import 'package:logger/logger.dart';
 class GuestbookRepository implements IGuestbookRepository {
   static const String _storageKey = 'guestbook_messages';
   final _logger = Logger();
+  
+  // Stream controllers for real-time updates
+  final StreamController<List<GuestbookMessage>> _messagesController = StreamController<List<GuestbookMessage>>.broadcast();
+  final StreamController<int> _messageCountController = StreamController<int>.broadcast();
+  
+  // Cache for reducing SharedPreferences calls
+  List<GuestbookMessage>? _cachedMessages;
+  Timer? _refreshTimer;
 
   @override
   Future<List<GuestbookMessage>> getMessages() async {
@@ -15,17 +24,32 @@ class GuestbookRepository implements IGuestbookRepository {
       final messagesJson = prefs.getString(_storageKey);
       
       if (messagesJson == null) {
+        _cachedMessages = [];
+        _notifyStreams();
         return [];
       }
 
       final List<dynamic> messagesList = json.decode(messagesJson);
-      return messagesList
+      final messages = messagesList
           .map((json) => GuestbookMessage.fromJson(json))
+          .where((message) => !message.isDeleted) // Filter out deleted messages
           .toList()
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt)); // Latest first
+      
+      _cachedMessages = messages;
+      _notifyStreams();
+      return messages;
     } catch (e) {
       _logger.e('Error loading guestbook messages: $e');
-      return [];
+      return _cachedMessages ?? [];
+    }
+  }
+
+  // Helper method to notify all streams when data changes
+  void _notifyStreams() {
+    if (_cachedMessages != null) {
+      _messagesController.add(_cachedMessages!);
+      _messageCountController.add(_cachedMessages!.length);
     }
   }
 
@@ -38,7 +62,12 @@ class GuestbookRepository implements IGuestbookRepository {
       final prefs = await SharedPreferences.getInstance();
       final messagesJson = json.encode(messages.map((m) => m.toJson()).toList());
       
-      return await prefs.setString(_storageKey, messagesJson);
+      final success = await prefs.setString(_storageKey, messagesJson);
+      if (success) {
+        _cachedMessages = messages;
+        _notifyStreams();
+      }
+      return success;
     } catch (e) {
       _logger.e('Error adding guestbook message: $e');
       return false;
@@ -54,9 +83,53 @@ class GuestbookRepository implements IGuestbookRepository {
       final prefs = await SharedPreferences.getInstance();
       final messagesJson = json.encode(messages.map((m) => m.toJson()).toList());
       
-      return await prefs.setString(_storageKey, messagesJson);
+      final success = await prefs.setString(_storageKey, messagesJson);
+      if (success) {
+        _cachedMessages = messages;
+        _notifyStreams();
+      }
+      return success;
     } catch (e) {
       _logger.e('Error deleting guestbook message: $e');
+      return false;
+    }
+  }
+  
+  @override
+  Future<bool> deleteMessageWithPassword(String messageId, String password) async {
+    try {
+      final messages = await getMessages();
+      final messageIndex = messages.indexWhere((m) => m.id == messageId);
+      
+      if (messageIndex == -1) {
+        _logger.w('Message not found for deletion');
+        return false;
+      }
+      
+      final message = messages[messageIndex];
+      
+      // Verify password
+      if (message.password != password) {
+        _logger.w('Invalid password for message deletion');
+        return false;
+      }
+      
+      // Soft delete - update the message to mark as deleted
+      final updatedMessage = message.copyWith(isDeleted: true);
+      messages[messageIndex] = updatedMessage;
+      
+      final prefs = await SharedPreferences.getInstance();
+      final messagesJson = json.encode(messages.map((m) => m.toJson()).toList());
+      
+      final success = await prefs.setString(_storageKey, messagesJson);
+      if (success) {
+        _cachedMessages = messages;
+        _notifyStreams();
+        _logger.i('Message soft deleted successfully');
+      }
+      return success;
+    } catch (e) {
+      _logger.e('Error deleting guestbook message with password: $e');
       return false;
     }
   }
@@ -76,7 +149,12 @@ class GuestbookRepository implements IGuestbookRepository {
       final prefs = await SharedPreferences.getInstance();
       final messagesJson = json.encode(messages.map((m) => m.toJson()).toList());
       
-      return await prefs.setString(_storageKey, messagesJson);
+      final success = await prefs.setString(_storageKey, messagesJson);
+      if (success) {
+        _cachedMessages = messages;
+        _notifyStreams();
+      }
+      return success;
     } catch (e) {
       _logger.e('Error updating guestbook message: $e');
       return false;
@@ -87,7 +165,12 @@ class GuestbookRepository implements IGuestbookRepository {
   Future<bool> clearAllMessages() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      return await prefs.remove(_storageKey);
+      final success = await prefs.remove(_storageKey);
+      if (success) {
+        _cachedMessages = [];
+        _notifyStreams();
+      }
+      return success;
     } catch (e) {
       _logger.e('Error clearing guestbook messages: $e');
       return false;
@@ -200,5 +283,55 @@ class GuestbookRepository implements IGuestbookRepository {
       '지인',
       '기타'
     ];
+  }
+
+  // Real-time Stream implementations
+  @override
+  Stream<List<GuestbookMessage>> getMessagesStream() {
+    // Initialize with current data if available
+    if (_cachedMessages != null) {
+      _messagesController.add(_cachedMessages!);
+    } else {
+      // Load initial data
+      getMessages();
+    }
+    return _messagesController.stream;
+  }
+
+  @override
+  Stream<List<GuestbookMessage>> getApprovedMessagesStream() {
+    return getMessagesStream().map((messages) => 
+        messages.where((message) => message.isApproved).toList());
+  }
+
+  @override
+  Stream<List<GuestbookMessage>> getPendingMessagesStream() {
+    return getMessagesStream().map((messages) => 
+        messages.where((message) => !message.isApproved).toList());
+  }
+
+  @override
+  Stream<List<GuestbookMessage>> getRecentMessagesStream({int limit = 20}) {
+    return getMessagesStream().map((messages) => 
+        messages.take(limit).toList());
+  }
+
+  @override
+  Stream<int> getMessageCountStream() {
+    // Initialize with current count if available
+    if (_cachedMessages != null) {
+      _messageCountController.add(_cachedMessages!.length);
+    } else {
+      // Load initial data
+      getMessages();
+    }
+    return _messageCountController.stream;
+  }
+
+  // Cleanup method for disposing streams
+  void dispose() {
+    _refreshTimer?.cancel();
+    _messagesController.close();
+    _messageCountController.close();
   }
 }

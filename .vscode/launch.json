@@ -7,7 +7,26 @@
         {
             "name": "wedding_invitation",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "args": [
+                "--web-browser-flag",
+                "--disable-web-security",
+                "--dart-define=SUPABASE_URL=https://otksynthwanpqpkdttzv.supabase.co",
+                "--dart-define=SUPABASE_ANON_KEY=sb_publishable_nuXZ7koUQ8q7x7Nfi-Bmsw_ssXmsfIr"
+            ]
+        },
+        {
+            "name": "wedding_invitation (Chrome - No Break)",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "-d",
+                "chrome",
+                "--web-renderer",
+                "html",
+                "--dart-define=SUPABASE_URL=https://otksynthwanpqpkdttzv.supabase.co",
+                "--dart-define=SUPABASE_ANON_KEY=sb_publishable_nuXZ7koUQ8q7x7Nfi-Bmsw_ssXmsfIr"
+            ]
         },
         {
             "name": "wedding_invitation (profile mode)",

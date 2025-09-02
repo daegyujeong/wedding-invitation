@@ -1480,7 +1480,7 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
                     controller: imageUrlController,
                     decoration: const InputDecoration(
                       labelText: '이미지 경로',
-                      hintText: 'assets/images/example.jpg',
+                      hintText: 'assets/images/example.webp',
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -1629,7 +1629,7 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
                     onPressed: () {
                       setDialogState(() {
                         imageUrls.add(
-                            'assets/images/gallery${imageUrls.length + 1}.jpg');
+                            'assets/images/gallery${imageUrls.length + 1}.webp');
                       });
                     },
                   ),
@@ -2144,7 +2144,7 @@ class _CustomDraggableEditorState extends State<CustomDraggableEditor> {
     return ImageWidget(
       id: _uuid.v4(),
       data: {
-        'imageUrl': 'assets/images/gallery1.jpg',
+        'imageUrl': 'assets/images/gallery1.webp',
         'width': 200.0,
         'height': 200.0,
         'position': {

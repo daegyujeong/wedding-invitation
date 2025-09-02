@@ -8,18 +8,22 @@ import '../../data/repositories/interfaces/guestbook_repository.dart';
 import '../../data/repositories/interfaces/location_repository.dart';
 import '../../data/repositories/interfaces/widget_repository.dart';
 import '../../data/repositories/interfaces/language_repository.dart';
+import '../../data/repositories/interfaces/rsvp_repository.dart';
 
 // Import all repository implementations
 import '../../data/repositories/invitation_repository_impl.dart';
 import '../../data/repositories/message_repository_impl.dart';
 import '../../data/repositories/guestbook_repository.dart';
+import '../../data/repositories/supabase_guestbook_repository.dart';
+import '../../data/repositories/supabase_rsvp_repository.dart';
 import '../../data/repositories/location_repository_impl.dart';
 import '../../data/repositories/widget_repository_impl.dart';
 import '../../data/repositories/language_repository_impl.dart';
 
 // Import services
 import '../../data/services/location_search_service.dart';
-import '../../data/services/google_places_web_service.dart';
+import '../../data/services/supabase_service.dart';
+// import '../../data/services/google_places_web_service.dart'; // Temporarily disabled
 
 /// Global service locator instance
 final GetIt serviceLocator = GetIt.instance;
@@ -46,10 +50,10 @@ void _registerServices() {
     () => LocationSearchService(),
   );
   
-  // Google Places web service (singleton to maintain state)
-  serviceLocator.registerLazySingleton<GooglePlacesWebService>(
-    () => GooglePlacesWebService(),
-  );
+  // Google Places web service (temporarily disabled for testing)
+  // serviceLocator.registerLazySingleton<GooglePlacesWebService>(
+  //   () => GooglePlacesWebService(),
+  // );
 }
 
 /// Register repository implementations as singletons
@@ -65,9 +69,15 @@ void _registerRepositories() {
     () => MessageRepositoryImpl(),
   );
   
-  // Guestbook repository
+  // Guestbook repository - use Supabase if initialized, otherwise local storage
   serviceLocator.registerLazySingleton<IGuestbookRepository>(
-    () => GuestbookRepository(),
+    () {
+      if (SupabaseService.isInitialized) {
+        return SupabaseGuestbookRepository();
+      } else {
+        return GuestbookRepository();
+      }
+    },
   );
   
   // Location repository (depends on location search service)
@@ -83,6 +93,11 @@ void _registerRepositories() {
   // Language repository
   serviceLocator.registerLazySingleton<ILanguageRepository>(
     () => LanguageRepositoryImpl(),
+  );
+  
+  // RSVP repository
+  serviceLocator.registerLazySingleton<IRSVPRepository>(
+    () => SupabaseRSVPRepository(),
   );
 }
 
@@ -131,12 +146,15 @@ class DI {
   static ILanguageRepository get languageRepository => 
       serviceLocator<ILanguageRepository>();
   
+  static IRSVPRepository get rsvpRepository => 
+      serviceLocator<IRSVPRepository>();
+  
   // Services
   static LocationSearchService get locationSearchService => 
       serviceLocator<LocationSearchService>();
   
-  static GooglePlacesWebService get googlePlacesService => 
-      serviceLocator<GooglePlacesWebService>();
+  // static GooglePlacesWebService get googlePlacesService => 
+  //     serviceLocator<GooglePlacesWebService>(); // Temporarily disabled
 }
 
 /// Extension for easy access to repositories in any widget or class
@@ -147,6 +165,7 @@ extension DIContext on Object {
   ILocationRepository get locationRepository => DI.locationRepository;
   IWidgetRepository get widgetRepository => DI.widgetRepository;
   ILanguageRepository get languageRepository => DI.languageRepository;
+  IRSVPRepository get rsvpRepository => DI.rsvpRepository;
   LocationSearchService get locationSearchService => DI.locationSearchService;
-  GooglePlacesWebService get googlePlacesService => DI.googlePlacesService;
+  // GooglePlacesWebService get googlePlacesService => DI.googlePlacesService; // Temporarily disabled
 }

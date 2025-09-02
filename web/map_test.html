@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Map Test</title>
+    <style>
+        #map { height: 400px; width: 100%; }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Wedding Map Test</h1>
+    <div id="map"></div>
+    
+    <!-- Google Maps JavaScript API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDYtu2Bu-VPXsA3z5sWaENXOqa-B-m8vxM&libraries=geometry,places"></script>
+    
+    <!-- Wedding Map Styles -->
+    <script src="wedding_map_styles.js"></script>
+    
+    <script>
+        function initTestMap() {
+            console.log('🧪 Testing map initialization...');
+            
+            // Test data
+            const venueData = {
+                name: 'Test Wedding Venue',
+                address: '123 Wedding Street, Singapore',
+                lat: 1.3521,
+                lng: 103.8198,
+                date: '2025-11-30',
+                time: '6:00 PM'
+            };
+            
+            const mapOptions = {
+                zoom: 15,
+                scrollwheel: true,
+                zoomControl: true,
+                mapTypeControl: false,
+                streetViewControl: true,
+                fullscreenControl: true
+            };
+            
+            // Test if WeddingMapStyles is available
+            if (typeof window.WeddingMapStyles !== 'undefined') {
+                console.log('✅ WeddingMapStyles found, testing custom styling...');
+                try {
+                    window.WeddingMapStyles.initMap('map', venueData, mapOptions);
+                    console.log('✅ Custom map initialized successfully');
+                } catch (error) {
+                    console.error('❌ WeddingMapStyles error:', error);
+                    initBasicMap(venueData, mapOptions);
+                }
+            } else {
+                console.log('⚠️ WeddingMapStyles not found, using basic map');
+                initBasicMap(venueData, mapOptions);
+            }
+        }
+        
+        function initBasicMap(venueData, mapOptions) {
+            console.log('🗺️ Initializing basic map...');
+            
+            if (typeof google === 'undefined' || !google.maps) {
+                console.error('❌ Google Maps API not loaded');
+                return;
+            }
+            
+            const map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: venueData.lat, lng: venueData.lng },
+                zoom: mapOptions.zoom,
+                scrollwheel: mapOptions.scrollwheel,
+                zoomControl: mapOptions.zoomControl,
+                mapTypeControl: mapOptions.mapTypeControl,
+                streetViewControl: mapOptions.streetViewControl,
+                fullscreenControl: mapOptions.fullscreenControl
+            });
+            
+            const marker = new google.maps.Marker({
+                position: { lat: venueData.lat, lng: venueData.lng },
+                map: map,
+                title: venueData.name,
+                animation: google.maps.Animation.DROP
+            });
+            
+            const infoWindow = new google.maps.InfoWindow({
+                content: `
+                    <div style="padding: 10px;">
+                        <h3>${venueData.name}</h3>
+                        <p>${venueData.address}</p>
+                        <p><strong>Date:</strong> ${venueData.date}</p>
+                        <p><strong>Time:</strong> ${venueData.time}</p>
+                    </div>
+                `
+            });
+            
+            marker.addListener('click', () => {
+                infoWindow.open(map, marker);
+            });
+            
+            // Open info window by default
+            setTimeout(() => {
+                infoWindow.open(map, marker);
+            }, 1000);
+            
+            console.log('✅ Basic map initialized successfully');
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', initTestMap);
+    </script>
+</body>
+</html>

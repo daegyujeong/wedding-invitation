@@ -21,8 +21,10 @@ class _AddMessageDialogState extends State<AddMessageDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _messageController = TextEditingController();
+  final _passwordController = TextEditingController();
   String? _selectedRelationship;
   bool _isSubmitting = false;
+  bool _showPassword = false;
 
   final List<String> _relationships = [
     '신랑측',
@@ -37,6 +39,7 @@ class _AddMessageDialogState extends State<AddMessageDialog> {
   void dispose() {
     _nameController.dispose();
     _messageController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -56,6 +59,7 @@ class _AddMessageDialogState extends State<AddMessageDialog> {
         message: _messageController.text.trim(),
         createdAt: DateTime.now(),
         relationship: _selectedRelationship,
+        password: _passwordController.text.isNotEmpty ? _passwordController.text : null,
         isApproved: true, // For now, auto-approve all messages
       );
 
@@ -193,6 +197,37 @@ class _AddMessageDialogState extends State<AddMessageDialog> {
                   }
                   return null;
                 },
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Password field for deletion
+              TextFormField(
+                controller: _passwordController,
+                obscureText: !_showPassword,
+                decoration: InputDecoration(
+                  labelText: '삭제 비밀번호 (선택사항)',
+                  hintText: '메시지 삭제시 필요한 비밀번호',
+                  helperText: '나중에 메시지를 삭제하려면 비밀번호를 설정하세요',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: widget.accentColor),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _showPassword ? Icons.visibility : Icons.visibility_off,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _showPassword = !_showPassword;
+                      });
+                    },
+                  ),
+                ),
               ),
               
               const SizedBox(height: 24),

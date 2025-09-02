@@ -590,7 +590,7 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
         editorWidget = ImageWidget(
           id: 'image_${_uuid.v4()}',
           data: {
-            'imageUrl': 'assets/images/gallery1.jpg',
+            'imageUrl': 'assets/images/gallery1.webp',
             'width': 200.0,
             'height': 200.0,
             'position': {
@@ -606,9 +606,9 @@ class _WidgetSelectorScreenState extends State<WidgetSelectorScreen>
           id: 'gallery_${_uuid.v4()}',
           data: {
             'imageUrls': [
-              'assets/images/gallery1.jpg',
-              'assets/images/gallery2.jpg',
-              'assets/images/gallery3.jpg',
+              'assets/images/gallery1.webp',
+              'assets/images/gallery2.webp',
+              'assets/images/gallery3.webp',
             ],
             'layoutType': 'carousel',
             'style': 'modern', // Add style property

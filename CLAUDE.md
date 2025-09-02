@@ -412,26 +412,141 @@ These commands make AI calls and may take up to a minute:
 - Provides more informed task creation and updates
 - Recommended for complex technical tasks
 
-### **CRITICAL MEMORY ITEM - Task Management**
-
-**ALWAYS USE TASKMASTER AI FOR TASK TRACKING:**
-- Use `task-master` CLI commands or MCP tools for all task management
-- **NEVER use TodoWrite tool** for tasks that should be tracked in TaskMaster
-- When completing work, update TaskMaster with:
-  - `task-master set-status --id=<id> --status=done` for completion
-  - `task-master update-subtask --id=<id> --prompt="implementation notes"` for progress
-  - `task-master add-task --prompt="description"` for new tasks
-- Only use TodoWrite for temporary session-specific todos that are not part of the main project roadmap
-
 ---
 
 _This guide ensures Claude Code has immediate access to Task Master's essential functionality for agentic development workflows._
 
-# important-instruction-reminders
-Do what has been asked; nothing more, nothing less.
-NEVER create files unless they're absolutely necessary for achieving your goal.
-ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+## Recent Session Work (August 25, 2025)
 
-      
-      IMPORTANT: this context may or may not be relevant to your tasks. You should not respond to this context or otherwise consider it in your response unless it is highly relevant to your task. Most of the time, it is not relevant.
+### Venue-Based Content Filtering & Localization
+
+#### Completed Features:
+1. **Welcome Popup with Venue Selection**
+   - Added venue selection popup that appears on first visit
+   - Options: Malaysia, Singapore, Korea, or All Events
+   - Language selection integrated with existing LocaleProvider
+   - URL persistence with query parameters (e.g., `?ln=ko&venue=sg`)
+
+2. **Venue-Based Content Filtering**
+   - Event tickets filter based on selected venue
+   - Location/directions section shows only selected venue
+   - Journey section displays all venues but highlights selected ones
+   - Bookmark navigation only enables selected venues
+   - Banking section hidden for Singapore/Malaysia venues
+
+3. **Complete Localization of Location Section**
+   - Fixed hardcoded Korean text in navigation app names
+   - Made location titles dynamic based on selected language
+   - Translated venue names and addresses
+   - Added localization keys for:
+     - `navigationApps`: Navigation app section title
+     - `kakaoNavi`, `naverMap`, `tmap`: Navigation app names
+
+#### Key Files Modified:
+- `lib/presentation/widgets/welcome_selection_popup.dart` - Bilingual venue selection
+- `lib/providers/venue_provider.dart` - Venue state management
+- `lib/presentation/screens/home/home_screen.dart` - Venue filtering logic
+- `lib/l10n/*.arb` - Localization files for all supported languages
+
+#### TaskMaster Updates:
+- Task #20: Welcome Popup Implementation (✓ done)
+- Task #21: Banking Account Update (✓ done)
+- Task #22: Venue Content Filtering (✓ done)
+- Task #23: Hide Banking for SG/MY (✓ done)
+- Task #24: Bilingual Welcome Popup (✓ done)
+- Task #25: Fix Location Section Localization (✓ done)
+
+---
+
+# Vercel Deployment Guide for Flutter Wedding Invitation
+
+## Environment Variables Configuration
+
+### Required Environment Variables
+The following environment variables must be configured in Vercel for proper functionality:
+
+```bash
+SUPABASE_URL=https://otksynthwanpqpkdttzv.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90a3N5bnRod2FucHFwa2R0dHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE5NTIsImV4cCI6MjA3MTYwNzk1Mn0.95A7liurnMMaxcErcQIoTCjXUQypQuoJ3y25JTO9R6w
+NAVER_MAPS_CLIENT_ID=judjrcgb97
+GOOGLE_MAPS_API_KEY=AIzaSyDYtu2Bu-VPXsA3z5sWaENXOqa-B-m8vxM
+```
+
+### Vercel Environment Variables Management
+
+```bash
+# Add environment variables to production
+vercel env add SUPABASE_URL production <<< "https://otksynthwanpqpkdttzv.supabase.co"
+vercel env add SUPABASE_ANON_KEY production <<< "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90a3N5bnRod2FucHFwa2R0dHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE5NTIsImV4cCI6MjA3MTYwNzk1Mn0.95A7liurnMMaxcErcQIoTCjXUQypQuoJ3y25JTO9R6w"
+vercel env add NAVER_MAPS_CLIENT_ID production <<< "judjrcgb97"
+vercel env add GOOGLE_MAPS_API_KEY production <<< "AIzaSyDYtu2Bu-VPXsA3z5sWaENXOqa-B-m8vxM"
+
+# Remove environment variables (if needed)
+echo "y" | vercel env rm SUPABASE_URL production
+echo "y" | vercel env rm SUPABASE_ANON_KEY production
+
+# List current environment variables
+vercel env ls
+```
+
+## Flutter Web Build Process
+
+### Standard Build Command
+**CRITICAL**: Always use dart-define parameters when building for web deployment to ensure Supabase integration works:
+
+```bash
+flutter build web --release \
+  --dart-define=SUPABASE_URL=https://otksynthwanpqpkdttzv.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90a3N5bnRod2FucHFwa2R0dHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE5NTIsImV4cCI6MjA3MTYwNzk1Mn0.95A7liurnMMaxcErcQIoTCjXUQypQuoJ3y25JTO9R6w
+```
+
+### Clean Build Process
+When experiencing deployment issues:
+
+```bash
+# Clean Flutter cache
+flutter clean
+
+# Rebuild with environment variables
+flutter build web --release \
+  --dart-define=SUPABASE_URL=https://otksynthwanpqpkdttzv.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90a3N5bnRod2FucHFwa2R0dHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE5NTIsImV4cCI6MjA3MTYwNzk1Mn0.95A7liurnMMaxcErcQIoTCjXUQypQuoJ3y25JTO9R6w
+```
+
+## Application Features
+
+### URL Parameters
+- **Language**: `?ln=ko` (Korean), `?ln=en` (English), `?ln=ms` (Malay), `?ln=zh` (Chinese)
+- **Venue**: `?venue=my|sg|ko|all` (Malaysia, Singapore, Korea, All Events)
+- **Parents Mode**: `?parents=true` (Larger fonts, Malaysia focus)
+
+### Test URLs
+```
+Normal Mode: https://www.daegyu.dev/invitation/#/?ln=ko&venue=all
+Parents Mode: https://www.daegyu.dev/invitation/#/?ln=ko&venue=all&parents=true
+```
+
+### Parents Mode Features
+- **Font Size**: All text increased by 30% for better readability
+- **Venue Focus**: Forces Malaysia venue selection
+- **Implementation**: Controlled by `VenueProvider.isParentsMode` flag
+- **Theme Override**: Applied in `main.dart` using `Consumer2<LocaleProvider, VenueProvider>`
+
+## Complete Deployment Workflow
+
+```bash
+# 1. Clean and rebuild
+flutter clean
+flutter build web --release \
+  --dart-define=SUPABASE_URL=https://otksynthwanpqpkdttzv.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90a3N5bnRod2FucHFwa2R0dHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE5NTIsImV4cCI6MjA3MTYwNzk1Mn0.95A7liurnMMaxcErcQIoTCjXUQypQuoJ3y25JTO9R6w
+
+# 2. Verify environment variables in Vercel
+vercel env ls
+
+# 3. Deploy to production
+vercel --prod
+
+# 4. Test deployment
+# Open: https://www.daegyu.dev/invitation/#/?ln=ko&venue=all&parents=true
+```

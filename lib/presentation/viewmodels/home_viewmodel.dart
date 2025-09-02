@@ -28,11 +28,11 @@ class HomeViewModel extends ChangeNotifier {
           defaultLanguage: 'ko',
         ),
         groomName: MultiLanguageText(
-          translations: {'ko': '김철수', 'en': 'Kim Cheolsu'},
+          translations: {'ko': '정대규', 'en': 'Jeong Daegyu'},
           defaultLanguage: 'ko',
         ),
         brideName: MultiLanguageText(
-          translations: {'ko': '이영희', 'en': 'Lee Younghee'},
+          translations: {'ko': 'Irene Chia', 'en': 'Irene Chia'},
           defaultLanguage: 'ko',
         ),
         greetingMessage: MultiLanguageText(

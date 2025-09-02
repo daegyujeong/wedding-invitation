@@ -1,7 +1,7 @@
 // lib/core/routing/app_router.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../presentation/screens/invitation/invitation_screen.dart';
+import '../../presentation/screens/home/home_screen.dart';
 import '../../presentation/screens/gallery/gallery_screen.dart';
 import '../../presentation/screens/location/location_screen.dart';
 import '../../presentation/screens/guestbook/guestbook_screen.dart';
@@ -50,7 +50,7 @@ class AppRouter {
         name: 'invitation',
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
-          child: const InvitationScreen(),
+          child: const HomeScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               FadeTransition(opacity: animation, child: child),
         ),

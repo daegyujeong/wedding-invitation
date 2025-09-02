@@ -25,8 +25,8 @@ class _GalleryTemplateEditorState extends State<GalleryTemplateEditor> {
     // Initialize with existing content
     _images = List<String>.from(widget.page.settings['images'] ?? []);
     if (_images.isEmpty) {
-      _images.add('assets/images/gallery1.jpg');
-      _images.add('assets/images/gallery2.jpg');
+      _images.add('assets/images/gallery1.webp');
+      _images.add('assets/images/gallery2.webp');
     }
   }
 
@@ -43,7 +43,7 @@ class _GalleryTemplateEditorState extends State<GalleryTemplateEditor> {
     // In a real app, this would open an image picker
     // For now, just add a default image
     setState(() {
-      _images.add('assets/images/gallery${_images.length + 1}.jpg');
+      _images.add('assets/images/gallery${_images.length + 1}.webp');
     });
   }
 

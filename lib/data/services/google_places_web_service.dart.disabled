@@ -2,9 +2,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'location_search_service.dart';
 
-// Use web-compatible interop
-import 'dart:js' as js;
-
 class GooglePlacesWebService {
   static const Duration _debounceDelay = Duration(milliseconds: 300);
   Timer? _debounceTimer;

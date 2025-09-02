@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import '../../core/config/environment.dart';
 import '../models/venue_model.dart';
-import 'google_places_web_service.dart';
+// import 'google_places_web_service.dart'; // Temporarily disabled
 
 class LocationSearchResult {
   final String id;
@@ -47,7 +47,7 @@ class LocationSearchService {
   static const String _naverBaseUrl = 'https://naveropenapi.apigw.ntruss.com/map-geocode/v2';
   
   // 웹용 실시간 검색 서비스 (lazy loading)
-  GooglePlacesWebService? _webPlacesService;
+  // GooglePlacesWebService? _webPlacesService; // Temporarily disabled
 
   // Google Places API 검색
   Future<List<LocationSearchResult>> searchGoogle(String query) async {
@@ -55,47 +55,9 @@ class LocationSearchService {
       final String apiKey = Environment.googleMapsApiKey;
       if (apiKey.isEmpty) return [];
 
-      // For web, use real-time Google Places API
+      // For web, use fallback results (Google Places API temporarily disabled)
       if (kIsWeb) {
-        try {
-          _webPlacesService ??= GooglePlacesWebService();
-          
-          // First try autocomplete search for real-time suggestions
-          final realTimeResults = await _webPlacesService!.searchPlaces(query);
-          if (realTimeResults.isNotEmpty) {
-            debugPrint('Using real-time Google Places autocomplete: ${realTimeResults.length}');
-            
-            // Get detailed coordinates for each result
-            final detailedResults = <LocationSearchResult>[];
-            for (final result in realTimeResults.take(8)) {
-              final detailed = await _webPlacesService!.getLocationDetails(
-                result.id, 
-                result.name, 
-                result.address
-              );
-              if (detailed != null) {
-                detailedResults.add(detailed);
-              }
-            }
-            
-            if (detailedResults.isNotEmpty) {
-              return detailedResults;
-            }
-          }
-          
-          // If autocomplete doesn't work well, try text search
-          final textSearchResults = await _webPlacesService!.textSearch(query);
-          if (textSearchResults.isNotEmpty) {
-            debugPrint('Using real-time Google Places text search: ${textSearchResults.length}');
-            return textSearchResults;
-          }
-          
-        } catch (e) {
-          debugPrint('Real-time search failed, using fallback: $e');
-        }
-        
-        // Only use fallback if Google Places API completely fails
-        debugPrint('All real-time searches failed, using fallback for query: $query');
+        debugPrint('Using fallback web search for query: $query');
         return _getWebFallbackResults(query);
       }
 
@@ -184,44 +146,9 @@ class LocationSearchService {
   // Kakao Local API 검색
   Future<List<LocationSearchResult>> searchKakao(String query) async {
     try {
-      // For web, try Google Places first, then fallback
+      // For web, use fallback results (Google Places API temporarily disabled)
       if (kIsWeb) {
-        try {
-          _webPlacesService ??= GooglePlacesWebService();
-          final realTimeResults = await _webPlacesService!.searchPlaces(query);
-          
-          if (realTimeResults.isNotEmpty) {
-            debugPrint('Kakao search using Google Places API: ${realTimeResults.length}');
-            
-            // Get detailed coordinates
-            final detailedResults = <LocationSearchResult>[];
-            for (final result in realTimeResults.take(8)) {
-              final detailed = await _webPlacesService!.getLocationDetails(
-                result.id, 
-                result.name, 
-                result.address
-              );
-              if (detailed != null) {
-                detailedResults.add(LocationSearchResult(
-                  id: detailed.id,
-                  name: detailed.name,
-                  address: detailed.address,
-                  latitude: detailed.latitude,
-                  longitude: detailed.longitude,
-                  provider: 'kakao-google',
-                ));
-              }
-            }
-            
-            if (detailedResults.isNotEmpty) {
-              return detailedResults;
-            }
-          }
-        } catch (e) {
-          debugPrint('Google Places search failed in Kakao method: $e');
-        }
-        
-        // Fallback to static results
+        debugPrint('Kakao search using fallback for web: $query');
         final results = await _getWebFallbackResults(query);
         return results.map((result) => LocationSearchResult(
           id: result.id,
@@ -292,44 +219,9 @@ class LocationSearchService {
   // Naver Geocoding API 검색
   Future<List<LocationSearchResult>> searchNaver(String query) async {
     try {
-      // For web, try Google Places first, then fallback
+      // For web, use fallback results (Google Places API temporarily disabled)
       if (kIsWeb) {
-        try {
-          _webPlacesService ??= GooglePlacesWebService();
-          final realTimeResults = await _webPlacesService!.searchPlaces(query);
-          
-          if (realTimeResults.isNotEmpty) {
-            debugPrint('Naver search using Google Places API: ${realTimeResults.length}');
-            
-            // Get detailed coordinates
-            final detailedResults = <LocationSearchResult>[];
-            for (final result in realTimeResults.take(8)) {
-              final detailed = await _webPlacesService!.getLocationDetails(
-                result.id, 
-                result.name, 
-                result.address
-              );
-              if (detailed != null) {
-                detailedResults.add(LocationSearchResult(
-                  id: detailed.id,
-                  name: detailed.name,
-                  address: detailed.address,
-                  latitude: detailed.latitude,
-                  longitude: detailed.longitude,
-                  provider: 'naver-google',
-                ));
-              }
-            }
-            
-            if (detailedResults.isNotEmpty) {
-              return detailedResults;
-            }
-          }
-        } catch (e) {
-          debugPrint('Google Places search failed in Naver method: $e');
-        }
-        
-        // Fallback to static results
+        debugPrint('Naver search using fallback for web: $query');
         final results = await _getWebFallbackResults(query);
         return results.map((result) => LocationSearchResult(
           id: result.id,
@@ -521,30 +413,6 @@ class LocationSearchService {
         address: 'Singapore',
         latitude: 1.3521,
         longitude: 103.8198,
-        provider: 'google',
-      ),
-      LocationSearchResult(
-        id: 'tokyo_city',
-        name: 'Tokyo',
-        address: 'Tokyo, Japan',
-        latitude: 35.6762,
-        longitude: 139.6503,
-        provider: 'google',
-      ),
-      LocationSearchResult(
-        id: 'osaka_city',
-        name: 'Osaka',
-        address: 'Osaka, Japan',
-        latitude: 34.6937,
-        longitude: 135.5023,
-        provider: 'google',
-      ),
-      LocationSearchResult(
-        id: 'kyoto_city',
-        name: 'Kyoto',
-        address: 'Kyoto, Japan',
-        latitude: 35.0116,
-        longitude: 135.7681,
         provider: 'google',
       ),
       LocationSearchResult(
@@ -995,30 +863,6 @@ class LocationSearchService {
         address: '22 Orange Grove Rd, Singapore 258350',
         latitude: 1.3066,
         longitude: 103.8239,
-        provider: 'google',
-      ),
-      LocationSearchResult(
-        id: 'ritz_carlton_tokyo',
-        name: 'The Ritz-Carlton Tokyo',
-        address: '9 Chome-7-1 Akasaka, Minato City, Tokyo 107-6245, Japan',
-        latitude: 35.6627,
-        longitude: 139.7344,
-        provider: 'google',
-      ),
-      LocationSearchResult(
-        id: 'park_hyatt_tokyo',
-        name: 'Park Hyatt Tokyo',
-        address: '3 Chome-7-1-2 Nishishinjuku, Shinjuku City, Tokyo 163-1055, Japan',
-        latitude: 35.6853,
-        longitude: 139.6935,
-        provider: 'google',
-      ),
-      LocationSearchResult(
-        id: 'mandarin_oriental_tokyo',
-        name: 'Mandarin Oriental Tokyo',
-        address: '2 Chome-1-1 Nihonbashimuromachi, Chuo City, Tokyo 103-8328, Japan',
-        latitude: 35.6875,
-        longitude: 139.7737,
         provider: 'google',
       ),
       LocationSearchResult(

@@ -1,7 +1,153 @@
-
 {
-  "title": "Our Wedding",
-  "groomName": "Kim Cheolsu",
-  "brideName": "Lee Younghee",
-  "greetingMessage": "We are delighted to invite you to celebrate our marriage."
+  "@@locale": "en",
+  
+  "appTitle": "Wedding Invitation",
+  "weddingInvitation": "WEDDING INVITATION",
+  "location": "Location",
+  "weddingVenue": "Wedding Venue",
+  "directionsToVenue": "Directions to {venue}",
+  "@directionsToVenue": {
+    "placeholders": {
+      "venue": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "ourJourney": "Our Journey",
+  "malaysia": "Malaysia",
+  "singapore": "Singapore",
+  "korea": "Korea",
+  
+  "dinnerParty": "WEDDING DINNER",
+  "registryOfMarriage": "REGISTRY OF MARRIAGE",
+  "afterParty": "Wedding Lunch",
+  
+  "date": "DATE",
+  "destination": "DESTINATION",
+  "eventTime": "EVENT TIME",
+  "boardingPass": "BOARDING PASS",
+  "groom": "GROOM",
+  "bride": "BRIDE",
+  
+  "directions": "Directions",
+  "transportationGuide": "Transportation Guide",
+  "mrt": "MRT",
+  "cableCar": "Cable Car",
+  "byCar": "By Car",
+  
+  "googlePlacesSearch": "Google Places Search",
+  "searchPlacesRealTime": "Search for places in real-time",
+  "placeSearchAvailableInMap": "Place search is available in the map view",
+  "selectedLocation": "Selected Location",
+  "lat": "Lat",
+  "lng": "Lng",
+  "mapTapped": "Map tapped",
+  
+  "gallery": "GALLERY",
+  "touchPhotoForFullGallery": "Touch photo to view full gallery",
+  "viewAllPhotos": "View All Photos",
+  
+  "guestbook": "Guestbook",
+  "leaveFirstMessage": "Be the first to leave a congratulatory message",
+  "leaveCongratMessage": "Leave a congratulatory message",
+  "viewAllMessages": "View all messages",
+  "yourName": "Your name",
+  "enterYourName": "Enter your name",
+  "congratMessage": "Congratulatory message",
+  "enterCongratMessage": "Enter your congratulatory message",
+  "cancel": "Cancel",
+  "submit": "Submit",
+  "messageSubmitted": "Your message has been submitted!",
+  "errorOccurred": "An error occurred: {error}",
+  "@errorOccurred": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "whereToDonate": "Where to Send Your Wishes",
+  "digitalPayments": "Digital Payments",
+  "bankTransfer": "Bank Transfer",
+  "groomSide": "Groom's side",
+  "brideSide": "Bride's side",
+  "groomFather": "Groom's father",
+  "brideMother": "Bride's mother",
+  "accountCopied": "Account number copied",
+  "pressToOpenApp": "Press button to open payment app",
+  
+  "rsvp": "RSVP",
+  "willYouAttend": "Will you be attending the wedding?",
+  "attending": "Attending",
+  "notAttending": "Not Attending",
+  "attendanceConfirmed": "Your attendance has been confirmed",
+  "absenceConfirmed": "Your absence has been noted",
+  
+  "invitingPreciousPeople": "Inviting our precious guests",
+  
+  "ourStory": "After meeting during an Indonesia trip\nReuniting in Singapore\nThrough 2 years of COVID, 3.5 years of long distance,\nAcross different time zones\nOur love has grown.\n\nNow in Singapore, looking in the same direction\nWe wish to spend our lives together",
+  "ourStoryTitle": "How We Met",
+  "howWeMet": "First Meeting",
+  "firstMeetingStory": "A chance encounter in Indonesia\nTwo souls crossing paths in 2019",
+  "reunited": "Reunited",
+  "reunitedStory": "Meeting again in Singapore\nWe knew this was meant to be",
+  "longDistance": "Our Journey",
+  "longDistanceStory": "2 years of pandemic, 3.5 years apart\nDifferent time zones\nBut our love only grew stronger",
+  "together": "Forever Together",
+  "togetherStory": "Now in Singapore, looking in the same direction\nReady to spend our lives together",
+  
+  "interview": "INTERVIEW",
+  "coupleInterviewTitle": "Our Love Story Interview",
+  "coupleInterviewSubtitle": "Before our wedding, we prepared\nan interview about our story.",
+  "q1": "Q1. The moment we first met",
+  "q1Answer": "Finally, a long-distance trip! We wanted to do something big in Korea, so we told our families about it.\n\nSpending time with family is something truly exciting and beautiful. ♥️\n\nPlease watch us as a couple and smile with us.🌿",
+  "q2": "Q2. When did you become a couple?",
+  "q2Answer": "It was a different day before, we went to Spain on September 10th 🚀",
+  "q3": "Q3. What made you decide to get married?",
+  "q3Answer": "Together, we became confident that we could overcome any difficulties.\n\nSpending time together, we learned so much about each other and wanted to cherish these happy moments for a long time😊\n\nWe can give each other happiness, kindness, and goodness. We think it's a good time to become better people😊",
+  "guestBookRequest": "Read Groom & Bride's Interview",
+  
+  "eldestSon": "Eldest Son of",
+  "eldestDaughter": "Eldest Daughter of",
+  "youngestDaughter": "Youngest Daughter of",
+  "groomParentFather": "Jeong Ju Sang",
+  "groomParentMother": "Choi Yun Gyo",
+  "brideParentFather": "Chia Ah Tee",
+  "brideParentMother": "Wong Yee Tin",
+  "navigationApps": "Navigation Apps",
+  "kakaoNavi": "Kakao Navi",
+  "naverMap": "Naver Map",
+  "tmap": "T Map",
+  
+  "malaysiaDinnerDate": "Friday, September 12, 2025",
+  "singaporeRegistryDate": "Sunday, November 9, 2025",
+  "koreaAfterPartyDate": "Sunday, November 30, 2025",
+  "koreaVenueName": "Garden of the Sun and the Moon",
+  "koreaVenueFullAddress": "Garden of the Sun and the Moon\nEunpyeon-ri 891, Dudong-myeon\nUlju-gun, Ulsan, South Korea\nTel. 052-264-0891",
+  "passwordDeleteSuccess": "Message has been deleted.",
+  "passwordDeleteFailed": "Password does not match.",
+  
+  "selectVenues": "Please select which venues you will attend",
+  "venueSelectionNote": "You may select multiple venues",
+  "guestName": "Guest Name",
+  "additionalNotes": "Additional Notes (Optional)",
+  "confirm": "Confirm",
+  "rsvpSubmitted": "RSVP has been submitted!",
+  "pleaseSelectVenue": "Please select at least one venue",
+  "deleteError": "An error occurred while deleting.",
+  "requiredFields": "Please fill in required fields",
+  
+  "transportationInfo": "Transportation Guide",
+  "byCarInfo": "By Car",
+  "parkingInfo": "Parking: Use parking lots 1 and 2 in front of the restaurant (free)",
+  "publicTransportInfo": "By Public Transport",
+  "busInfo": "Bus 763 is available but has long intervals. We recommend taking a taxi.",
+  
+  "deletePassword": "Delete Password (Optional)",
+  "deletePasswordHint": "Password required to delete this message",
+  "deletePasswordHelper": "Set a password if you want to delete this message later",
+  
+  "addToCalendar": "Add to Calendar"
 }

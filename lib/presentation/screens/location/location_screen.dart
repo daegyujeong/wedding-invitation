@@ -16,25 +16,25 @@ class LocationScreen extends StatefulWidget {
 
 class _LocationScreenState extends State<LocationScreen> {
   LocationModel? _selectedLocation;
-  
+
   // Venue locations
   static const Map<String, Map<String, dynamic>> _venues = {
     'my': {
       'name': 'AC Hotel Kuantan',
-      'latitude': 3.8077,
-      'longitude': 103.3260,
+      'latitude': 3.816691981866172,
+      'longitude': 103.33681728473105,
       'address': 'Jalan Teluk Sisek, Kuantan, Pahang, Malaysia',
     },
     'sg': {
       'name': 'Arbora',
-      'latitude': 1.273806,
-      'longitude': 103.817497,
+      'latitude': 1.2713102232292395,
+      'longitude': 103.81929169938385,
       'address': '109 Mount Faber Road, Singapore 099203',
     },
     'ko': {
       'name': '일월의정원',
-      'latitude': 35.6288349,
-      'longitude': 129.2087028,
+      'latitude': 35.62885057440548,
+      'longitude': 129.21897305040977,
       'address': '울산광역시 울주군 두동면 은편리 891',
     },
   };
@@ -60,7 +60,12 @@ class _LocationScreenState extends State<LocationScreen> {
           onPressed: () => context.go('/'),
         ),
       ),
-      body: _buildLocationContent(context),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: _buildLocationContent(context),
+        ),
+      ),
     );
   }
 
@@ -101,7 +106,7 @@ class _LocationScreenState extends State<LocationScreen> {
                     final selectedVenue = venueProvider.selectedVenue;
                     final venueData = _venues[selectedVenue] ?? _venues['sg']!;
                     final venueName = venueData['name'] as String;
-                    
+
                     return Text(
                       'Directions to $venueName',
                       style: const TextStyle(
@@ -114,27 +119,27 @@ class _LocationScreenState extends State<LocationScreen> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Venue info card
           _buildVenueCard(),
-          
+
           const SizedBox(height: 16),
-          
+
           // Interactive map
           _buildMapCard(context),
-          
+
           const SizedBox(height: 16),
-          
+
           // Place picker demo (search info)
           _buildPlacePickerDemo(),
-          
+
           const SizedBox(height: 16),
-          
+
           // Transportation cards
           _buildTransportationSection(),
-          
+
           const SizedBox(height: 20),
         ],
       ),
@@ -144,19 +149,19 @@ class _LocationScreenState extends State<LocationScreen> {
   Widget _buildVenueCard() {
     final venueProvider = Provider.of<VenueProvider>(context);
     final selectedVenue = venueProvider.selectedVenue;
-    
+
     // If no specific venue is selected or 'all' is selected, show all venues
     if (selectedVenue == null || selectedVenue == 'all') {
       return _buildAllVenuesCard();
     }
-    
+
     // Get venue data
     final venueData = _venues[selectedVenue];
     if (venueData == null) return const SizedBox.shrink();
-    
+
     final venueName = venueData['name'] as String;
     final address = venueData['address'] as String;
-    
+
     // Get phone number based on venue
     String phoneNumber;
     switch (selectedVenue) {
@@ -171,7 +176,7 @@ class _LocationScreenState extends State<LocationScreen> {
         phoneNumber = '+65 6377 9688';
         break;
     }
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(24),
@@ -229,9 +234,9 @@ class _LocationScreenState extends State<LocationScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Address
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,9 +259,9 @@ class _LocationScreenState extends State<LocationScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Phone
           Row(
             children: [
@@ -279,7 +284,7 @@ class _LocationScreenState extends State<LocationScreen> {
       ),
     );
   }
-  
+
   String _getVenueSubtitle(String venue) {
     switch (venue) {
       case 'ko':
@@ -295,25 +300,25 @@ class _LocationScreenState extends State<LocationScreen> {
   Widget _buildMapCard(BuildContext context) {
     final venueProvider = Provider.of<VenueProvider>(context);
     final selectedVenue = venueProvider.selectedVenue;
-    
+
     // If no specific venue is selected or 'all' is selected, show all venues
     if (selectedVenue == null || selectedVenue == 'all') {
       return _buildAllVenuesMaps();
     }
-    
+
     // Get venue data
     final venueData = _venues[selectedVenue];
     if (venueData == null) return const SizedBox.shrink();
-    
+
     final venueName = venueData['name'] as String;
     final latitude = venueData['latitude'] as double;
     final longitude = venueData['longitude'] as double;
-    
+
     // For Korea venue, show tabs based on language, otherwise use default provider
     if (selectedVenue == 'ko') {
       return _buildKoreaMapWithTabs(latitude, longitude, venueName);
     }
-    
+
     // Use Google Maps for other venues
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -335,6 +340,7 @@ class _LocationScreenState extends State<LocationScreen> {
           latitude: latitude,
           longitude: longitude,
           venue: venueName,
+          address: _venues[selectedVenue]?['address'] as String?,
           provider: MapProvider.google,
           height: 400,
           showControls: true,
@@ -346,7 +352,6 @@ class _LocationScreenState extends State<LocationScreen> {
       ),
     );
   }
-
 
   Widget _buildTransportationSection() {
     return Column(
@@ -364,7 +369,7 @@ class _LocationScreenState extends State<LocationScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        
+
         // MRT
         _buildTransportCard(
           icon: Icons.train,
@@ -376,9 +381,9 @@ class _LocationScreenState extends State<LocationScreen> {
             'Cable car from HarbourFront Tower 2',
           ],
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         // Cable Car
         _buildTransportCard(
           icon: Icons.cable,
@@ -390,9 +395,9 @@ class _LocationScreenState extends State<LocationScreen> {
             'Operating hours: 8:45 AM - 10:00 PM',
           ],
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         // Car
         _buildTransportCard(
           icon: Icons.directions_car,
@@ -545,9 +550,9 @@ class _LocationScreenState extends State<LocationScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Location search functionality
           Container(
             padding: const EdgeInsets.all(16),
@@ -572,7 +577,7 @@ class _LocationScreenState extends State<LocationScreen> {
               ],
             ),
           ),
-          
+
           // Selected location display
           if (_selectedLocation != null) ...[
             const SizedBox(height: 16),
@@ -657,7 +662,7 @@ class _LocationScreenState extends State<LocationScreen> {
         final venueData = entry.value;
         final venueName = venueData['name'] as String;
         final address = venueData['address'] as String;
-        
+
         return Container(
           margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
           padding: const EdgeInsets.all(20),
@@ -697,7 +702,7 @@ class _LocationScreenState extends State<LocationScreen> {
       }).toList(),
     );
   }
-  
+
   Widget _buildAllVenuesMaps() {
     return Column(
       children: _venues.entries.map((entry) {
@@ -706,12 +711,7 @@ class _LocationScreenState extends State<LocationScreen> {
         final venueName = venueData['name'] as String;
         final latitude = venueData['latitude'] as double;
         final longitude = venueData['longitude'] as double;
-        
-        // Use venue-specific map provider  
-        MapProvider mapProvider = venueCode == 'ko' 
-            ? MapProvider.naver 
-            : MapProvider.google;
-        
+
         return Container(
           margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
           decoration: BoxDecoration(
@@ -739,34 +739,41 @@ class _LocationScreenState extends State<LocationScreen> {
                   ),
                 ),
               ),
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(16),
-                  bottomRight: Radius.circular(16),
+              // For Korea venue, show tabs even in all venues view
+              if (venueCode == 'ko')
+                _buildKoreaMapTabsCompact(
+                    latitude, longitude, venueName, venueCode)
+              else
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                  ),
+                  child: MultiMapWidget(
+                    key: ValueKey('${venueCode}_google_map'),
+                    latitude: latitude,
+                    longitude: longitude,
+                    venue: venueName,
+                    address: _venues[venueCode]?['address'] as String?,
+                    provider: MapProvider.google,
+                    height: 200,
+                    showControls: false,
+                  ),
                 ),
-                child: MultiMapWidget(
-                  key: ValueKey('${venueCode}_${mapProvider.name}_map'),
-                  latitude: latitude,
-                  longitude: longitude,
-                  venue: venueName,
-                  provider: mapProvider,
-                  height: 200,
-                  showControls: false,
-                ),
-              ),
             ],
           ),
         );
       }).toList(),
     );
   }
-  
-  Widget _buildKoreaMapWithTabs(double latitude, double longitude, String venueName) {
+
+  Widget _buildKoreaMapWithTabs(
+      double latitude, double longitude, String venueName) {
     final localeProvider = Provider.of<LocaleProvider>(context);
     final venueProvider = Provider.of<VenueProvider>(context);
     final selectedVenue = venueProvider.selectedVenue;
     final isKorean = localeProvider.locale.languageCode == 'ko';
-    
+
     return DefaultTabController(
       length: 2,
       initialIndex: isKorean ? 0 : 1, // Naver for Korean, Google for others
@@ -837,6 +844,7 @@ class _LocationScreenState extends State<LocationScreen> {
                       latitude: latitude,
                       longitude: longitude,
                       venue: venueName,
+                      address: _venues[selectedVenue]?['address'] as String?,
                       provider: MapProvider.naver,
                       height: 400,
                       showControls: true,
@@ -854,6 +862,7 @@ class _LocationScreenState extends State<LocationScreen> {
                       latitude: latitude,
                       longitude: longitude,
                       venue: venueName,
+                      address: _venues[selectedVenue]?['address'] as String?,
                       provider: MapProvider.google,
                       height: 400,
                       showControls: true,
@@ -865,6 +874,87 @@ class _LocationScreenState extends State<LocationScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildKoreaMapTabsCompact(
+      double latitude, double longitude, String venueName, String venueCode) {
+    final localeProvider = Provider.of<LocaleProvider>(context);
+    final isKorean = localeProvider.locale.languageCode == 'ko';
+
+    return DefaultTabController(
+      length: 2,
+      initialIndex: isKorean ? 0 : 1, // Naver for Korean, Google for others
+      child: Column(
+        children: [
+          // Tab bar
+          Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Colors.grey.shade200),
+              ),
+            ),
+            child: TabBar(
+              tabs: const [
+                Tab(
+                  child: Text('네이버 지도', style: TextStyle(fontSize: 12)),
+                ),
+                Tab(
+                  child: Text('Google Maps', style: TextStyle(fontSize: 12)),
+                ),
+              ],
+              labelColor: Colors.green.shade600,
+              unselectedLabelColor: Colors.grey.shade600,
+              indicatorColor: Colors.green.shade600,
+              indicatorWeight: 2,
+            ),
+          ),
+          // Tab views
+          SizedBox(
+            height: 200,
+            child: TabBarView(
+              children: [
+                // Naver Map
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                  ),
+                  child: MultiMapWidget(
+                    key: ValueKey('${venueCode}_naver_compact_map'),
+                    latitude: latitude,
+                    longitude: longitude,
+                    venue: venueName,
+                    address: _venues[venueCode]?['address'] as String?,
+                    provider: MapProvider.naver,
+                    height: 200,
+                    showControls: false,
+                    showDirections: false,
+                  ),
+                ),
+                // Google Map
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                  ),
+                  child: MultiMapWidget(
+                    key: ValueKey('${venueCode}_google_compact_map'),
+                    latitude: latitude,
+                    longitude: longitude,
+                    venue: venueName,
+                    address: _venues[venueCode]?['address'] as String?,
+                    provider: MapProvider.google,
+                    height: 200,
+                    showControls: false,
+                    showDirections: false,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

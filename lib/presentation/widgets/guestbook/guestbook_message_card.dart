@@ -81,12 +81,19 @@ class _GuestbookMessageCardState extends State<GuestbookMessageCard>
   }
 
   String _formatDate(DateTime date) {
+    // Ensure we're working with local time for consistent comparison
+    final localDate = date.toLocal();
     final now = DateTime.now();
-    final difference = now.difference(date);
+    final difference = now.difference(localDate);
+
+    // Handle negative differences (future dates) by showing absolute time
+    if (difference.isNegative) {
+      return DateFormat('yyyy.MM.dd HH:mm').format(localDate);
+    }
 
     if (difference.inDays == 0) {
       if (difference.inHours == 0) {
-        if (difference.inMinutes == 0) {
+        if (difference.inMinutes <= 1) {
           return '방금 전';
         }
         return '${difference.inMinutes}분 전';
@@ -97,7 +104,7 @@ class _GuestbookMessageCardState extends State<GuestbookMessageCard>
     } else if (difference.inDays < 7) {
       return '${difference.inDays}일 전';
     } else {
-      return DateFormat('yyyy.MM.dd').format(date);
+      return DateFormat('yyyy.MM.dd').format(localDate);
     }
   }
 

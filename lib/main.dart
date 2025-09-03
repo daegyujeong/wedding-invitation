@@ -32,19 +32,12 @@ void main() async {
 
   // Supabase 초기화
   try {
-    // Debug environment variables for web
-    if (kIsWeb) {
-      debugPrint('=== WEB ENVIRONMENT DEBUG ===');
-      debugPrint('SUPABASE_URL: ${const String.fromEnvironment('SUPABASE_URL')}');
-      debugPrint('SUPABASE_ANON_KEY length: ${const String.fromEnvironment('SUPABASE_ANON_KEY').length}');
-      debugPrint('============================');
-    }
-    
     await SupabaseService.initialize();
-    debugPrint('Supabase initialized successfully');
   } catch (e) {
-    debugPrint('Warning: Supabase initialization failed: $e');
-    debugPrint('App will continue with local storage only');
+    // App will continue with local storage only
+    if (kDebugMode) {
+      debugPrint('Warning: Supabase initialization failed: $e');
+    }
   }
 
   runApp(const MyApp());

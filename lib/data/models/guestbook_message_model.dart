@@ -36,11 +36,15 @@ class GuestbookMessage {
   }
 
   factory GuestbookMessage.fromJson(Map<String, dynamic> json) {
+    // Handle both UTC and local timestamps properly
+    final createdAtString = json['createdAt'] as String;
+    final parsedDateTime = DateTime.parse(createdAtString);
+    
     return GuestbookMessage(
       id: json['id'],
       name: json['name'],
       message: json['message'],
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt: parsedDateTime.isUtc ? parsedDateTime.toLocal() : parsedDateTime,
       isApproved: json['isApproved'] ?? true,
       isDeleted: json['isDeleted'] ?? false,
       password: json['password'],
@@ -51,11 +55,18 @@ class GuestbookMessage {
 
   // Supabase uses snake_case for column names
   factory GuestbookMessage.fromSupabase(Map<String, dynamic> json) {
+    // Supabase stores timestamps in UTC, so we need to parse as UTC and convert to local
+    final createdAtString = json['created_at'] as String;
+    // Ensure we parse as UTC if not already specified
+    final utcDateTime = createdAtString.endsWith('Z') 
+        ? DateTime.parse(createdAtString)
+        : DateTime.parse('${createdAtString}Z');
+    
     return GuestbookMessage(
       id: json['id'],
       name: json['name'],
       message: json['message'],
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: utcDateTime.toLocal(), // Convert to local time
       isApproved: json['is_approved'] ?? true,
       isDeleted: json['is_deleted'] ?? false,
       password: json['password'],
@@ -69,7 +80,7 @@ class GuestbookMessage {
       'id': id,
       'name': name,
       'message': message,
-      'created_at': createdAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(), // Convert to UTC before saving
       'is_approved': isApproved,
       'is_deleted': isDeleted,
       'password': password,

@@ -526,6 +526,11 @@ Normal Mode: https://www.daegyu.dev/invitation/#/?ln=ko&venue=all
 Parents Mode: https://www.daegyu.dev/invitation/#/?ln=ko&venue=all&parents=true
 ```
 
+### Social Media Preview
+- **Open Graph Image**: `M04.04_sky_field_portrait.webp` - Sky field portrait for social sharing
+- **Image Dimensions**: 1200x1800 (portrait orientation)
+- **Location**: `/web/M04.04_sky_field_portrait.webp`
+
 ### Parents Mode Features
 - **Font Size**: All text increased by 30% for better readability
 - **Venue Focus**: Forces Malaysia venue selection
@@ -550,3 +555,167 @@ vercel --prod
 # 4. Test deployment
 # Open: https://www.daegyu.dev/invitation/#/?ln=ko&venue=all&parents=true
 ```
+
+---
+
+# CRITICAL: Flutter Web Optimization for Emoji & Bundle Size
+
+## Problem: After `flutter clean`, emoji and bundle size issues occur
+
+### Issues That Happen After `flutter clean`:
+1. **Emoji rendering**: Color emojis become black and white
+2. **Bundle size explosion**: From ~8.8MB to 27MB (18MB+ unnecessary canvaskit files)
+3. **Service worker bloat**: From 12KB to 19.8MB
+4. **Upload inefficiency**: Vercel uploads grow from <1MB to 45MB
+
+## MANDATORY Solution Steps
+
+### Step 1: Always Use HTML Renderer
+**CRITICAL**: Use `--web-renderer html` (NOT canvaskit) for proper emoji support
+
+### Step 2: Remove Canvaskit Files After Build
+**CRITICAL**: Always run `rm -rf build/web/canvaskit/` after building with HTML renderer
+
+### Step 3: Use Deployment Script
+**ALWAYS use**: `./scripts/build-for-deployment.sh` - this script has the optimizations built-in
+
+## Correct Build Process
+
+```bash
+# 1. Clean build with optimization script
+./scripts/build-for-deployment.sh
+
+# 2. Verify optimization worked
+du -sh build/web                           # Should show ~8.8M (not 27M)
+ls -lh build/web/flutter_service_worker.js # Should show ~12K (not 19.8M)
+
+# 3. Deploy optimized build
+npx vercel --prod
+```
+
+## Build Script Requirements
+
+The `scripts/build-for-deployment.sh` MUST contain:
+
+```bash
+# Build with HTML renderer (for emoji support)
+flutter build web --release \
+  --dart-define=SUPABASE_URL=https://otksynthwanpqpkdttzv.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90a3N5bnRod2FucHFwa2R0dHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE5NTIsImV4cCI6MjA3MTYwNzk1Mn0.95A7liurnMMaxcErcQIoTCjXUQypQuoJ3y25JTO9R6w \
+  --web-renderer html
+
+# Remove canvaskit files to reduce size from 27MB to 8.8MB
+rm -rf build/web/canvaskit/
+```
+
+## Expected Results After Optimization:
+- ✅ **Bundle size**: 8.8MB (67% reduction from 27MB)
+- ✅ **Service worker**: 12KB (99.94% reduction from 19.8MB)
+- ✅ **Upload size**: <1MB (98% reduction from 45MB)
+- ✅ **Emoji**: Full color support (fixed from black/white)
+
+## Quick Fix Verification:
+```bash
+# After running build script, verify:
+echo "Bundle size: $(du -sh build/web | cut -f1)"
+echo "Service worker: $(ls -lh build/web/flutter_service_worker.js | awk '{print $5}')"
+echo "Canvaskit removed: $([ ! -d build/web/canvaskit ] && echo 'YES' || echo 'NO')"
+```
+
+**Reference**: See `FLUTTER_WEB_OPTIMIZATION_GUIDE.md` for detailed explanation.
+
+---
+
+# CRITICAL: Flutter Web Cache Reset Guide
+
+## Problem: Users See Old Version After Deployment
+
+When users (especially on mobile) see old cached versions after deployment, follow this guide.
+
+## Quick Fix Process
+
+### 1. Update Version in index.html (BOTH places!)
+
+```bash
+# Generate new timestamp
+date +%s  # e.g., 1757589083
+```
+
+Update in `web/index.html`:
+```html
+<!-- Meta tag version -->
+<meta name="version" content="v2.4.0-cache-buster-1757589083">
+
+<!-- JavaScript version (MUST MATCH!) -->
+<script>
+  const currentVersion = 'v2.4.0-cache-buster-1757589083';
+</script>
+```
+
+### 2. Build and Deploy
+
+```bash
+# Clean build with optimization
+./scripts/build-for-deployment.sh
+
+# Deploy to production
+npx vercel --prod
+```
+
+### 3. User Instructions for Cache Clear
+
+**Automatic Update**: Wait 1 minute (service worker auto-updates)
+
+**Quick Fix**: Add `?v=2` to URL:
+```
+https://www.daegyu.dev/invitation/?v=2
+```
+
+**Manual Clear (Mobile)**:
+- **iOS Safari**: Settings → Safari → Clear History and Website Data
+- **Android Chrome**: Settings → Privacy → Clear browsing data → Cached images
+
+## Key Implementation Details
+
+### Version Check Script (in index.html)
+```javascript
+(function() {
+  const currentVersion = 'v2.4.0-cache-buster-1757589083';
+  const lastVersion = localStorage.getItem('app-version');
+  
+  if (lastVersion && lastVersion !== currentVersion) {
+    // Clear caches and reload
+    caches.keys().then(names => 
+      Promise.all(names.map(name => caches.delete(name)))
+    ).then(() => {
+      localStorage.setItem('app-version', currentVersion);
+      window.location.reload(true);
+    });
+  }
+})();
+```
+
+### Service Worker Force Update (in index.html)
+```javascript
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.ready.then(registration => {
+    registration.update();
+  });
+  
+  // Check every minute
+  setInterval(() => {
+    navigator.serviceWorker.controller?.postMessage('skipWaiting');
+  }, 60000);
+}
+```
+
+## IMPORTANT REMINDERS
+
+1. **ALWAYS UPDATE BOTH VERSION STRINGS** (meta tag AND JavaScript)
+2. **Version format**: `v{major}.{minor}.{patch}-cache-buster-{timestamp}`
+3. **Test in incognito first** before telling users to clear cache
+4. **Mobile browsers cache more aggressively** than desktop
+
+**Full Guide**: See `CACHE_RESET_GUIDE.md` for complete documentation.
+
+---

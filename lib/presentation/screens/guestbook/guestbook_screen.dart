@@ -1,6 +1,7 @@
 // lib/presentation/screens/guestbook/guestbook_screen.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/di/dependency_injection.dart';
 import '../../../data/models/guestbook_message_model.dart';
 import '../../../data/repositories/interfaces/guestbook_repository.dart';
@@ -56,6 +57,10 @@ class _GuestbookScreenState extends State<GuestbookScreen> {
   }
 
   void _setupRealtimeUpdates() {
+    // First, load messages immediately
+    _loadMessages();
+    
+    // Then setup stream for updates
     _messagesSubscription = _guestbookRepository.getApprovedMessagesStream().listen(
       (messages) {
         if (mounted) {
@@ -148,12 +153,22 @@ class _GuestbookScreenState extends State<GuestbookScreen> {
   }
 
   Future<void> _loadMessages() async {
-    // This method is now primarily used for manual refresh
+    // This method is now primarily used for manual refresh and initial load
     // Real-time updates are handled by the stream subscription
     try {
-      await _guestbookRepository.getApprovedMessages();
+      final messages = await _guestbookRepository.getApprovedMessages();
+      if (mounted) {
+        setState(() {
+          _allMessages = messages;
+          _updateCurrentPageMessages();
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('새로고침 실패: $e'),
@@ -171,7 +186,7 @@ class _GuestbookScreenState extends State<GuestbookScreen> {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: _nameController.text.trim(),
       message: _messageController.text.trim(),
-      createdAt: DateTime.now(),
+      createdAt: DateTime.now().toUtc(), // Store in UTC from the start
       password: password,
     );
 
@@ -395,6 +410,25 @@ class _GuestbookScreenState extends State<GuestbookScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
+        leading: Container(
+          width: 40,
+          height: 40,
+          margin: const EdgeInsets.all(8),
+          child: IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            icon: const Icon(Icons.close, size: 24),
+            onPressed: () {
+              // Get current URL parameters
+              final uri = Uri.parse(GoRouterState.of(context).uri.toString());
+              final params = uri.queryParameters;
+              
+              // Build URL with preserved parameters
+              final queryString = params.isEmpty ? '' : '?${params.entries.map((e) => '${e.key}=${e.value}').join('&')}';
+              context.go('/$queryString');
+            },
+          ),
+        ),
         title: const Text(
           '방명록',
           style: TextStyle(
@@ -496,18 +530,14 @@ class _GuestbookScreenState extends State<GuestbookScreen> {
     return ListView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
-      itemCount: _currentPageMessages.length + 1 + (_totalPages > 1 ? 1 : 0), // +1 for header, +1 for pagination if needed
+      itemCount: _currentPageMessages.length + (_totalPages > 1 ? 1 : 0), // +1 for pagination if needed, removed header
       itemBuilder: (context, index) {
-        if (index == 0) {
-          return _buildHeader();
-        }
-        
         // Check if this is the pagination row
-        if (_totalPages > 1 && index == _currentPageMessages.length + 1) {
+        if (_totalPages > 1 && index == _currentPageMessages.length) {
           return _buildPaginationControls();
         }
         
-        final message = _currentPageMessages[index - 1];
+        final message = _currentPageMessages[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: GuestbookMessageCard(
@@ -551,50 +581,123 @@ class _GuestbookScreenState extends State<GuestbookScreen> {
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.pink.shade400, Colors.pink.shade300],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+
+  List<Widget> _buildPageIndicators() {
+    if (_totalPages <= 5) {
+      // Show all pages if 5 or fewer
+      return List.generate(_totalPages, (index) {
+        final isCurrentPage = index == _currentPage;
+        return GestureDetector(
+          onTap: () => _goToPage(index),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: isCurrentPage ? Colors.pink.shade400 : Colors.grey.shade200,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                '${index + 1}',
+                style: TextStyle(
+                  color: isCurrentPage ? Colors.white : Colors.black87,
+                  fontWeight: isCurrentPage ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        );
+      });
+    }
+
+    // Show ellipsis pagination for more than 5 pages
+    List<Widget> indicators = [];
+    
+    // Always show first page
+    indicators.add(_buildPageIndicator(0));
+    
+    if (_currentPage > 2) {
+      // Add ellipsis if current page is far from start
+      indicators.add(
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: 32,
+          height: 32,
+          child: const Center(
+            child: Text(
+              '...',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
+              ),
+            ),
+          ),
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.pink.shade200.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+      );
+    }
+    
+    // Show pages around current page
+    int start = (_currentPage - 1).clamp(1, _totalPages - 2);
+    int end = (_currentPage + 1).clamp(1, _totalPages - 2);
+    
+    for (int i = start; i <= end; i++) {
+      if (i != 0 && i != _totalPages - 1) {
+        indicators.add(_buildPageIndicator(i));
+      }
+    }
+    
+    if (_currentPage < _totalPages - 3) {
+      // Add ellipsis if current page is far from end
+      indicators.add(
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: 32,
+          height: 32,
+          child: const Center(
+            child: Text(
+              '...',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
+              ),
+            ),
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          const Icon(
-            Icons.favorite,
-            color: Colors.white,
-            size: 32,
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            '축하 메시지',
+        ),
+      );
+    }
+    
+    // Always show last page (if more than 1 page)
+    if (_totalPages > 1) {
+      indicators.add(_buildPageIndicator(_totalPages - 1));
+    }
+    
+    return indicators;
+  }
+
+  Widget _buildPageIndicator(int pageIndex) {
+    final isCurrentPage = pageIndex == _currentPage;
+    return GestureDetector(
+      onTap: () => _goToPage(pageIndex),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: isCurrentPage ? Colors.pink.shade400 : Colors.grey.shade200,
+          shape: BoxShape.circle,
+        ),
+        child: Center(
+          child: Text(
+            '${pageIndex + 1}',
             style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: isCurrentPage ? Colors.white : Colors.black87,
+              fontWeight: isCurrentPage ? FontWeight.bold : FontWeight.normal,
+              fontSize: 14,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            '총 ${_allMessages.length}개의 따뜻한 메시지',
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.white,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -626,31 +729,7 @@ class _GuestbookScreenState extends State<GuestbookScreen> {
           Flexible(
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: List.generate(_totalPages.clamp(1, 5), (index) {
-                final isCurrentPage = index == _currentPage;
-                return GestureDetector(
-                  onTap: () => _goToPage(index),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: isCurrentPage ? Colors.pink.shade400 : Colors.grey.shade200,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '${index + 1}',
-                        style: TextStyle(
-                          color: isCurrentPage ? Colors.white : Colors.black87,
-                          fontWeight: isCurrentPage ? FontWeight.bold : FontWeight.normal,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
+              children: _buildPageIndicators(),
             ),
           ),
           

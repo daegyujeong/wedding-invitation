@@ -43,6 +43,12 @@ class _HomeScreenState extends State<HomeScreen> {
   IRSVPRepository? _rsvpRepository;
   List<GuestbookMessage> _messages = [];
   bool _isLoadingMessages = true;
+  int _currentGuestbookPage = 0;
+  final int _messagesPerPage = 3;
+  
+  // Popup pagination
+  int _currentPopupPage = 0;
+  static const int _popupMessagesPerPage = 10;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -95,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _initializeGuestbook();
   }
 
-  void _handleUrlParameters() {
+  Future<void> _handleUrlParameters() async {
     final venueProvider = Provider.of<VenueProvider>(context, listen: false);
     final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
 
@@ -118,6 +124,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (venueParam != null || parentsParam == 'true') {
       venueProvider.setFromUrlParams(venueParam,
           isParentsMode: parentsParam == 'true');
+    } else {
+      // If no venue parameter is provided, reset selection to allow popup to show
+      await venueProvider.resetSelection();
     }
 
     // Show popup if user hasn't made selections yet
@@ -152,8 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
       (messages) {
         if (mounted) {
           setState(() {
-            _messages =
-                messages.take(3).toList(); // Show only latest 3 messages
+            _messages = messages; // Store all messages for popup
             _isLoadingMessages = false;
           });
         }
@@ -1164,11 +1172,13 @@ class _HomeScreenState extends State<HomeScreen> {
               return Container(
                 key: _ticketKeys[1],
                 child: _buildEventTicket(
-                  eventTitle: l10n.registryOfMarriage,
+                  eventTitle: l10n.dualWeddingEvents,
                   date: l10n.singaporeRegistryDate,
                   location: '싱가폴',
                   locationSub: 'Singapore',
                   time: '6:00 PM',
+                  secondaryTime: '7:00 PM',
+                  secondaryEvent: 'Wedding Dinner',
                   gradientColors: const [
                     Color(0xFFE8F5E8),
                     Color(0xFF4CAF50)
@@ -1228,6 +1238,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required String location,
     required String locationSub,
     required String time,
+    String? secondaryTime,
+    String? secondaryEvent,
     required List<Color> gradientColors,
     required String flagIcon,
     required dynamic invitation,
@@ -1424,14 +1436,71 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Text(
-                          time,
-                          style: TextStyle(
-                            fontSize: isMobile ? 28 : 32,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF1976D2),
+                        if (secondaryTime != null && secondaryEvent != null) ...[
+                          // Dual timing display - vertical stacked layout
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              // First event - ROM
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    l10n.romEvent,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 10 : 11,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    time,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 16 : 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF1976D2),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              // Second event - Wedding Dinner
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    'Wedding Dinner',
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 10 : 11,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    secondaryTime,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 16 : 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF1976D2),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ),
+                        ] else ...[
+                          // Single timing display
+                          Text(
+                            time,
+                            style: TextStyle(
+                              fontSize: isMobile ? 28 : 32,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1976D2),
+                            ),
+                          ),
+                        ],
                         SizedBox(height: isMobile ? 12 : 16),
                         Text(
                           'VENUE',
@@ -1883,11 +1952,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             : (originalIndex == 1 ? 'sg' : 'ko');
                         final venueProvider =
                             Provider.of<VenueProvider>(context);
-                        final isKoreaVenue = originalIndex == 2 &&
-                            venueCode == 'ko' &&
-                            venueProvider.selectedVenue == 'ko';
+                        final isKoreaVenue = originalIndex == 2 && venueCode == 'ko';
+                        final shouldShowKoreaInfo = isKoreaVenue && 
+                            (venueProvider.selectedVenue == 'ko' || 
+                             venueProvider.selectedVenue == 'all');
 
-                        if (isKoreaVenue) {
+                        if (shouldShowKoreaInfo) {
                           return Column(
                             children: [
                               // Navigation apps title
@@ -2040,6 +2110,47 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(height: 4),
                                               Text(
                                                 l10n.busInfo,
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey.shade600,
+                                                  height: 1.4,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                    const SizedBox(height: 16),
+
+                                    // Taxi section
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Icon(
+                                          Icons.local_taxi,
+                                          size: 18,
+                                          color: Colors.yellow.shade700,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                l10n.taxiInfo,
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.grey.shade800,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                l10n.taxiTravelTime,
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   color: Colors.grey.shade600,
@@ -2356,20 +2467,24 @@ class _HomeScreenState extends State<HomeScreen> {
             )
           else
             Column(
-              children: _messages
-                  .take(3)
-                  .map(
-                    (message) => Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: GuestbookMessageCard(
-                        message: message,
-                        textColor: Colors.black87,
-                        accentColor: const Color(0xFFD4A574),
-                        onDelete: _handleDeleteMessage,
+              children: [
+                // Display paginated messages
+                ..._getPaginatedMessages()
+                    .map(
+                      (message) => Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: GuestbookMessageCard(
+                          message: message,
+                          textColor: Colors.black87,
+                          accentColor: const Color(0xFFD4A574),
+                          onDelete: _handleDeleteMessage,
+                        ),
                       ),
-                    ),
-                  )
-                  .toList(),
+                    )
+                    .toList(),
+                // Show pagination controls if there are more messages
+                if (_getTotalPages() > 1) _buildGuestbookPagination(),
+              ],
             ),
           const SizedBox(height: 20),
           SizedBox(
@@ -2396,7 +2511,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 10),
           TextButton(
-            onPressed: () => context.go('/guestbook'),
+            onPressed: _showAllMessagesPopup,
             child: Text(
               l10n.viewAllMessages,
               style: const TextStyle(
@@ -2408,6 +2523,127 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  List<GuestbookMessage> _getPaginatedMessages() {
+    final startIndex = _currentGuestbookPage * _messagesPerPage;
+    final endIndex = (startIndex + _messagesPerPage).clamp(0, _messages.length);
+    return _messages.sublist(startIndex, endIndex);
+  }
+
+  int _getTotalPages() {
+    return (_messages.length / _messagesPerPage).ceil();
+  }
+
+  Widget _buildGuestbookPagination() {
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Previous button
+          IconButton(
+            onPressed: _currentGuestbookPage > 0
+                ? () {
+                    setState(() {
+                      _currentGuestbookPage--;
+                    });
+                  }
+                : null,
+            icon: Icon(
+              Icons.chevron_left,
+              color: _currentGuestbookPage > 0
+                  ? const Color(0xFFD4A574)
+                  : Colors.grey.shade300,
+            ),
+          ),
+          // Page indicators
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(
+              _getTotalPages().clamp(1, 5),
+              (index) {
+                final actualPage = _calculateActualPageIndex(index);
+                final isCurrentPage = actualPage == _currentGuestbookPage;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _currentGuestbookPage = actualPage;
+                    });
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: isCurrentPage
+                          ? const Color(0xFFD4A574)
+                          : Colors.grey.shade200,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${actualPage + 1}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isCurrentPage ? Colors.white : Colors.black87,
+                          fontWeight: isCurrentPage ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          // Next button
+          IconButton(
+            onPressed: _currentGuestbookPage < _getTotalPages() - 1
+                ? () {
+                    setState(() {
+                      _currentGuestbookPage++;
+                    });
+                  }
+                : null,
+            icon: Icon(
+              Icons.chevron_right,
+              color: _currentGuestbookPage < _getTotalPages() - 1
+                  ? const Color(0xFFD4A574)
+                  : Colors.grey.shade300,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  int _calculateActualPageIndex(int displayIndex) {
+    final totalPages = _getTotalPages();
+    if (totalPages <= 5) {
+      return displayIndex;
+    }
+    // For more than 5 pages, show smart pagination
+    if (_currentGuestbookPage < 3) {
+      return displayIndex;
+    } else if (_currentGuestbookPage > totalPages - 4) {
+      return totalPages - 5 + displayIndex;
+    } else {
+      return _currentGuestbookPage - 2 + displayIndex;
+    }
+  }
+
+  int _calculatePopupPageIndex(int displayIndex, int totalPages) {
+    if (totalPages <= 5) {
+      return displayIndex;
+    }
+    // For more than 5 pages, show smart pagination
+    if (_currentPopupPage < 3) {
+      return displayIndex;
+    } else if (_currentPopupPage > totalPages - 4) {
+      return totalPages - 5 + displayIndex;
+    } else {
+      return _currentPopupPage - 2 + displayIndex;
+    }
   }
 
   Widget _buildKoreanBankingSection() {
@@ -3456,7 +3692,7 @@ class _HomeScreenState extends State<HomeScreen> {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: _nameController.text.trim(),
       message: _messageController.text.trim(),
-      createdAt: DateTime.now(),
+      createdAt: DateTime.now().toUtc(), // Store in UTC from the start
       password:
           _passwordController.text.isNotEmpty ? _passwordController.text : null,
     );
@@ -3662,6 +3898,253 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }
     }
+  }
+
+  void _showAllMessagesPopup() {
+    final l10n = AppLocalizations.of(context)!;
+    
+    // Reset popup pagination when opening
+    _currentPopupPage = 0;
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            final startIndex = _currentPopupPage * _popupMessagesPerPage;
+            final endIndex = (startIndex + _popupMessagesPerPage).clamp(0, _messages.length);
+            final paginatedMessages = _messages.sublist(startIndex, endIndex);
+            final totalPages = (_messages.length / _popupMessagesPerPage).ceil();
+            
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Container(
+                constraints: const BoxConstraints(
+                  maxWidth: 600,
+                  maxHeight: 700,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    // Header
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD4A574).withOpacity(0.1),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          topRight: Radius.circular(12),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.guestbook,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              if (_messages.isNotEmpty)
+                                Text(
+                                  '총 ${_messages.length}개의 메시지',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            icon: const Icon(Icons.close),
+                            iconSize: 24,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Messages list
+                    Expanded(
+                      child: _messages.isEmpty
+                          ? Container(
+                              padding: const EdgeInsets.all(40),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.message_outlined,
+                                    size: 48,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    l10n.leaveFirstMessage,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Column(
+                              children: [
+                                Expanded(
+                                  child: ListView.builder(
+                                    padding: const EdgeInsets.all(20),
+                                    itemCount: paginatedMessages.length,
+                                    itemBuilder: (context, index) {
+                                      final message = paginatedMessages[index];
+                                      return Container(
+                                        margin: EdgeInsets.only(
+                                          bottom: index < paginatedMessages.length - 1 ? 16 : 0,
+                                        ),
+                                        child: GuestbookMessageCard(
+                                          message: message,
+                                          textColor: Colors.black87,
+                                          accentColor: const Color(0xFFD4A574),
+                                          onDelete: _handleDeleteMessage,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                // Pagination controls
+                                if (totalPages > 1)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        // Previous button
+                                        IconButton(
+                                          onPressed: _currentPopupPage > 0
+                                              ? () {
+                                                  setModalState(() {
+                                                    _currentPopupPage--;
+                                                  });
+                                                }
+                                              : null,
+                                          icon: Icon(
+                                            Icons.chevron_left,
+                                            color: _currentPopupPage > 0
+                                                ? const Color(0xFFD4A574)
+                                                : Colors.grey.shade300,
+                                          ),
+                                        ),
+                                        // Page indicators
+                                        ...List.generate(
+                                          totalPages.clamp(1, 5),
+                                          (index) {
+                                            final actualPage = _calculatePopupPageIndex(index, totalPages);
+                                            final isCurrentPage = actualPage == _currentPopupPage;
+                                            return GestureDetector(
+                                              onTap: () {
+                                                setModalState(() {
+                                                  _currentPopupPage = actualPage;
+                                                });
+                                              },
+                                              child: Container(
+                                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                                padding: const EdgeInsets.all(8),
+                                                decoration: BoxDecoration(
+                                                  color: isCurrentPage
+                                                      ? const Color(0xFFD4A574)
+                                                      : Colors.transparent,
+                                                  borderRadius: BorderRadius.circular(4),
+                                                ),
+                                                child: Text(
+                                                  '${actualPage + 1}',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: isCurrentPage
+                                                        ? Colors.white
+                                                        : const Color(0xFFD4A574),
+                                                    fontWeight: isCurrentPage
+                                                        ? FontWeight.w600
+                                                        : FontWeight.w400,
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        // Next button
+                                        IconButton(
+                                          onPressed: _currentPopupPage < totalPages - 1
+                                              ? () {
+                                                  setModalState(() {
+                                                    _currentPopupPage++;
+                                                  });
+                                                }
+                                              : null,
+                                          icon: Icon(
+                                            Icons.chevron_right,
+                                            color: _currentPopupPage < totalPages - 1
+                                                ? const Color(0xFFD4A574)
+                                                : Colors.grey.shade300,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                    ),
+                    // Add message button
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(12),
+                          bottomRight: Radius.circular(12),
+                        ),
+                      ),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(); // Close popup first
+                            _showAddMessageDialog(); // Then show add dialog
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFD4A574),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            l10n.leaveCongratMessage,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   // Launch URL helper
@@ -3907,6 +4390,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showNotAttendingDialog() {
     final l10n = AppLocalizations.of(context)!;
     final TextEditingController nameController = TextEditingController();
+    final TextEditingController memoController = TextEditingController();
     final formKey = GlobalKey<FormState>();
 
     showDialog(
@@ -3941,6 +4425,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: memoController,
+                  decoration: InputDecoration(
+                    labelText: l10n.additionalMemo,
+                    hintText: l10n.additionalMemoHint,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                  ),
+                  maxLines: 3,
+                  maxLength: 200,
+                ),
               ],
             ),
           ),
@@ -3959,7 +4458,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     email: '', // No email required
                     isAttending: false, // Not attending
                     selectedVenues: [], // No venue selection for not attending
-                    additionalNotes: null,
+                    additionalNotes: memoController.text.trim().isEmpty 
+                        ? null 
+                        : memoController.text.trim(),
                     submittedAt: DateTime.now(),
                   );
 

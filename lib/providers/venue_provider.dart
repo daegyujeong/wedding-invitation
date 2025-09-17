@@ -136,14 +136,17 @@ class VenueProvider extends ChangeNotifier {
     return !_hasUserMadeSelection && !_isParentsMode;
   }
   
-  void resetSelection() {
+  Future<void> resetSelection() async {
     _selectedVenue = null;
     _hasUserMadeSelection = false;
     notifyListeners();
     
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.remove(_venueKey);
-      prefs.remove(_hasSelectedKey);
-    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_venueKey);
+      await prefs.remove(_hasSelectedKey);
+    } catch (e) {
+      debugPrint('Error resetting venue selection: $e');
+    }
   }
 }

@@ -13,7 +13,6 @@ class LocaleProvider extends ChangeNotifier {
     Locale('en'), // English
     Locale('ko'), // Korean
     Locale('zh'), // Chinese
-    Locale('ms'), // Malay
   ];
   
   // Language names for display
@@ -21,7 +20,6 @@ class LocaleProvider extends ChangeNotifier {
     'en': 'English',
     'ko': '한국어',
     'zh': '中文',
-    'ms': 'Bahasa Melayu',
   };
   
   // Country flags (emoji)
@@ -29,7 +27,6 @@ class LocaleProvider extends ChangeNotifier {
     'en': '🇬🇧',
     'ko': '🇰🇷',
     'zh': '🇨🇳',
-    'ms': '🇲🇾',
   };
   
   LocaleProvider() {

@@ -45,10 +45,11 @@ class SupabaseService {
         return null;
       }
       
-      // Initialize Supabase with web-optimized settings
+      // Initialize Supabase with web-optimized settings and timeout
       _logger.i('Initializing Supabase with URL: ${Environment.supabaseUrl}');
       _logger.i('Supabase key length: ${Environment.supabaseAnonKey.length}');
       
+      // Add timeout to prevent hanging
       await Supabase.initialize(
         url: Environment.supabaseUrl,
         anonKey: Environment.supabaseAnonKey,
@@ -56,18 +57,19 @@ class SupabaseService {
         realtimeClientOptions: const RealtimeClientOptions(
           eventsPerSecond: 2,
         ),
-      );
+      ).timeout(const Duration(seconds: 10));
       
       _instance = SupabaseService._();
       _logger.i('Supabase initialized successfully');
       
-      // Test connection
-      await _instance!.testConnection();
+      // Test connection with timeout
+      await _instance!.testConnection().timeout(const Duration(seconds: 5));
       
       return _instance!;
     } catch (e) {
       _logger.e('Failed to initialize Supabase: $e');
-      rethrow;
+      // Don't rethrow - let the app continue with local storage
+      return null;
     }
   }
   

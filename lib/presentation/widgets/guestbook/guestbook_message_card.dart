@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../data/models/guestbook_message_model.dart';
 
 class GuestbookMessageCard extends StatefulWidget {
@@ -81,6 +82,8 @@ class _GuestbookMessageCardState extends State<GuestbookMessageCard>
   }
 
   String _formatDate(DateTime date) {
+    final l10n = AppLocalizations.of(context)!;
+    
     // Date should already be in local time from the model
     final now = DateTime.now();
     final difference = now.difference(date);
@@ -93,17 +96,17 @@ class _GuestbookMessageCardState extends State<GuestbookMessageCard>
     if (difference.inDays == 0) {
       if (difference.inHours == 0) {
         if (difference.inMinutes <= 1) {
-          return '방금 전';
+          return l10n.timeJustNow;
         }
-        return '${difference.inMinutes}분 전';
+        return l10n.timeMinutesAgo(difference.inMinutes);
       }
-      return '${difference.inHours}시간 전';
+      return l10n.timeHoursAgo(difference.inHours);
     } else if (difference.inDays == 1) {
-      return '어제';
+      return l10n.timeYesterday;
     } else if (difference.inDays < 7) {
-      return '${difference.inDays}일 전';
+      return l10n.timeDaysAgo(difference.inDays);
     } else if (difference.inDays < 30) {
-      return '${difference.inDays}일 전';
+      return l10n.timeDaysAgo(difference.inDays);
     } else {
       return DateFormat('yyyy.MM.dd').format(date);
     }

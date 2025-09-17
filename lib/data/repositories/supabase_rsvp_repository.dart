@@ -90,7 +90,7 @@ class SupabaseRSVPRepository implements IRSVPRepository {
     
     try {
       // Always insert new RSVP (allow duplicate names)
-      await client.from(_tableName).insert(rsvp.toJson());
+      await client.from(_tableName).insert(rsvp.toSupabase());
       
       // Refresh cache
       await getAllRSVPs();
@@ -112,7 +112,7 @@ class SupabaseRSVPRepository implements IRSVPRepository {
     try {
       await client
           .from(_tableName)
-          .update(rsvp.toJson())
+          .update(rsvp.toSupabase())
           .eq('id', rsvp.id);
       
       // Refresh cache
@@ -145,7 +145,7 @@ class SupabaseRSVPRepository implements IRSVPRepository {
       
       if (response == null) return null;
       
-      return RSVPModel.fromJson(response);
+      return RSVPModel.fromSupabase(response);
     } catch (e) {
       _logger.e('Error getting RSVP by guest name from Supabase: $e');
       return null;
@@ -174,7 +174,7 @@ class SupabaseRSVPRepository implements IRSVPRepository {
       
       if (response == null) return null;
       
-      return RSVPModel.fromJson(response);
+      return RSVPModel.fromSupabase(response);
     } catch (e) {
       _logger.e('Error getting RSVP by email from Supabase: $e');
       return null;
@@ -196,7 +196,7 @@ class SupabaseRSVPRepository implements IRSVPRepository {
           .order('submitted_at', ascending: false);
       
       final rsvps = (response as List)
-          .map((json) => RSVPModel.fromJson(json))
+          .map((json) => RSVPModel.fromSupabase(json))
           .toList();
       
       _cachedRSVPs = rsvps;
@@ -225,7 +225,7 @@ class SupabaseRSVPRepository implements IRSVPRepository {
           .order('submitted_at', ascending: false);
       
       return (response as List)
-          .map((json) => RSVPModel.fromJson(json))
+          .map((json) => RSVPModel.fromSupabase(json))
           .toList();
     } catch (e) {
       _logger.e('Error loading attending RSVPs from Supabase: $e');

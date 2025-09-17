@@ -14,6 +14,8 @@
   
   "dinnerParty": "WEDDING DINNER",
   "registryOfMarriage": "REGISTRY OF MARRIAGE",
+  "dualWeddingEvents": "ROM & JAMUAN KAHWIN",
+  "romEvent": "ROM",
   "afterParty": "Wedding Lunch",
   
   "date": "TARIKH",
@@ -120,6 +122,8 @@
   "parkingInfo": "Tempat letak kereta: Gunakan tempat letak kereta 1 dan 2 di hadapan restoran (percuma)",
   "publicTransportInfo": "Dengan Pengangkutan Awam",
   "busInfo": "Bas 763 tersedia tetapi mempunyai selang masa yang panjang. Kami mengesyorkan menggunakan teksi.",
+  "taxiInfo": "Dengan Teksi",
+  "taxiTravelTime": "20 minit dari Stesen KTX Ulsan\n 35 minit dari Stesen Taehwagang atau Terminal Bas Ulsan",
   
   "deletePassword": "Kata Laluan Padam (Pilihan)",
   "deletePasswordHint": "Kata laluan yang diperlukan untuk memadam mesej ini",

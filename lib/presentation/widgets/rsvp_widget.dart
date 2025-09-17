@@ -18,13 +18,15 @@ class RSVPWidget extends StatefulWidget {
   State<RSVPWidget> createState() => _RSVPWidgetState();
 }
 
-class _RSVPWidgetState extends State<RSVPWidget> 
+class _RSVPWidgetState extends State<RSVPWidget>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _messageController = TextEditingController();
+  final _memoController =
+      TextEditingController(); // Separate controller for 불참 memo
   final _phoneController = TextEditingController();
-  
+
   AttendanceStatus _attendanceStatus = AttendanceStatus.none;
   int _guestCount = 1;
   String _relationship = '친구';
@@ -32,7 +34,7 @@ class _RSVPWidgetState extends State<RSVPWidget>
   final List<String> _dietaryRestrictions = [];
   bool _isSubmitting = false;
   bool _isSubmitted = false;
-  
+
   late AnimationController _animationController;
   late Animation<double> _fadeInAnimation;
   late Animation<Offset> _slideAnimation;
@@ -60,12 +62,12 @@ class _RSVPWidgetState extends State<RSVPWidget>
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeInAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -73,7 +75,7 @@ class _RSVPWidgetState extends State<RSVPWidget>
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
@@ -81,7 +83,7 @@ class _RSVPWidgetState extends State<RSVPWidget>
       parent: _animationController,
       curve: Curves.easeOutQuart,
     ));
-    
+
     _animationController.forward();
   }
 
@@ -89,6 +91,7 @@ class _RSVPWidgetState extends State<RSVPWidget>
   void dispose() {
     _nameController.dispose();
     _messageController.dispose();
+    _memoController.dispose();
     _phoneController.dispose();
     _animationController.dispose();
     super.dispose();
@@ -96,7 +99,7 @@ class _RSVPWidgetState extends State<RSVPWidget>
 
   void _submitRSVP() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() {
       _isSubmitting = true;
     });
@@ -109,19 +112,20 @@ class _RSVPWidgetState extends State<RSVPWidget>
       mealPreference: _mealPreference,
       dietaryRestrictions: _dietaryRestrictions,
       message: _messageController.text.trim(),
+      memo: _memoController.text.trim(), // Add memo field
       phone: _phoneController.text.trim(),
-      submittedAt: DateTime.now(),
+      submittedAt: DateTime.now().toUtc(),
     );
 
     try {
       await widget.onSubmit(response);
-      
+
       if (mounted) {
         setState(() {
           _isSubmitting = false;
           _isSubmitted = true;
         });
-        
+
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -145,7 +149,7 @@ class _RSVPWidgetState extends State<RSVPWidget>
         setState(() {
           _isSubmitting = false;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('오류가 발생했습니다: ${e.toString()}'),
@@ -205,9 +209,7 @@ class _RSVPWidgetState extends State<RSVPWidget>
             color: Colors.green.shade600,
           ),
         ),
-        
         const SizedBox(height: 20),
-        
         Text(
           '참석 여부 접수 완료!',
           style: TextStyle(
@@ -216,9 +218,7 @@ class _RSVPWidgetState extends State<RSVPWidget>
             color: Colors.green.shade700,
           ),
         ),
-        
         const SizedBox(height: 12),
-        
         Text(
           '${_nameController.text}님의 참석 여부가\n정상적으로 접수되었습니다.',
           textAlign: TextAlign.center,
@@ -228,9 +228,7 @@ class _RSVPWidgetState extends State<RSVPWidget>
             height: 1.5,
           ),
         ),
-        
         const SizedBox(height: 24),
-        
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -239,6 +237,7 @@ class _RSVPWidgetState extends State<RSVPWidget>
                 _isSubmitted = false;
                 _nameController.clear();
                 _messageController.clear();
+                _memoController.clear();
                 _phoneController.clear();
                 _attendanceStatus = AttendanceStatus.none;
                 _guestCount = 1;
@@ -302,9 +301,9 @@ class _RSVPWidgetState extends State<RSVPWidget>
               ),
             ],
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Name field
           _buildTextField(
             controller: _nameController,
@@ -318,9 +317,9 @@ class _RSVPWidgetState extends State<RSVPWidget>
               return null;
             },
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Phone field
           _buildTextField(
             controller: _phoneController,
@@ -329,65 +328,70 @@ class _RSVPWidgetState extends State<RSVPWidget>
             icon: Icons.phone,
             keyboardType: TextInputType.phone,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Attendance status
           _buildAttendanceSelector(),
-          
+
           if (_attendanceStatus == AttendanceStatus.attending) ...[
             const SizedBox(height: 16),
-            
+
             // Guest count
             _buildGuestCountSelector(),
-            
+
             const SizedBox(height: 16),
-            
+
             // Relationship
             _buildRelationshipSelector(),
-            
+
             const SizedBox(height: 16),
-            
+
             // Meal preference
             _buildMealPreferenceSelector(),
-            
+
             const SizedBox(height: 16),
-            
+
             // Dietary restrictions
             _buildDietaryRestrictionsSelector(),
           ],
-          
+
           if (_attendanceStatus == AttendanceStatus.notAttending) ...[
             const SizedBox(height: 16),
-            
+
             // Note field for not attending
             _buildTextField(
-              controller: _messageController,
-              label: '추가 메모(선택사항)',
-              hint: '불참하게 된 이유나 메시지를 남겨주세요',
+              controller: _memoController,
+              label: '추가 메모 (선택사항)',
+              hint: '',
               icon: Icons.note_alt,
               maxLines: 3,
             ),
           ],
-          
-          const SizedBox(height: 16),
-          
-          // Message field
-          _buildTextField(
-            controller: _messageController,
-            label: '축하 메시지 (선택)',
-            hint: '축하 메시지를 남겨주세요',
-            icon: Icons.message,
-            maxLines: 3,
-          ),
-          
+
+          // Only show congratulatory message field when attending
+          if (_attendanceStatus == AttendanceStatus.attending) ...[
+            const SizedBox(height: 16),
+
+            // Message field
+            _buildTextField(
+              controller: _messageController,
+              label: '축하 메시지 (선택)',
+              hint: '축하 메시지를 남겨주세요',
+              icon: Icons.message,
+              maxLines: 3,
+            ),
+          ],
+
           const SizedBox(height: 24),
-          
+
           // Submit button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: widget.enabled && !_isSubmitting && _attendanceStatus != AttendanceStatus.none
+              onPressed: widget.enabled &&
+                      !_isSubmitting &&
+                      _attendanceStatus != AttendanceStatus.none
                   ? _submitRSVP
                   : null,
               style: ElevatedButton.styleFrom(
@@ -411,7 +415,8 @@ class _RSVPWidgetState extends State<RSVPWidget>
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: widget.enabled && _attendanceStatus != AttendanceStatus.none
+                        color: widget.enabled &&
+                                _attendanceStatus != AttendanceStatus.none
                             ? Colors.white
                             : Colors.grey.shade400,
                       ),
@@ -517,39 +522,28 @@ class _RSVPWidgetState extends State<RSVPWidget>
     Color color,
   ) {
     final isSelected = _attendanceStatus == status;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
           _attendanceStatus = status;
         });
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : Colors.white,
-          border: Border.all(
-            color: isSelected ? color : Colors.grey.shade300,
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected ? color : Colors.grey.shade400,
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: isSelected ? color : Colors.grey.shade600,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? color : Colors.grey.shade600,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
               ),
             ),
           ],
@@ -584,7 +578,8 @@ class _RSVPWidgetState extends State<RSVPWidget>
               const SizedBox(width: 12),
               const Text('총 '),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.blue.shade50,
                   borderRadius: BorderRadius.circular(8),
@@ -694,7 +689,7 @@ class _RSVPWidgetState extends State<RSVPWidget>
 
   Widget _buildMealOption(MealPreference preference, String label) {
     final isSelected = _mealPreference == preference;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -741,7 +736,7 @@ class _RSVPWidgetState extends State<RSVPWidget>
           runSpacing: 8,
           children: _dietaryOptions.map((restriction) {
             final isSelected = _dietaryRestrictions.contains(restriction);
-            
+
             return GestureDetector(
               onTap: () {
                 setState(() {
@@ -753,11 +748,14 @@ class _RSVPWidgetState extends State<RSVPWidget>
                 });
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: isSelected ? Colors.orange.shade50 : Colors.white,
                   border: Border.all(
-                    color: isSelected ? Colors.orange.shade400 : Colors.grey.shade300,
+                    color: isSelected
+                        ? Colors.orange.shade400
+                        : Colors.grey.shade300,
                   ),
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -766,7 +764,9 @@ class _RSVPWidgetState extends State<RSVPWidget>
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: isSelected ? Colors.orange.shade700 : Colors.grey.shade600,
+                    color: isSelected
+                        ? Colors.orange.shade700
+                        : Colors.grey.shade600,
                   ),
                 ),
               ),
@@ -798,6 +798,7 @@ class RSVPResponse {
   final MealPreference mealPreference;
   final List<String> dietaryRestrictions;
   final String message;
+  final String memo; // Additional memo field for not attending
   final String phone;
   final DateTime submittedAt;
 
@@ -809,6 +810,7 @@ class RSVPResponse {
     required this.mealPreference,
     required this.dietaryRestrictions,
     required this.message,
+    required this.memo,
     required this.phone,
     required this.submittedAt,
   });

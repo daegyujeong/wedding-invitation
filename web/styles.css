@@ -1,43 +1,17 @@
-/* Enhanced emoji font loading for Flutter Web */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+/* Simple, optimized styles for Flutter Web */
 
-/* Global emoji font support */
-* {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
-}
-
-/* Flutter Web specific emoji fixes */
-flt-renderer, 
-flt-glass-pane,
-flt-glass-pane *,
-flt-scene-host,
-flt-scene-host * {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif !important;
-}
-
-/* Force emoji rendering for text elements */
-flt-paragraph,
-flt-span-text {
-  font-family: inherit !important;
-  font-variant-emoji: emoji !important;
-}
-
-/* Canvas renderer emoji support */
-canvas {
-  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Android Emoji', 'EmojiOne', 'EmojiSymbols', 'DejaVu Sans', sans-serif !important;
-}
-
-/* Webkit specific emoji rendering */
-@media screen and (-webkit-min-device-pixel-ratio: 0) {
-  * {
-    -webkit-font-feature-settings: "liga";
-    font-feature-settings: "liga";
-  }
-}
-
-/* Force color emoji on all modern browsers */
+/* Use system fonts only - no external font downloads */
 body, html {
-  font-variant-emoji: emoji;
-  -webkit-font-variant-emoji: emoji;
-  -moz-font-variant-emoji: emoji;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Basic Flutter Web support */
+flt-glass-pane {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
 }

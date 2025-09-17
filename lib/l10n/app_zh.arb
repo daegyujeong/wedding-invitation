@@ -14,6 +14,8 @@
   
   "dinnerParty": "WEDDING DINNER",
   "registryOfMarriage": "REGISTRY OF MARRIAGE",
+  "dualWeddingEvents": "登记 & 婚宴",
+  "romEvent": "登记",
   "afterParty": "Wedding Lunch",
   
   "date": "日期",
@@ -120,6 +122,8 @@
   "parkingInfo": "停车：使用餐厅前第1停车场和第2停车场（免费）",
   "publicTransportInfo": "公共交通",
   "busInfo": "763路公交车可用，但间隔较长。建议乘坐出租车。",
+  "taxiInfo": "乘坐出租车",
+  "taxiTravelTime": "从KTX蔚山站20分钟\n从太和江站或蔚山巴士总站35分钟",
   
   "deletePassword": "删除密码（可选）",
   "deletePasswordHint": "删除消息时需要的密码",

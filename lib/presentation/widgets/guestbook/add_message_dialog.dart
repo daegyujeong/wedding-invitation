@@ -57,7 +57,7 @@ class _AddMessageDialogState extends State<AddMessageDialog> {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: _nameController.text.trim(),
         message: _messageController.text.trim(),
-        createdAt: DateTime.now(),
+        createdAt: DateTime.now().toUtc(), // Store in UTC from the start
         relationship: _selectedRelationship,
         password: _passwordController.text.isNotEmpty ? _passwordController.text : null,
         isApproved: true, // For now, auto-approve all messages

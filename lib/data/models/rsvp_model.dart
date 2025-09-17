@@ -31,6 +31,10 @@ class RSVPModel {
   }
 
   factory RSVPModel.fromJson(Map<String, dynamic> json) {
+    // Handle timezone conversion like guestbook model
+    final submittedAtString = json['submitted_at'] as String;
+    final parsedDateTime = DateTime.parse(submittedAtString);
+    
     return RSVPModel(
       id: json['id'] as String,
       guestName: json['guest_name'] as String,
@@ -38,8 +42,38 @@ class RSVPModel {
       isAttending: json['is_attending'] as bool,
       selectedVenues: List<String>.from(json['selected_venues'] ?? []),
       additionalNotes: json['additional_notes'] as String?,
-      submittedAt: DateTime.parse(json['submitted_at'] as String),
+      submittedAt: parsedDateTime.isUtc ? parsedDateTime.toLocal() : parsedDateTime,
     );
+  }
+
+  // Supabase uses snake_case for column names
+  factory RSVPModel.fromSupabase(Map<String, dynamic> json) {
+    // Follow explicit timezone conversion pattern like guestbook
+    final raw = json['submitted_at'] as String;
+    final utc = DateTime.parse(raw);      // already treated as UTC
+    final local = utc.toLocal();          // convert to browser/device local time
+    
+    return RSVPModel(
+      id: json['id'] as String,
+      guestName: json['guest_name'] as String,
+      email: json['email'] as String,
+      isAttending: json['is_attending'] as bool,
+      selectedVenues: List<String>.from(json['selected_venues'] ?? []),
+      additionalNotes: json['additional_notes'] as String?,
+      submittedAt: local,
+    );
+  }
+
+  Map<String, dynamic> toSupabase() {
+    return {
+      'id': id,
+      'guest_name': guestName,
+      'email': email,
+      'is_attending': isAttending,
+      'selected_venues': selectedVenues,
+      'additional_notes': additionalNotes,
+      'submitted_at': submittedAt.toIso8601String(), // Already in UTC, no conversion needed
+    };
   }
   
   RSVPModel copyWith({

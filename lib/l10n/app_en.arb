@@ -21,6 +21,8 @@
   
   "dinnerParty": "WEDDING DINNER",
   "registryOfMarriage": "REGISTRY OF MARRIAGE",
+  "dualWeddingEvents": "ROM & WEDDING DINNER",
+  "romEvent": "ROM",
   "afterParty": "Wedding Lunch",
   
   "date": "DATE",
@@ -47,6 +49,33 @@
   "gallery": "GALLERY",
   "touchPhotoForFullGallery": "Touch photo to view full gallery",
   "viewAllPhotos": "View All Photos",
+  
+  "timeJustNow": "just now",
+  "timeMinutesAgo": "{minutes} minutes ago",
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHoursAgo": "{hours} hours ago",
+  "@timeHoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "timeYesterday": "yesterday",
+  "timeDaysAgo": "{days} days ago",
+  "@timeDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   
   "guestbook": "Guestbook",
   "leaveFirstMessage": "Be the first to leave a congratulatory message",
@@ -133,6 +162,8 @@
   "venueSelectionNote": "You may select multiple venues",
   "guestName": "Guest Name",
   "additionalNotes": "Additional Notes (Optional)",
+  "additionalMemo": "Additional Memo (Optional)",
+  "additionalMemoHint": "Please enter your memo",
   "confirm": "Confirm",
   "rsvpSubmitted": "RSVP has been submitted!",
   "pleaseSelectVenue": "Please select at least one venue",
@@ -144,6 +175,8 @@
   "parkingInfo": "Parking: Use parking lots 1 and 2 in front of the restaurant (free)",
   "publicTransportInfo": "By Public Transport",
   "busInfo": "Bus 763 is available but has long intervals. We recommend taking a taxi.",
+  "taxiInfo": "By Taxi",
+  "taxiTravelTime": "20 minutes from KTX Ulsan Station \n 35 minutes from Taehwagang Station or Ulsan Bus Terminal",
   
   "deletePassword": "Delete Password (Optional)",
   "deletePasswordHint": "Password required to delete this message",

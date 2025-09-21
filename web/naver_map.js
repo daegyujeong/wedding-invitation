@@ -255,16 +255,50 @@ window.createNaverMap = async function(elementId, options) {
   try {
     console.log('🚀 Creating Naver Map with options:', options);
     
-    const controller = new NaverMapController();
-    const success = await controller.initialize(elementId, options);
-    
-    if (success) {
-      window.naverMapControllers[elementId] = controller;
-      console.log('✅ Naver Map controller created successfully');
-      return { success: true };
+    // Check if iOS Safari and use iOS-specific initialization
+    if (window.iOSMapHelper && window.iOSMapHelper.isIOSSafari()) {
+      console.log('🍎 Using iOS Safari Naver map initialization');
+      
+      try {
+        const result = await window.iOSMapHelper.initIOSNaverMap(elementId, options);
+        console.log('✅ iOS Naver Map controller created successfully');
+        return { success: true };
+      } catch (error) {
+        console.error('❌ iOS Naver map failed, creating fallback:', error);
+        
+        // Create a fallback for Naver - simple text with link
+        const mapElement = document.getElementById(elementId);
+        if (mapElement) {
+          mapElement.innerHTML = `
+            <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #f8f9fa; border-radius: 8px; padding: 20px; text-align: center;">
+              <div style="margin-bottom: 16px;">
+                <h3 style="margin: 0 0 8px 0; color: #1ec800; font-size: 18px;">${options.venue || 'Location'}</h3>
+                ${options.address ? `<p style="margin: 0; color: #666; font-size: 14px;">${options.address}</p>` : ''}
+              </div>
+              <a href="https://map.naver.com/p/search/${encodeURIComponent(options.venue || '')}" 
+                 target="_blank" 
+                 style="display: inline-block; padding: 12px 24px; background: #1ec800; color: white; text-decoration: none; border-radius: 25px; font-weight: 500;">
+                네이버 지도에서 보기
+              </a>
+            </div>
+          `;
+        }
+        
+        return { success: true }; // Return success for fallback
+      }
     } else {
-      console.error('❌ Failed to initialize Naver Map');
-      return { success: false, error: 'Failed to initialize map' };
+      // Non-iOS browsers use normal initialization
+      const controller = new NaverMapController();
+      const success = await controller.initialize(elementId, options);
+      
+      if (success) {
+        window.naverMapControllers[elementId] = controller;
+        console.log('✅ Naver Map controller created successfully');
+        return { success: true };
+      } else {
+        console.error('❌ Failed to initialize Naver Map');
+        return { success: false, error: 'Failed to initialize map' };
+      }
     }
   } catch (error) {
     console.error('❌ Naver Map creation error:', error);

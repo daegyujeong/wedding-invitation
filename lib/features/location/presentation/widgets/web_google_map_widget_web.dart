@@ -98,9 +98,32 @@ class _WebGoogleMapWidgetImplState extends State<_WebGoogleMapWidgetImpl> {
 
   void _initializeMap() {
     try {
-      // Use a more compatible approach with direct JavaScript execution
+      // Use iOS-specific initialization if iOS Safari is detected
       final script = '''
-        if (typeof window.WeddingMapStyles !== 'undefined' && typeof google !== 'undefined' && google.maps) {
+        // Check if iOS Safari and use iOS-specific initialization
+        if (window.iOSMapHelper && window.iOSMapHelper.isIOSSafari()) {
+          console.log('🍎 Using iOS Safari map initialization');
+          
+          var options = {
+            latitude: ${widget.latitude},
+            longitude: ${widget.longitude},
+            venue: '${widget.venue.replaceAll("'", "\\'")}',
+            address: '${(widget.address ?? widget.venue).replaceAll("'", "\\'")}',
+            zoom: ${widget.zoom.toInt()},
+            showControls: ${widget.showControls}
+          };
+          
+          window.iOSMapHelper.initIOSMap('wedding-map-$_mapId', options)
+            .then(function(result) {
+              console.log('✅ iOS map initialized successfully');
+            })
+            .catch(function(error) {
+              console.error('❌ iOS map failed, using static fallback:', error);
+              window.iOSMapHelper.createStaticMapFallback('wedding-map-$_mapId', options);
+            });
+            
+        } else if (typeof window.WeddingMapStyles !== 'undefined' && typeof google !== 'undefined' && google.maps) {
+          // Non-iOS browsers use the enhanced map styles
           try {
             var venueData = {
               name: '${widget.venue.replaceAll("'", "\\'")}',

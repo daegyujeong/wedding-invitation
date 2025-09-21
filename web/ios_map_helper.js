@@ -125,7 +125,11 @@ window.iOSMapHelper = {
       return;
     }
     
-    console.log('📱 Creating static map fallback for iOS');
+    console.log('📱 Creating static map fallback for iOS within container:', elementId);
+    
+    // Preserve the original container dimensions
+    const containerHeight = mapElement.offsetHeight || 300;
+    const containerWidth = mapElement.offsetWidth || 400;
     
     const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?` +
       `center=${options.latitude},${options.longitude}` +
@@ -135,23 +139,24 @@ window.iOSMapHelper = {
       `&markers=color:red%7C${options.latitude},${options.longitude}` +
       `&key=AIzaSyDYtu2Bu-VPXsA3z5sWaENXOqa-B-m8vxM`;
     
+    // Create map content that fits within the existing container
     const fallbackHtml = `
-      <div style="width: 100%; height: 100%; position: relative; background: #f0f0f0; border-radius: 12px; overflow: hidden;">
-        <img src="${staticMapUrl}" alt="${options.venue || 'Map'}" style="width: 100%; height: 100%; object-fit: cover;">
-        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); padding: 12px; text-align: center;">
-          <h4 style="margin: 0 0 8px 0; font-size: 16px; color: #333;">${options.venue || 'Location'}</h4>
-          ${options.address ? `<p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">${options.address}</p>` : ''}
+      <div style="width: 100%; height: ${containerHeight}px; max-height: 400px; position: relative; background: #f0f0f0; border-radius: 12px; overflow: hidden;">
+        <img src="${staticMapUrl}" alt="${options.venue || 'Map'}" style="width: 100%; height: calc(100% - 60px); object-fit: cover;">
+        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); padding: 8px; text-align: center; height: 60px; display: flex; align-items: center; justify-content: center;">
           <a href="https://maps.apple.com/?q=${options.latitude},${options.longitude}" 
              target="_blank" 
-             style="display: inline-block; padding: 8px 16px; background: #007aff; color: white; text-decoration: none; border-radius: 20px; font-size: 14px;">
-            Open in Apple Maps
+             style="display: inline-block; padding: 6px 14px; background: #007aff; color: white; text-decoration: none; border-radius: 18px; font-size: 13px; font-weight: 500;">
+            📍 Open in Apple Maps
           </a>
         </div>
       </div>
     `;
     
     mapElement.innerHTML = fallbackHtml;
-    console.log('✅ Static map fallback created');
+    mapElement.style.height = containerHeight + 'px';
+    mapElement.style.width = '100%';
+    console.log(`✅ Static map fallback created with height: ${containerHeight}px`);
   },
   
   // Force replace all map widgets on iOS
@@ -167,30 +172,32 @@ window.iOSMapHelper = {
       korea: { lat: 35.62885057440548, lng: 129.21897305040977, name: '일월의정원', address: '울산광역시 울주군 두동면' }
     };
     
-    // Find all potential map containers and Flutter WebView containers
+    // ONLY target specific map containers, not the entire page
     const mapSelectors = [
-      '[id*="map"]', '[id*="Map"]', '[class*="map"]', '[class*="Map"]',
-      'flt-glass-pane', 'flutter-view', '[flt-renderer]', 
-      '.flutter-web-canvas-container', '[id*="wedding-map"]'
+      '[id*="wedding-map"]',
+      '[id*="map-container"]',
+      'div[id^="map-container-wedding-map"]'
     ];
     
     const mapContainers = document.querySelectorAll(mapSelectors.join(', '));
     
-    console.log(`🔍 Found ${mapContainers.length} potential map containers`);
+    console.log(`🔍 Found ${mapContainers.length} specific map containers`);
     
     mapContainers.forEach((container, index) => {
+      // Check if this is actually a map container that needs replacement
+      const isMapContainer = container.id && container.id.includes('map');
       const isEmpty = container.innerHTML.trim() === '' || 
                      container.innerHTML.includes('Loading') ||
-                     container.innerHTML.includes('wedding venue map') ||
-                     !container.innerHTML.includes('<img') && !container.innerHTML.includes('iframe');
+                     container.innerHTML.includes('wedding venue map');
       
-      if (isEmpty && container.offsetHeight > 100) { // Only replace if container has reasonable height
-        console.log(`🔄 Replacing map container ${index}:`, container.id || container.className);
+      // Only replace if it's definitely a map container and is empty/loading
+      if (isMapContainer && isEmpty && container.offsetHeight > 100 && container.offsetHeight < 500) { 
+        console.log(`🔄 Replacing specific map container ${index}:`, container.id);
         
         // Try to determine which venue this should be
         let venue = venues.korea; // Default to Korea
         
-        // Check URL parameters or content for hints
+        // Check URL parameters or nearby text for venue hints
         const urlParams = new URLSearchParams(window.location.search);
         const venueParam = urlParams.get('venue');
         
@@ -208,30 +215,11 @@ window.iOSMapHelper = {
           zoom: 15
         };
         
-        // Ensure container has ID for replacement
-        if (!container.id) {
-          container.id = `ios-map-${Date.now()}-${index}`;
-        }
-        
         this.createStaticMapFallback(container.id, fallbackOptions);
       }
     });
     
-    // Also specifically target empty Flutter canvas containers
-    const flutterContainers = document.querySelectorAll('flt-glass-pane > *');
-    flutterContainers.forEach((container, index) => {
-      if (container.offsetHeight > 200 && container.innerHTML.trim() === '') {
-        console.log(`🔄 Replacing empty Flutter container ${index}`);
-        container.id = `flutter-map-${Date.now()}-${index}`;
-        this.createStaticMapFallback(container.id, {
-          latitude: venues.korea.lat,
-          longitude: venues.korea.lng,
-          venue: venues.korea.name,
-          address: venues.korea.address,
-          zoom: 15
-        });
-      }
-    });
+    // DON'T replace Flutter containers - they might contain the entire app
   },
   
   // Initialize Naver Map for iOS
@@ -297,23 +285,29 @@ console.log('✅ iOS Map Helper loaded. iOS Safari detected:', window.iOSMapHelp
 
 // Auto-run iOS map replacement on page load
 if (window.iOSMapHelper.isIOSSafari()) {
-  console.log('🍎 iOS detected - setting up automatic map replacement');
+  console.log('🍎 iOS detected - setting up targeted map replacement');
   
-  // Run immediately if DOM is ready
+  let replacementCount = 0;
+  const maxReplacements = 3; // Only try a few times to avoid interfering
+  
+  const tryReplacement = function() {
+    if (replacementCount < maxReplacements) {
+      window.iOSMapHelper.replaceAllMapsOnIOS();
+      replacementCount++;
+      console.log(`📍 Map replacement attempt ${replacementCount}/${maxReplacements}`);
+    }
+  };
+  
+  // Run after Flutter has loaded
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
-      setTimeout(function() {
-        window.iOSMapHelper.replaceAllMapsOnIOS();
-      }, 2000); // Wait 2 seconds for Flutter to render
+      setTimeout(tryReplacement, 3000); // Wait 3 seconds for Flutter
+      setTimeout(tryReplacement, 5000); // Try again at 5 seconds
+      setTimeout(tryReplacement, 8000); // Final try at 8 seconds
     });
   } else {
-    setTimeout(function() {
-      window.iOSMapHelper.replaceAllMapsOnIOS();
-    }, 2000);
+    setTimeout(tryReplacement, 3000);
+    setTimeout(tryReplacement, 5000); 
+    setTimeout(tryReplacement, 8000);
   }
-  
-  // Also run periodically to catch dynamically created maps
-  setInterval(function() {
-    window.iOSMapHelper.replaceAllMapsOnIOS();
-  }, 5000);
 }
